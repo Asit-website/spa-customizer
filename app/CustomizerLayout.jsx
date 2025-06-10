@@ -1,22 +1,30 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Topbar from "./components/Topbar";
 import Sidebar from "./components/Sidebar";
 import RightSmallPreview from "./components/RightSmallPreview";
 import { FaMinus, FaPlus } from "react-icons/fa6";
 import { BiCloudUpload } from "react-icons/bi";
 
+import { FabricJSCanvas, useFabricJSEditor } from "fabricjs-react";
+import { FabricImage } from "fabric";
+
+
 const CustomizerLayout = () => {
     const [products, setProducts] = useState([]);
-    const [showChatBox,setShowChatBox] = useState(false);
+    const [showChatBox, setShowChatBox] = useState(false);
     const fileInputRef = useRef(null);
+    const { editor, onReady } = useFabricJSEditor();
+    const [pendingImage, setPendingImage] = useState(null);
+    const [customText, setCustomText] = useState("");
 
     const handleUpload = (event) => {
         const file = event.target.files?.[0];
         if (!file) return;
 
         const imageUrl = URL.createObjectURL(file);
+        setPendingImage(imageUrl);
 
         const newProduct = {
             id: Date.now(),
@@ -38,6 +46,58 @@ const CustomizerLayout = () => {
 
     const lastProduct = products[products.length - 1];
     const hasUploaded = products.length > 0;
+
+    useEffect(() => {
+        if (editor && pendingImage) {
+            FabricImage.fromURL(pendingImage).then((image) => {
+                const canvasWidth = editor.canvas.getWidth();
+                const canvasHeight = editor.canvas.getHeight();
+
+                const maxWidth = canvasWidth * 0.8;
+                const maxHeight = canvasHeight * 0.8;
+
+                const scaleX = maxWidth / image.width;
+                const scaleY = maxHeight / image.height;
+                const scale = Math.min(scaleX, scaleY, 1);
+
+                image.scale(scale);
+
+                image.set({
+                    left: (canvasWidth - image.getScaledWidth()) / 2,
+                    top: (canvasHeight - image.getScaledHeight()) / 2,
+                });
+
+                editor.canvas.add(image);
+                editor.canvas.renderAll();
+                setPendingImage(null);
+            });
+        }
+    }, [editor, pendingImage]);
+
+    const handleAddCustomText = () => {
+        if (!editor || !customText.trim()) return;
+
+        import("fabric").then((fabricModule) => {
+            const fabric = fabricModule.fabric;
+
+            const text = new fabric.IText(customText, {
+                left: editor.canvas.getWidth() / 2,
+                top: editor.canvas.getHeight() / 2,
+                fontSize: 28,
+                fill: "#000000",
+                originX: "center",
+                originY: "center",
+            });
+
+            editor.canvas.add(text);
+            editor.canvas.setActiveObject(text);
+            editor.canvas.renderAll();
+            setCustomText("");
+        });
+    };
+
+
+
 
     return (
         <div className="w-full h-screen flex justify-center items-center bg-gray-100 relative max-w-[1720px] mx-auto">
@@ -66,16 +126,27 @@ const CustomizerLayout = () => {
                 </div>
             )}
 
+            {/* {hasUploaded && (
+                <div className="absolute top-36 left-36 z-[3000] bg-white p-4 rounded shadow">
+                    <input
+                        type="text"
+                        placeholder="Enter text"
+                        value={customText}
+                        onChange={(e) => setCustomText(e.target.value)}
+                        className="border px-2 py-1 rounded mr-2"
+                    />
+                    <button
+                        onClick={handleAddCustomText}
+                        className="bg-[#3559C7] text-white px-3 py-1 rounded"
+                    >
+                        Add Text
+                    </button>
+                </div>
+            )} */}
+
+
             {hasUploaded && lastProduct && (
-                <img
-                    src={lastProduct.image}
-                    alt="Preview"
-                    className="max-h-[400px] object-contain"
-                    style={{
-                        transform: `rotate(${lastProduct.rotate}deg)`,
-                        opacity: lastProduct.opacity / 100,
-                    }}
-                />
+                <FabricJSCanvas className="!w-screen !h-screen absolute top-0 left-0 z-0" onReady={onReady} />
             )}
 
             {hasUploaded && (
@@ -121,52 +192,52 @@ const CustomizerLayout = () => {
                 showChatBox && (
                     <div className="w-[350px] h-[430px] 
              absolute right-7 bottom-28 rounded-xl shadow-lg bg-white border border-gray-200 overflow-hidden z-70">
-                <div className="bg-gradient-to-b from-[#1B2653] to-[#192248] text-white px-4 py-3">
-                    <div className="flex items-center justify-between">
-                        <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749345784/qqchat_jn7bok.png" alt="" />
-                        <img onClick={()=> setShowChatBox(false)} src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749341803/Vector_hm0yzo.png" alt="" className="cursor-pointer"/>
-                    </div>
-                    <div className="mt-3 mb-5">
-                        <h2 className="text-[22px] font-semibold">Customizer’s Help Center</h2>
-                        <p className="text-[14px] text-white/70">How can we help you today?</p>
-                    </div>
-                </div>
+                        <div className="bg-gradient-to-b from-[#1B2653] to-[#192248] text-white px-4 py-3">
+                            <div className="flex items-center justify-between">
+                                <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749345784/qqchat_jn7bok.png" alt="" />
+                                <img onClick={() => setShowChatBox(false)} src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749341803/Vector_hm0yzo.png" alt="" className="cursor-pointer" />
+                            </div>
+                            <div className="mt-3 mb-5">
+                                <h2 className="text-[22px] font-semibold">Customizer’s Help Center</h2>
+                                <p className="text-[14px] text-white/70">How can we help you today?</p>
+                            </div>
+                        </div>
 
-                <div className="flex flex-col gap-1">
-                    <div
-                        className="px-4 py-3 hover:bg-gray-50 flex items-center justify-between cursor-pointer"
-                    >
-                        <span className="text-[16px] text-gray-800 font-medium">How customizer work?</span>
-                        <span className="text-gray-400">›</span>
+                        <div className="flex flex-col gap-1">
+                            <div
+                                className="px-4 py-3 hover:bg-gray-50 flex items-center justify-between cursor-pointer"
+                            >
+                                <span className="text-[16px] text-gray-800 font-medium">How customizer work?</span>
+                                <span className="text-gray-400">›</span>
+                            </div>
+                            <hr className="border-t border-[#D3DBDF] h-px" />
+                            <div
+                                className="px-4 py-3 hover:bg-gray-50 flex items-center justify-between cursor-pointer"
+                            >
+                                <span className="text-[16px] text-gray-800 font-medium">How customizer work?</span>
+                                <span className="text-gray-400">›</span>
+                            </div>
+                            <hr className="border-t border-[#D3DBDF] h-px" />
+                            <div
+                                className="px-4 py-3 hover:bg-gray-50 flex items-center justify-between cursor-pointer"
+                            >
+                                <span className="text-[16px] text-gray-800 font-medium">How customizer work?</span>
+                                <span className="text-gray-400">›</span>
+                            </div>
+                            <hr className="border-t border-[#D3DBDF] h-px" />
+                            <div
+                                className="px-4 py-3 hover:bg-gray-50 flex items-center justify-between cursor-pointer"
+                            >
+                                <span className="text-[16px] text-gray-800 font-medium">How customizer work?</span>
+                                <span className="text-gray-400">›</span>
+                            </div>
+                            <hr className="border-t border-[#D3DBDF] h-px" />
+                        </div>
                     </div>
-                    <hr className="border-t border-[#D3DBDF] h-px" />
-                    <div
-                        className="px-4 py-3 hover:bg-gray-50 flex items-center justify-between cursor-pointer"
-                    >
-                        <span className="text-[16px] text-gray-800 font-medium">How customizer work?</span>
-                        <span className="text-gray-400">›</span>
-                    </div>
-                    <hr className="border-t border-[#D3DBDF] h-px" />
-                    <div
-                        className="px-4 py-3 hover:bg-gray-50 flex items-center justify-between cursor-pointer"
-                    >
-                        <span className="text-[16px] text-gray-800 font-medium">How customizer work?</span>
-                        <span className="text-gray-400">›</span>
-                    </div>
-                    <hr className="border-t border-[#D3DBDF] h-px" />
-                    <div
-                        className="px-4 py-3 hover:bg-gray-50 flex items-center justify-between cursor-pointer"
-                    >
-                        <span className="text-[16px] text-gray-800 font-medium">How customizer work?</span>
-                        <span className="text-gray-400">›</span>
-                    </div>
-                    <hr className="border-t border-[#D3DBDF] h-px" />
-                </div>
-            </div>
                 )
             }
 
-            <div onClick={()=> setShowChatBox(!showChatBox)} className="flex items-center justify-center p-5 rounded-full bg-[#3559C7] absolute right-7 bottom-7 cursor-pointer">
+            <div onClick={() => setShowChatBox(!showChatBox)} className="flex items-center justify-center p-5 rounded-full bg-[#3559C7] absolute right-7 bottom-7 cursor-pointer">
                 <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749345784/qqchat_jn7bok.png" alt="chat" />
             </div>
         </div>
