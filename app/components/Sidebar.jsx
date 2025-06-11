@@ -1,17 +1,9 @@
 "use client";
 import React, { useRef, useState } from "react";
 
-const Sidebar = ({ products, setProducts }) => {
+const Sidebar = ({ products, setProducts, handleAddCustomText, customText, setCustomText, updateLastProduct }) => {
   const [activeTab, setActiveTab] = useState("editor");
   const lastProduct = products[products.length - 1];
-
-  const updateLastProduct = (key, value) => {
-    setProducts((prev) =>
-      prev.map((p, i) =>
-        i === prev.length - 1 ? { ...p, [key]: value } : p
-      )
-    );
-  };
 
   const [uploadedFile, setUploadedFile] = useState(null);
   const fileInputRef = useRef(null);
@@ -28,21 +20,24 @@ const Sidebar = ({ products, setProducts }) => {
     <div className="absolute top-28 left-7 flex gap-5 z-50">
       <div className="bg-white p-5 rounded-lg border border-[#D3DBDF] flex flex-col h-fit items-center gap-7">
         {[
-          { key: "editor", label: "Editor", icon: "Frame_4_ltpuco" },
-          { key: "edit", label: "Edit", icon: "pencil-outline_ptelan" },
-          { key: "text", label: "Text", icon: "text-recognition_keibyu" },
-          { key: "colors", label: "Colors", icon: "invert-colors_gpvdwp" },
-          { key: "clipart", label: "Clipart", icon: "heart-multiple-outline_vo1v51" },
+          { key: "editor", label: "Editor", icon: "Frame_4_vzkhrn" },
+          { key: "edit", label: "Edit", icon: "pencil-outline_c6lwsj" },
+          { key: "text", label: "Text", icon: "text-recognition_emsdp8" },
+          { key: "colors", label: "Colors", icon: "invert-colors_bybi8l" },
+          { key: "clipart", label: "Clipart", icon: "heart-multiple-outline_rjqkb7" },
         ].map(({ key, label, icon }) => (
           <div key={key} onClick={() => setActiveTab(key)} className="flex flex-col gap-2 cursor-pointer">
             <img
-              src={`https://res.cloudinary.com/dd9tagtiw/image/upload/v1749340721/${icon}.png`}
+              src={`https://res.cloudinary.com/dd9tagtiw/image/upload/v1749641805/${icon}.svg`}
               alt={label}
               className="m-auto"
             />
-            <p className={`text-[14px] text-center font-semibold ${activeTab === key ? "text-blue-600" : ""}`}>{label}</p>
+            <p className={`text-[14px] text-center font-semibold ${activeTab === key ? "text-blue-600" : ""}`}>
+              {label}
+            </p>
           </div>
         ))}
+
       </div>
 
       {activeTab === "editor" && (
@@ -196,11 +191,33 @@ const Sidebar = ({ products, setProducts }) => {
 
           <div className='flex flex-col gap-3 py-4 px-3'>
             <h3 className='text-[16px] font-semibold'>Tools</h3>
-            
+
             <button className='border-[#D3DBDF] border rounded-md py-3 px-8  text-[16px] flex items-center justify-start gap-2'><img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508617/circle-opacity_zvwbfk.png" alt="" /> Remove Background</button>
             <button className='border-[#D3DBDF] border rounded-md py-3 px-8  text-[16px] flex items-center justify-start gap-2'> <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508617/move-resize-variant_karpuj.png" alt="" /> Upscale</button>
           </div>
 
+        </div>
+      )}
+
+      {activeTab === "text" && (
+        <div className='bg-white rounded-lg border border-[#D3DBDF] w-80 h-fit'>
+          <div className='flex items-center justify-between py-2 px-3'>
+            <div className='flex items-center gap-2'>
+              <h3 className='text-[18px] font-semibold'>Add text</h3>
+            </div>
+            <div>
+              <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749341803/Vector_hm0yzo.png" alt="Close" />
+            </div>
+          </div>
+          <hr className="border-t border-[#D3DBDF] h-px" />
+          <div className='py-3 px-4'>
+            <div className='flex flex-col gap-2'>
+              <input type="text" value={customText}
+                onChange={(e) => setCustomText(e.target.value)} name="" id="" placeholder="Add Headline" className="border border-[#D3DBDF] rounded-lg p-3 min-h-20 placeholder:font-semibold" />
+              <input type="text" name="" id="" placeholder="Add Paragraph" className="border border-[#D3DBDF] rounded-lg p-3 placeholder:font-semibold" />
+            </div>
+            <button onClick={handleAddCustomText} className='bg-[#D7DEF4] rounded-md mt-5 py-3 text-[#AEBDEA] w-full text-[16px] cursor-pointer'>Add text</button>
+          </div>
         </div>
       )}
 
