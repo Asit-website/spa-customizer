@@ -1,7 +1,7 @@
 "use client";
 import React, { useRef, useState } from "react";
 
-const Sidebar = ({ products, setProducts, handleAddCustomText, customText, setCustomText, updateLastProduct }) => {
+const Sidebar = ({ products, editor, handleAddCustomText, customText, setCustomText, updateLastProduct, showAddModal, showEditModal, setShowEditModal, setShowAddModal, textSize, setTextSize, textSpacing, setTextSpacing, textArc, setTextArc }) => {
   const [activeTab, setActiveTab] = useState("editor");
   const lastProduct = products[products.length - 1];
 
@@ -26,7 +26,10 @@ const Sidebar = ({ products, setProducts, handleAddCustomText, customText, setCu
           { key: "colors", label: "Colors", icon: "invert-colors_bybi8l" },
           { key: "clipart", label: "Clipart", icon: "heart-multiple-outline_rjqkb7" },
         ].map(({ key, label, icon }) => (
-          <div key={key} onClick={() => setActiveTab(key)} className="flex flex-col gap-2 cursor-pointer">
+          <div key={key} onClick={() => {
+            setActiveTab(key);
+            if (key === "text") setShowAddModal(true);
+          }} className="flex flex-col gap-2 cursor-pointer">
             <img
               src={`https://res.cloudinary.com/dd9tagtiw/image/upload/v1749641805/${icon}.svg`}
               alt={label}
@@ -200,25 +203,128 @@ const Sidebar = ({ products, setProducts, handleAddCustomText, customText, setCu
       )}
 
       {activeTab === "text" && (
-        <div className='bg-white rounded-lg border border-[#D3DBDF] w-80 h-fit'>
-          <div className='flex items-center justify-between py-2 px-3'>
-            <div className='flex items-center gap-2'>
-              <h3 className='text-[18px] font-semibold'>Add text</h3>
-            </div>
-            <div>
-              <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749341803/Vector_hm0yzo.png" alt="Close" />
-            </div>
-          </div>
-          <hr className="border-t border-[#D3DBDF] h-px" />
-          <div className='py-3 px-4'>
-            <div className='flex flex-col gap-2'>
-              <input type="text" value={customText}
-                onChange={(e) => setCustomText(e.target.value)} name="" id="" placeholder="Add Headline" className="border border-[#D3DBDF] rounded-lg p-3 min-h-20 placeholder:font-semibold" />
-              <input type="text" name="" id="" placeholder="Add Paragraph" className="border border-[#D3DBDF] rounded-lg p-3 placeholder:font-semibold" />
-            </div>
-            <button onClick={handleAddCustomText} className='bg-[#D7DEF4] rounded-md mt-5 py-3 text-[#AEBDEA] w-full text-[16px] cursor-pointer'>Add text</button>
-          </div>
-        </div>
+        <>
+          {
+            showAddModal && (
+              <div className='bg-white rounded-lg border border-[#D3DBDF] w-80 h-fit'>
+                <div className='flex items-center justify-between py-2 px-3'>
+                  <div className='flex items-center gap-2'>
+                    <h3 className='text-[18px] font-semibold'>Add text</h3>
+                  </div>
+                  <div className="cursor-pointer" onClick={() => setShowAddModal(false)}>
+                    <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749341803/Vector_hm0yzo.png" alt="Close" />
+                  </div>
+                </div>
+                <hr className="border-t border-[#D3DBDF] h-px" />
+                <div className='py-3 px-4'>
+                  <div className='flex flex-col gap-2'>
+                    <input type="text" value={customText}
+                      onChange={(e) => setCustomText(e.target.value)} name="" id="" placeholder="Add Headline" className="border border-[#D3DBDF] rounded-lg p-3 min-h-20 placeholder:font-semibold" />
+                    <input type="text" name="" id="" placeholder="Add Paragraph" className="border border-[#D3DBDF] rounded-lg p-3 placeholder:font-semibold" />
+                  </div>
+                  <button onClick={handleAddCustomText} className={` rounded-md mt-5 py-3  w-full text-[16px] cursor-pointer ${customText.trim() !== "" ? "text-white bg-blue-600" : "bg-[#D7DEF4] text-[#AEBDEA]"}`}>Add text</button>
+                </div>
+              </div>
+            )
+          }
+
+
+
+          {
+            showEditModal && (
+              <div className="bg-white rounded-lg border border-[#D3DBDF] w-80 h-fit max-h-[530px] overflow-y-scroll">
+
+                <div className='flex items-center justify-between py-2 px-3'>
+                  <div className='flex items-center gap-2'>
+                    <h3 className='text-[18px] font-semibold'>Edit text</h3>
+                  </div>
+                  <div className="cursor-pointer" onClick={() => setShowEditModal(false)}>
+                    <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749341803/Vector_hm0yzo.png" alt="Close" />
+                  </div>
+                </div>
+                <hr className="border-t border-[#D3DBDF] h-px" />
+                <div className='py-3 px-4'>
+                  <input type="text" value={customText}
+                    onChange={(e) => setCustomText(e.target.value)} name="" id="" placeholder="Add Headline" className="border border-[#D3DBDF] rounded-lg p-3 min-h-20  w-full placeholder:font-semibold" />
+                </div>
+
+
+                <hr className="border-t border-[#D3DBDF] h-px" />
+
+                <div className='flex items-center justify-between py-4 px-3'>
+                  <div className='flex items-center gap-2'>
+                    <h3 className='text-[16px] font-semibold'>Flip</h3>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507255/tune-vertical_ezas8p.png" alt="flip" />
+                    <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507254/flip-vertical_ajs5ur.png" alt="flip" />
+                  </div>
+                </div>
+
+                <hr className="border-t border-[#D3DBDF] h-px" />
+
+                <hr className="border-t border-[#D3DBDF] h-px" />
+
+                <div className='flex flex-col gap-3 justify-between py-4 px-3'>
+                  <label className="text-[16px] font-medium">Size</label>
+                  <input
+                    type="range"
+                    min={10}
+                    max={100}
+                    value={textSize}
+                    onChange={(e) => {
+                      const newSize = parseInt(e.target.value);
+                      setTextSize(newSize);
+                      const activeObj = editor.canvas.getActiveObject();
+                      if (activeObj && activeObj.type === "i-text") {
+                        activeObj.set("fontSize", newSize);
+                        editor.canvas.renderAll();
+                      }
+                    }}
+                    className="w-full"
+                  />
+
+                  <label className="text-[16px] font-medium">Arc</label>
+                  <input
+                    type="range"
+                    className="w-full"
+                  />
+
+                  <label className="text-[16px] font-medium">Spacing</label>
+                  <input
+                    type="range"
+                    min={-10}
+                    max={100}
+                    value={textSpacing}
+                    onChange={(e) => {
+                      const newSpacing = parseInt(e.target.value);
+                      setTextSpacing(newSpacing);
+                      const activeObj = editor.canvas.getActiveObject();
+                      if (activeObj && activeObj.type === "i-text") {
+                        activeObj.set("charSpacing", newSpacing * 10);
+                        editor.canvas.renderAll();
+                      }
+                    }}
+                    className="w-full"
+                  />
+
+                </div>
+                <hr className="border-t border-[#D3DBDF] h-px" />
+
+                <div className='flex flex-col gap-3 justify-between py-4 px-3'>
+                  <h3 className='text-[16px] font-semibold'>Arrange</h3>
+                  <div className="flex items-center gap-7">
+                    <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508122/arrange-bring-forward_vigco4.png" alt="" />
+                    <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508122/arrange-bring-to-front_povosv.png" alt="" />
+                    <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508122/arrange-send-backward_buzw6f.png" alt="" />
+                    <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508121/arrange-send-to-back_bcyzlu.png" alt="" />
+                  </div>
+                </div>
+
+              </div>
+            )
+          }
+        </>
       )}
 
     </div>

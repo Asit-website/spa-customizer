@@ -10,35 +10,59 @@ import { FabricJSCanvas, useFabricJSEditor } from "fabricjs-react";
 import { FabricImage } from "fabric";
 
 const CustomizerLayout = () => {
-    const [products, setProducts] = useState([]);
+    const [products, setProducts] = useState(() => {
+        try {
+            const saved = localStorage.getItem("Products");
+            return saved ? JSON.parse(saved) : [];
+        } catch {
+            return [];
+        }
+    });
     const [showChatBox, setShowChatBox] = useState(false);
     const fileInputRef = useRef(null);
     const { editor, onReady } = useFabricJSEditor();
     const [pendingImage, setPendingImage] = useState(null);
     const [customText, setCustomText] = useState("");
+    const [showAddModal, setShowAddModal] = useState(true);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [textSize, setTextSize] = useState(28);
+    const [textSpacing, setTextSpacing] = useState(0);
+    const [textArc, setTextArc] = useState(0);
 
-    const lastImageRef = useRef(null); // ✅ Track the last image on canvas
+    const lastImageRef = useRef(null);
+
 
     const handleUpload = (event) => {
         const file = event.target.files?.[0];
         if (!file) return;
 
-        const imageUrl = URL.createObjectURL(file);
-        setPendingImage(imageUrl);
+        const reader = new FileReader();
 
-        const newProduct = {
-            id: Date.now(),
-            image: imageUrl,
-            size: "M",
-            color: "white",
-            text: customText,
-            description: "",
-            rotate: 0,
-            opacity: 100,
+        reader.onloadend = () => {
+            const base64Image = reader.result;
+
+            setPendingImage(base64Image);
+
+            const newProduct = {
+                id: Date.now(),
+                image: base64Image,
+                size: "M",
+                color: "white",
+                text: customText,
+                description: "",
+                rotate: 0,
+                opacity: 100,
+                textSize: textSize,
+                textSpacing: textSpacing,
+                textArc: textArc,
+            };
+
+            setProducts((prev) => [...prev, newProduct]);
         };
 
-        setProducts((prev) => [...prev, newProduct]);
+        reader.readAsDataURL(file);
     };
+
 
     const triggerUpload = () => {
         fileInputRef.current?.click();
@@ -48,49 +72,51 @@ const CustomizerLayout = () => {
     const hasUploaded = products.length > 0;
 
     useEffect(() => {
-        if (editor && pendingImage) {
-            FabricImage.fromURL(pendingImage).then((image) => {
-                const canvasWidth = editor.canvas.getWidth();
-                const canvasHeight = editor.canvas.getHeight();
+        if (!editor) return;
+        editor.canvas.clear();
 
-                const maxWidth = canvasWidth * 0.8;
-                const maxHeight = canvasHeight * 0.8;
+        const lastProduct = products[products.length - 1];
+        if (!lastProduct || !lastProduct.image) return;
 
-                const scaleX = maxWidth / image.width;
-                const scaleY = maxHeight / image.height;
-                const scale = Math.min(scaleX, scaleY, 1);
+        import("fabric").then(({ Image, IText }) => {
+            const img = new window.Image();
+            img.src = lastProduct.image;
 
-                image.scale(scale);
-                image.set({
-                    left: (canvasWidth - image.getScaledWidth()) / 2,
-                    top: (canvasHeight - image.getScaledHeight()) / 2,
+            img.onload = () => {
+                const fabricImg = new Image(img, {
+                    left: editor.canvas.getWidth() / 2,
+                    top: editor.canvas.getHeight() / 2,
+                    originX: "center",
+                    originY: "center",
+                    angle: lastProduct.rotate || 0,
+                    opacity: (lastProduct.opacity || 100) / 100,
+                    selectable: true,
                 });
 
-                // ✅ Remove previous image if it exists
-                if (lastImageRef.current) {
-                    editor.canvas.remove(lastImageRef.current);
-                }
-
-                editor.canvas.add(image);
-                editor.canvas.setActiveObject(image);
+                editor.canvas.add(fabricImg);
                 editor.canvas.renderAll();
+            };
 
-                lastImageRef.current = image; // ✅ Save new image ref
+            img.onerror = (e) => {
+                console.error("Failed to load image on canvas", e);
+            };
 
-                setProducts((prev) => {
-                    const updated = [...prev];
-                    const lastIndex = updated.length - 1;
-                    updated[lastIndex] = {
-                        ...updated[lastIndex],
-                        fabricObject: image,
-                    };
-                    return updated;
+            if (lastProduct.text) {
+                const text = new IText(lastProduct.text, {
+                    left: editor.canvas.getWidth() / 2,
+                    top: editor.canvas.getHeight() / 2,
+                    fontSize: lastProduct.textSize || 28,
+                    fill: "#000000",
+                    originX: "center",
+                    originY: "center",
                 });
 
-                setPendingImage(null);
-            });
-        }
-    }, [editor, pendingImage]);
+                editor.canvas.add(text);
+                editor.canvas.renderAll();
+            }
+        });
+    }, [editor, products])
+
 
     const handleAddCustomText = () => {
         if (!editor || !customText.trim()) return;
@@ -105,6 +131,7 @@ const CustomizerLayout = () => {
                 originY: "center",
             });
 
+            console.log("textObject", textObject)
             editor.canvas.add(textObject);
             editor.canvas.setActiveObject(textObject);
             editor.canvas.renderAll();
@@ -121,7 +148,12 @@ const CustomizerLayout = () => {
                 return updated;
             });
 
+            setTextSize(28);
+            setTextSpacing(0);
+            setTextArc(0);
             setCustomText("");
+            setShowAddModal(false);
+            setShowEditModal(true);
         });
     };
 
@@ -158,29 +190,28 @@ const CustomizerLayout = () => {
         localStorage.setItem("Products", JSON.stringify(products));
     }, [products]);
 
-    useEffect(() => {
-        const saved = localStorage.getItem("Products");
-        if (saved) {
-            try {
-                const parsed = JSON.parse(saved);
-                setProducts(parsed);
-            } catch (e) {
-                console.error("Failed to parse saved products:", e);
-            }
-        }
-    }, []);
-
     return (
         <div className="w-full h-screen flex justify-center items-center bg-gray-100 relative max-w-[1720px] mx-auto">
             <Topbar />
             {hasUploaded && (
                 <Sidebar
+                    editor={editor}
                     products={products}
                     setProducts={setProducts}
                     handleAddCustomText={handleAddCustomText}
                     customText={customText}
                     setCustomText={setCustomText}
                     updateLastProduct={updateLastProduct}
+                    showAddModal={showAddModal}
+                    showEditModal={showEditModal}
+                    setShowAddModal={setShowAddModal}
+                    setShowEditModal={setShowEditModal}
+                    textSize={textSize}
+                    setTextSize={setTextSize}
+                    textSpacing={textSpacing}
+                    setTextSpacing={setTextSpacing}
+                    textArc={textArc}
+                    setTextArc={setTextArc}
                 />
             )}
             {hasUploaded && <RightSmallPreview />}
@@ -217,7 +248,7 @@ const CustomizerLayout = () => {
                             key={prod.id}
                             className="bg-white w-14 h-14 p-2 rounded-lg border border-[#D3DBDF] flex items-center justify-center"
                         >
-                            <img src={prod.image} alt={`Product ${index + 1}`} className="object-contain" />
+                            <img src={prod.image} alt={`Product ${index + 1}`} className="object-contain" onError={(e) => e.currentTarget.style.display = 'none'} />
                         </div>
                     ))}
                     <div
