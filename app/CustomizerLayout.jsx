@@ -7,7 +7,7 @@ import RightSmallPreview from "./components/RightSmallPreview";
 import { FaMinus, FaPlus } from "react-icons/fa6";
 import { BiCloudUpload } from "react-icons/bi";
 import { FabricJSCanvas, useFabricJSEditor } from "fabricjs-react";
-import { FabricImage } from "fabric";
+import FontSelector from "./components/FontSelector";
 
 const CustomizerLayout = () => {
     const [products, setProducts] = useState(() => {
@@ -30,7 +30,6 @@ const CustomizerLayout = () => {
     const [textArc, setTextArc] = useState(0);
 
     const lastImageRef = useRef(null);
-
 
     const handleUpload = (event) => {
         const file = event.target.files?.[0];
@@ -237,7 +236,9 @@ const CustomizerLayout = () => {
             )}
 
             {hasUploaded && lastProduct && (
-                <FabricJSCanvas className="!w-screen !h-screen absolute top-0 left-0 z-0" onReady={onReady} />
+                <>
+                    <FabricJSCanvas className="!w-screen !h-screen absolute top-0 left-0 z-0" onReady={onReady} />
+                </>
             )}
 
             {hasUploaded && (
