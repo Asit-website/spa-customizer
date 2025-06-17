@@ -6,6 +6,7 @@ import EditTab from "./EditTab";
 import AddTextTab from "./AddTextTab";
 import EditTextTab from "./EditTextTab";
 import SelectColorsTab from "./SelectColorsTab";
+import ClipartTab from "./ClipartTab";
 
 const Sidebar = ({
   products,
@@ -62,7 +63,7 @@ const Sidebar = ({
 
       {activeTab === "edit" && lastProduct && (
         <>
-          <EditTab />
+          {/* <EditTab /> */}
           <PreviewTab lastProduct={lastProduct} updateLastProduct={updateLastProduct} />
         </>
       )}
@@ -92,6 +93,8 @@ const Sidebar = ({
       )}
 
       {activeTab === "colors" && <SelectColorsTab />}
+      {activeTab === "clipart" && <ClipartTab />}
+
     </div>
   );
 };
