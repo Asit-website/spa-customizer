@@ -24,7 +24,11 @@ const Sidebar = ({
   textSpacing,
   setTextSpacing,
   textArc,
-  setTextArc
+  setTextArc,
+  handleColorChange,
+  selectedColor,
+  setSelectedColor,
+  addEmojiTextToCanvas
 }) => {
   const [activeTab, setActiveTab] = useState("editor");
   const lastProduct = products[products.length - 1];
@@ -94,8 +98,8 @@ const Sidebar = ({
         </>
       )}
 
-      {activeTab === "colors" && <SelectColorsTab />}
-      {activeTab === "clipart" && ( showClipartTab && <ClipartTab setShowClipartTab={setShowClipartTab}/>)}
+      {activeTab === "colors" && <SelectColorsTab handleColorChange={handleColorChange} selectedColor={selectedColor} setSelectedColor={setSelectedColor} />}
+      {activeTab === "clipart" && (showClipartTab && <ClipartTab addEmojiTextToCanvas={addEmojiTextToCanvas} setShowClipartTab={setShowClipartTab} />)}
 
     </div>
   );

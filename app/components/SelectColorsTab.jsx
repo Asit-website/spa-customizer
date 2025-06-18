@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-const SelectColorsTab = () => {
+const SelectColorsTab = ({handleColorChange,selectedColor}) => {
 
     const colorOptionsWithNames = [
         { color: "#000000", name: "Black" },
@@ -44,7 +44,7 @@ const SelectColorsTab = () => {
         { color: "#ffffff", name: "White" },
     ];
 
-    const [selectedColor , setSelectedColor] = useState({});
+    // const [selectedColor , setSelectedColor] = useState({});
 
     return (
         <div className="bg-white rounded-lg border border-[#D3DBDF] w-72 h-fit max-h-[460px] overflow-y-scroll">
@@ -62,7 +62,7 @@ const SelectColorsTab = () => {
                 {
                     colorOptionsWithNames.map((color,index) => {
                         return (
-                            <div key={index} onClick={() => setSelectedColor(color)} className={`flex relative items-center p-2 rounded-md cursor-pointer gap-4 ${selectedColor.color === color.color ? "border border-[#D3DBDF]" : ""}`}>
+                            <div key={index} onClick={() => handleColorChange(color)} className={`flex relative items-center p-2 rounded-md cursor-pointer gap-4 ${selectedColor.color === color.color ? "border border-[#D3DBDF]" : ""}`}>
                                 <div className={`w-8 h-8 rounded-full cursor-pointer transition-all duration-150 `} style={{ backgroundColor: color.color }} />
 
                                 <div className='flex flex-col'>

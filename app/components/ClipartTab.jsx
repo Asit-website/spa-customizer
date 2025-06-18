@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import EmojiCategoryList from './EmojiCategoryList';
 import EmojiList from './EmojiList';
 
-const ClipartTab = ({ setShowClipartTab }) => {
+const ClipartTab = ({ setShowClipartTab,addEmojiTextToCanvas }) => {
     const [view, setView] = useState('main');
     const [selectedEmojis, setSelectedEmojis] = useState([]);
 
@@ -104,11 +104,11 @@ const ClipartTab = ({ setShowClipartTab }) => {
             )}
 
             {view === 'emoji-categories' && (
-                <EmojiCategoryList categories={emojiData} onCategoryClick={handleCategoryClick} />
+                <EmojiCategoryList addEmojiTextToCanvas={addEmojiTextToCanvas} categories={emojiData} onCategoryClick={handleCategoryClick} />
             )}
 
             {view === 'emoji-list' && (
-                <EmojiList emojis={selectedEmojis} />
+                <EmojiList emojis={selectedEmojis} addEmojiTextToCanvas={addEmojiTextToCanvas} />
             )}
         </div>
     );

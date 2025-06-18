@@ -1,6 +1,6 @@
 import React from 'react';
 
-const EmojiCategoryList = ({ categories, onCategoryClick }) => {
+const EmojiCategoryList = ({ categories, onCategoryClick, addEmojiTextToCanvas }) => {
     return (
         <>
             <div className='flex flex-col gap-3 py-3 px-3'>
@@ -14,15 +14,37 @@ const EmojiCategoryList = ({ categories, onCategoryClick }) => {
                 </div>
             </div>
             <div className="flex flex-col gap-2 pb-3">
-                {categories.map((category, index) => (
-                    <h3
-                        key={index}
-                        onClick={() => onCategoryClick(category)}
-                        className="cursor-pointer px-6 py-2 text-[16px] hover:bg-gray-100"
-                    >
-                        {category.category}
-                    </h3>
-                ))}
+                {categories.map((category, index) => {
+                    if (category.category === "Emoji" && category.emojis?.length > 0) {
+                        return (
+                            <div key={index}>
+                                <h3 className="px-6 py-2 text-[16px] font-semibold">Emoji</h3>
+                                <div className="grid grid-cols-5 gap-2 px-6 py-2">
+                                    {category.emojis.map((emoji, i) => (
+                                        <span
+                                            key={i}
+                                            onClick={() => addEmojiTextToCanvas(emoji)}
+                                            className="text-[24px] cursor-pointer hover:scale-110 transition"
+                                        >
+                                            {emoji}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        );
+                    } else {
+                        return (
+                            <h3
+                                key={index}
+                                onClick={() => onCategoryClick(category)}
+                                className="cursor-pointer px-6 py-2 text-[16px] hover:bg-gray-100"
+                            >
+                                {category.category}
+                            </h3>
+                        );
+                    }
+                })}
+
             </div>
         </>
     );

@@ -18,6 +18,42 @@ const CustomizerLayout = () => {
   const [textSpacing, setTextSpacing] = useState(0);
   const [textArc, setTextArc] = useState(0);
 
+  const [selectedColor, setSelectedColor] = useState({});
+
+  const handleColorChange = (colorObj) => {
+    setSelectedColor(colorObj); // Update local state
+    updateLastProduct("color", colorObj.color); // Save in product list
+    updateTshirtColor(colorObj.color); // Change canvas color
+  };
+
+
+  const updateTshirtColor = (color) => {
+    if (!editor || !editor.canvas) return;
+
+    editor.canvas.getObjects().forEach((obj) => {
+      if (obj.type === "image") {
+        import("fabric").then(({ filters }) => {
+          obj.filters = [];
+
+          if (color && color !== "white") {
+            obj.filters.push(
+              new filters.BlendColor({
+                color,
+                mode: "tint",
+                alpha: 1,
+              })
+            );
+          }
+
+          obj.applyFilters();
+          editor.canvas.renderAll();
+        });
+      }
+    });
+  };
+
+
+
   useEffect(() => {
     const defaultProduct = {
       id: Date.now(),
@@ -46,21 +82,59 @@ const CustomizerLayout = () => {
       const img = new window.Image();
       img.src = lastProduct.image;
 
-      img.onload = () => {
-        const fabricImg = new Image(img, {
-          left: editor.canvas.getWidth() / 2,
-          top: editor.canvas.getHeight() / 2,
-          originX: "center",
-          originY: "center",
-          angle: lastProduct.rotate || 0,
-          opacity: (lastProduct.opacity || 100) / 100,
-          selectable: true,
-        });
+      // img.onload = () => {
+      //   const fabricImg = new Image(img, {
+      //     left: editor.canvas.getWidth() / 2,
+      //     top: editor.canvas.getHeight() / 2,
+      //     originX: "center",
+      //     originY: "center",
+      //     angle: lastProduct.rotate || 0,
+      //     opacity: (lastProduct.opacity || 100) / 100,
+      //     selectable: true,
+      //   });
 
-        fabricImg.customId = lastProduct.id;
-        editor.canvas.add(fabricImg);
-        editor.canvas.renderAll();
+      //   fabricImg.customId = lastProduct.id;
+      //   editor.canvas.add(fabricImg);
+      //   editor.canvas.renderAll();
+      // };
+
+      const img1 = new window.Image();
+      img1.crossOrigin = "anonymous"; // ✅ this MUST be before src
+      img1.src = lastProduct.image;
+
+      img1.onload = () => {
+        import("fabric").then(({ Image, filters }) => {
+          const fabricImg = new Image(img1, {
+            left: editor.canvas.getWidth() / 2,
+            top: editor.canvas.getHeight() / 2,
+            originX: "center",
+            originY: "center",
+            angle: lastProduct.rotate || 0,
+            opacity: (lastProduct.opacity || 100) / 100,
+            selectable: true,
+          });
+
+          //  Apply tint filter only if color is not white
+          if (lastProduct.color && lastProduct.color !== "white") {
+            const tintFilter = new filters.BlendColor({
+              color: lastProduct.color,
+              mode: "tint",
+              alpha: 1,
+            });
+
+            fabricImg.filters = [tintFilter];
+            fabricImg.applyFilters();
+          }
+
+          fabricImg.customId = lastProduct.id;
+          editor.canvas.add(fabricImg);
+          editor.canvas.sendToBack(fabricImg);
+          editor.canvas.renderAll();
+        });
       };
+
+
+
 
       if (lastProduct.text) {
         const text = new IText(lastProduct.text, {
@@ -77,7 +151,10 @@ const CustomizerLayout = () => {
         editor.canvas.renderAll();
       }
     });
-  }, [editor]); 
+  }, [editor]);
+
+
+
 
   useEffect(() => {
     if (!editor || !editor.canvas || products.length === 0) return;
@@ -148,6 +225,53 @@ const CustomizerLayout = () => {
     });
   };
 
+  // ================for emoji============
+//   const addEmojiTextToCanvas = (emojiChar) => {
+//   if (!editor || !editor.canvas) return;
+
+//   import("fabric").then(({ IText }) => {
+//     const emojiText = new IText(emojiChar, {
+//       left: editor.canvas.getWidth() / 2,
+//       top: editor.canvas.getHeight() / 2,
+//       originX: "center",
+//       originY: "center",
+//       fontSize: 40,
+//       fill: "#000000",
+//       selectable: true,
+//     });
+
+//     emojiText.customId = Date.now(); // unique ID
+//     editor.canvas.add(emojiText);
+//     editor.canvas.setActiveObject(emojiText);
+//     editor.canvas.renderAll();
+//   });
+// };
+
+const addEmojiTextToCanvas = (emojiChar) => {
+  if (!editor || !editor.canvas) return;
+
+  import("fabric").then(({ IText }) => {
+    const emojiText = new IText(emojiChar, {
+      left: editor.canvas.getWidth() / 2,
+      top: editor.canvas.getHeight() / 2,
+      originX: "center",
+      originY: "center",
+      fontSize: 48,
+      fill: "#000",
+    });
+
+    emojiText.customId = products[products.length - 1]?.id;
+
+    editor.canvas.add(emojiText);
+    editor.canvas.setActiveObject(emojiText);
+    editor.canvas.bringToFront(emojiText); // 👈 Bring emoji to front layer
+    editor.canvas.renderAll();
+  });
+};
+
+
+
+
   return (
     <div className="w-full h-screen flex justify-center items-center bg-gray-100 relative max-w-[1720px] mx-auto">
       <Topbar />
@@ -169,6 +293,10 @@ const CustomizerLayout = () => {
         setTextSpacing={setTextSpacing}
         textArc={textArc}
         setTextArc={setTextArc}
+        handleColorChange={handleColorChange}
+        selectedColor={selectedColor}
+        setSelectedColor={setSelectedColor}
+        addEmojiTextToCanvas={addEmojiTextToCanvas}
       />
       <RightSmallPreview />
 
