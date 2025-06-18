@@ -28,6 +28,7 @@ const Sidebar = ({
 }) => {
   const [activeTab, setActiveTab] = useState("editor");
   const lastProduct = products[products.length - 1];
+  const [showClipartTab, setShowClipartTab] = useState(false);
 
   return (
     <div className="absolute top-28 left-7 flex gap-5 z-50">
@@ -44,6 +45,7 @@ const Sidebar = ({
             onClick={() => {
               setActiveTab(key);
               if (key === "text") setShowAddModal(true);
+              if (key === "clipart") setShowClipartTab(true);
             }}
             className="flex flex-col gap-2 cursor-pointer"
           >
@@ -93,7 +95,7 @@ const Sidebar = ({
       )}
 
       {activeTab === "colors" && <SelectColorsTab />}
-      {activeTab === "clipart" && <ClipartTab />}
+      {activeTab === "clipart" && ( showClipartTab && <ClipartTab setShowClipartTab={setShowClipartTab}/>)}
 
     </div>
   );
