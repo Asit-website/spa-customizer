@@ -29,14 +29,22 @@ const Sidebar = ({
   selectedColor,
   setSelectedColor,
   addEmojiTextToCanvas,
-  updateArrange
+  updateArrange,
+  setTextColor,
+  setChangeTextColor,
+  setTextFontFamily,
+  setChangeFontFamily,
+  setFontStyle,
+  setChangeFontStyle,
+  setChangeFlipX,
+  setChangeFlipy
 }) => {
   const [activeTab, setActiveTab] = useState("editor");
   const lastProduct = products[products.length - 1];
   const [showClipartTab, setShowClipartTab] = useState(false);
-  const [showEditorModal,setShowEditorModal] = useState(false);
-  const [showImageEditModal,setShowImageEditModal] = useState(false);
-  const [showBgColorsModal,setShowBgColorsModal] = useState(false);
+  const [showEditorModal, setShowEditorModal] = useState(false);
+  const [showImageEditModal, setShowImageEditModal] = useState(false);
+  const [showBgColorsModal, setShowBgColorsModal] = useState(false);
 
   return (
     <div className="absolute top-24 sm:top-28 left-7 w-[90%]  flex gap-5 z-50 flex-col sm:flex-row">
@@ -72,12 +80,12 @@ const Sidebar = ({
         ))}
       </div>
 
-      {activeTab === "editor" && ( showEditorModal && <EditorTab setShowEditorModal={setShowEditorModal}/>) }
+      {activeTab === "editor" && (showEditorModal && <EditorTab setShowEditorModal={setShowEditorModal} />)}
 
       {activeTab === "edit" && lastProduct && (
         <>
           {/* <EditTab /> */}
-          { (showImageEditModal && <PreviewTab setShowImageEditModal={setShowImageEditModal} updateArrange={updateArrange} products={products} lastProduct={lastProduct} updateLastProduct={updateLastProduct} />) }
+          {(showImageEditModal && <PreviewTab setChangeFlipX={setChangeFlipX} setChangeFlipy={setChangeFlipy}  setShowImageEditModal={setShowImageEditModal} updateArrange={updateArrange} products={products} lastProduct={lastProduct} updateLastProduct={updateLastProduct} />)}
         </>
       )}
 
@@ -93,6 +101,8 @@ const Sidebar = ({
           )}
           {showEditModal && (
             <EditTextTab
+              setTextColor={setTextColor}
+              setChangeTextColor={setChangeTextColor}
               editor={editor}
               setShowEditModal={setShowEditModal}
               customText={customText}
@@ -101,6 +111,10 @@ const Sidebar = ({
               setTextSize={setTextSize}
               textSpacing={textSpacing}
               setTextSpacing={setTextSpacing}
+              setTextFontFamily={setTextFontFamily}
+              setChangeFontFamily={setChangeFontFamily}
+              setChangeFontStyle={setChangeFontStyle}
+              setFontStyle={setFontStyle}
             />
           )}
         </>

@@ -32,6 +32,11 @@ const CustomizerLayout = () => {
   const [selectedColor, setSelectedColor] = useState({});
   const [layers, setLayers] = useState([]);
   const [showSidebar, setShowSidebar] = useState(true);
+  const [setTextColor, setChangeTextColor] = useState("#000");
+  const [setTextFontFamily, setChangeFontFamily] = useState("Ubuntu");
+  const [setFontStyle, setChangeFontStyle] = useState("normal");
+  const [setFlipX , setChangeFlipX] = useState(false);
+  const [setFlipY , setChangeFlipy] = useState(false);
 
   const handleColorChange = (colorObj) => {
     setSelectedColor(colorObj);
@@ -85,7 +90,6 @@ const CustomizerLayout = () => {
     setProducts([defaultProduct]);
   }, []);
 
-  // ✅ FIXED: Canvas prototype safely set inside effect
   useEffect(() => {
     if (!editor || !editor.canvas) return;
 
@@ -136,12 +140,16 @@ const CustomizerLayout = () => {
           top: editor.canvas.getHeight() / 2,
           originX: "center",
           originY: "center",
+          flipX: setFlipX,
+          flipY: setFlipY,
           angle: lastProduct.rotate || 0,
           opacity: (lastProduct.opacity || 100) / 100,
           selectable: true,
           scaleX: lastProduct.flipX ? -1 : 1,
           scaleY: lastProduct.flipY ? -1 : 1,
         });
+      
+        console.log(fabricImg)
 
         if (lastProduct.color && lastProduct.color !== "white") {
           const tintFilter = new filters.BlendColor({
@@ -159,24 +167,6 @@ const CustomizerLayout = () => {
 
         editor.canvas.renderAll();
       };
-
-      if (lastProduct.text) {
-        const text = new IText(lastProduct.text, {
-          left: editor.canvas.getWidth() / 2,
-          top: editor.canvas.getHeight() / 2,
-          fontSize: lastProduct.textSize || 28,
-          fill: "#000000",
-          originX: "center",
-          originY: "center",
-          selectable: true,
-          evented: true,
-        });
-
-        text.customId = lastProduct.id;
-        text.setCoords();
-        editor.canvas.add(text);
-        editor.canvas.renderAll();
-      }
     });
   }, [editor]);
 
@@ -190,12 +180,14 @@ const CustomizerLayout = () => {
         obj.set({
           opacity: lastProduct.opacity / 100,
           angle: lastProduct.rotate,
+          flipX: setFlipX,
+          flipY: setFlipY,
         });
       }
     });
 
     editor.canvas.renderAll();
-  }, [products]);
+  }, [products,setFlipX,setFlipY]);
 
   const handleAddCustomText = () => {
     if (!editor || !customText.trim()) return;
@@ -205,7 +197,9 @@ const CustomizerLayout = () => {
         left: editor.canvas.getWidth() / 2,
         top: editor.canvas.getHeight() / 2,
         fontSize: 28,
-        fill: "#000000",
+        fill: setTextColor,
+        fontFamily: setTextFontFamily,
+        fontStyle: setFontStyle,
         originX: "center",
         originY: "center",
         selectable: true,
@@ -225,6 +219,8 @@ const CustomizerLayout = () => {
         updated[lastIndex] = {
           ...updated[lastIndex],
           text: customText,
+          fill: setTextColor,
+          fontStyle: setFontStyle,
           fabricObject: textObject,
         };
         return updated;
@@ -366,6 +362,17 @@ const CustomizerLayout = () => {
     }
   }, [editor]);
 
+  useEffect(() => {
+    if (!editor || !editor.canvas) return;
+
+    const activeObject = editor.canvas.getActiveObject();
+
+    if (activeObject && activeObject.type === "i-text") {
+      activeObject.set({ fill: setTextColor, fontFamily: setTextFontFamily, fontStyle: setFontStyle });
+      editor.canvas.renderAll();
+    }
+  }, [setTextColor, setTextFontFamily, setFontStyle]);
+
 
   return (
     <div className="w-full h-screen flex justify-center items-center bg-gray-100 relative max-w-[1720px] mx-auto">
@@ -395,6 +402,14 @@ const CustomizerLayout = () => {
             setSelectedColor={setSelectedColor}
             addEmojiTextToCanvas={addEmojiTextToCanvas}
             updateArrange={updateArrange}
+            setTextColor={setTextColor}
+            setChangeTextColor={setChangeTextColor}
+            setTextFontFamily={setTextFontFamily}
+            setChangeFontFamily={setChangeFontFamily}
+            setFontStyle={setFontStyle}
+            setChangeFontStyle={setChangeFontStyle}
+            setChangeFlipX={setChangeFlipX}
+            setChangeFlipy={setChangeFlipy}
           />
         )
       }

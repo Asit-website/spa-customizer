@@ -2,12 +2,11 @@ import React, { useState } from 'react'
 import FontSelector from './FontSelector';
 import CustomColorSwatch from './CustomColorSwatch';
 
-const EditTextTab = ({ editor , setShowEditModal, customText, setCustomText, textSize, setTextSize, setTextSpacing, textSpacing }) => {
+const EditTextTab = ({ setTextColor, setChangeTextColor, editor, setShowEditModal, customText, setCustomText, textSize, setTextSize, setTextSpacing, textSpacing, setTextFontFamily, setChangeFontFamily, setFontStyle, setChangeFontStyle }) => {
 
-    const [selectedColor, setSelectedColor] = useState(null);
     const [showColorTab, setShowColorTab] = useState(false);
-    const [selectedFont, setSelectedFont] = useState("Montserrat");
-    const [showTextSelectTab,setShowTextSelectTab] = useState(false);
+    // const [selectedFont, setSelectedFont] = useState("Montserrat");
+    const [showTextSelectTab, setShowTextSelectTab] = useState(false);
 
     return (
         <>
@@ -48,16 +47,16 @@ const EditTextTab = ({ editor , setShowEditModal, customText, setCustomText, tex
                     </div>
                     <div className="flex items-center gap-3 mt-2">
                         <div onClick={() => setShowTextSelectTab(prev => !prev)} className='border border-[#D3DBDF] min-w-[165px] cursor-pointer flex items-center justify-between rounded-md p-2'>
-                            <span className='text-[14px] text-gray-500 font-medium'>{selectedFont}</span>
+                            <span className='text-[14px] text-gray-500 font-medium'>{setTextFontFamily}</span>
                             <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1750138078/chevron-right_p6kmcp.svg" alt="arrow" />
                         </div>
 
-                        <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1750137959/alpha-b_aygypw.svg" alt="bold" />
-                        <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1750137959/format-italic_d9ndma.svg" alt="italic" />
+                        <img className='cursor-pointer' onClick={() => setChangeFontStyle(setFontStyle === "bold" ? "normal" : "bold")} src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1750137959/alpha-b_aygypw.svg" alt="bold" />
+                        <img className='cursor-pointer' onClick={() => setChangeFontStyle(setFontStyle === 'italic' ? "normal" : 'italic')} src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1750137959/format-italic_d9ndma.svg" alt="italic" />
 
                         <div
                             className={`w-6 h-6 rounded-full cursor-pointer border-2 transition-all duration-150 `}
-                            style={{ backgroundColor: selectedColor }}
+                            style={{ backgroundColor: setTextColor }}
                             onClick={() => setShowColorTab(prev => !prev)}
                         />
                     </div>
@@ -123,14 +122,14 @@ const EditTextTab = ({ editor , setShowEditModal, customText, setCustomText, tex
 
             </div>
 
-            { showTextSelectTab && (
-                <FontSelector selectedFont={selectedFont} setShowTextSelectTab={setShowTextSelectTab}  setSelectedFont={setSelectedFont}/>
+            {showTextSelectTab && (
+                <FontSelector selectedFont={setTextFontFamily} setShowTextSelectTab={setShowTextSelectTab} setSelectedFont={setChangeFontFamily} />
             )}
 
             {
                 showColorTab && (
-                    <CustomColorSwatch selectedColor={selectedColor} setSelectedColor={setSelectedColor} setShowColorTab={setShowColorTab}/>
-                    
+                    <CustomColorSwatch setTextColor={setTextColor} setChangeTextColor={setChangeTextColor} setShowColorTab={setShowColorTab} />
+
                 )
             }
         </>
