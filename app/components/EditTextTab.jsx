@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import FontSelector from './FontSelector';
 import CustomColorSwatch from './CustomColorSwatch';
 
-const EditTextTab = ({ setShowEditModal, customText, setCustomText, textSize, setTextSize, setTextSpacing, textSpacing }) => {
+const EditTextTab = ({ editor , setShowEditModal, customText, setCustomText, textSize, setTextSize, setTextSpacing, textSpacing }) => {
 
     const [selectedColor, setSelectedColor] = useState(null);
     const [showColorTab, setShowColorTab] = useState(false);
@@ -15,7 +15,7 @@ const EditTextTab = ({ setShowEditModal, customText, setCustomText, textSize, se
 
                 <div className='flex items-center justify-between py-2 px-3'>
                     <div className='flex items-center gap-2'>
-                        <h3 className='text-[16px] font-semibold'>Edit text</h3>
+                        <h3 className='text-[16px] text-black font-semibold'>Edit text</h3>
                     </div>
                     <div className="cursor-pointer" onClick={() => setShowEditModal(false)}>
                         <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749341803/Vector_hm0yzo.png" alt="Close" />
@@ -24,7 +24,7 @@ const EditTextTab = ({ setShowEditModal, customText, setCustomText, textSize, se
                 <hr className="border-t border-[#D3DBDF] h-px" />
                 <div className='py-3 px-4'>
                     <input type="text" value={customText}
-                        onChange={(e) => setCustomText(e.target.value)} name="" id="" placeholder="Add Headline" className="border border-[#D3DBDF] rounded-lg p-3 min-h-20  w-full placeholder:font-semibold" />
+                        onChange={(e) => setCustomText(e.target.value)} name="" id="" placeholder="Add Headline" className="border border-[#D3DBDF] text-black rounded-lg p-3 min-h-20  w-full placeholder:font-semibold" />
                 </div>
 
 
@@ -32,7 +32,7 @@ const EditTextTab = ({ setShowEditModal, customText, setCustomText, textSize, se
 
                 <div className='flex items-center justify-between py-3 px-3'>
                     <div className='flex items-center gap-2'>
-                        <h3 className='text-[14px] font-semibold'>Flip</h3>
+                        <h3 className='text-[14px] text-black font-semibold'>Flip</h3>
                     </div>
                     <div className="flex items-center gap-3">
                         <img className='w-[22px]' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507255/tune-vertical_ezas8p.png" alt="flip" />
@@ -44,7 +44,7 @@ const EditTextTab = ({ setShowEditModal, customText, setCustomText, textSize, se
 
                 <div className=' py-3 px-3'>
                     <div className='flex items-center gap-2'>
-                        <h3 className='text-[14px] font-semibold'>Font</h3>
+                        <h3 className='text-[14px] text-black font-semibold'>Font</h3>
                     </div>
                     <div className="flex items-center gap-3 mt-2">
                         <div onClick={() => setShowTextSelectTab(prev => !prev)} className='border border-[#D3DBDF] min-w-[165px] cursor-pointer flex items-center justify-between rounded-md p-2'>
@@ -66,7 +66,7 @@ const EditTextTab = ({ setShowEditModal, customText, setCustomText, textSize, se
                 <hr className="border-t border-[#D3DBDF] h-px" />
 
                 <div className='flex flex-col gap-3 justify-between py-4 px-3'>
-                    <label className="text-[14px] font-medium">Size</label>
+                    <label className="text-[14px] text-black font-medium">Size</label>
                     <input
                         type="range"
                         min={10}
@@ -81,16 +81,16 @@ const EditTextTab = ({ setShowEditModal, customText, setCustomText, textSize, se
                                 editor.canvas.renderAll();
                             }
                         }}
-                        className="w-full"
+                        className="w-full "
                     />
 
-                    <label className="text-[14px] font-medium">Arc</label>
+                    <label className="text-[14px] text-black font-medium">Arc</label>
                     <input
                         type="range"
                         className="w-full"
                     />
 
-                    <label className="text-[14px] font-medium">Spacing</label>
+                    <label className="text-[14px] text-black font-medium">Spacing</label>
                     <input
                         type="range"
                         min={-10}
@@ -112,7 +112,7 @@ const EditTextTab = ({ setShowEditModal, customText, setCustomText, textSize, se
                 <hr className="border-t border-[#D3DBDF] h-px" />
 
                 <div className='flex flex-col gap-3 justify-between py-3 px-3'>
-                    <h3 className='text-[14px] font-semibold'>Arrange</h3>
+                    <h3 className='text-[14px] font-semibold text-black'>Arrange</h3>
                     <div className="flex items-center gap-7">
                         <img className='w-[20px]' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508122/arrange-bring-forward_vigco4.png" alt="" />
                         <img className='w-[20px]' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508122/arrange-bring-to-front_povosv.png" alt="" />

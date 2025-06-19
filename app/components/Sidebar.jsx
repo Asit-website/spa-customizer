@@ -28,15 +28,19 @@ const Sidebar = ({
   handleColorChange,
   selectedColor,
   setSelectedColor,
-  addEmojiTextToCanvas
+  addEmojiTextToCanvas,
+  updateArrange
 }) => {
   const [activeTab, setActiveTab] = useState("editor");
   const lastProduct = products[products.length - 1];
   const [showClipartTab, setShowClipartTab] = useState(false);
+  const [showEditorModal,setShowEditorModal] = useState(false);
+  const [showImageEditModal,setShowImageEditModal] = useState(false);
+  const [showBgColorsModal,setShowBgColorsModal] = useState(false);
 
   return (
-    <div className="absolute top-28 left-7 flex gap-5 z-50">
-      <div className="bg-white p-5 rounded-lg border border-[#D3DBDF] flex flex-col h-fit items-center gap-6">
+    <div className="absolute top-24 sm:top-28 left-7 w-[90%]  flex gap-5 z-50 flex-col sm:flex-row">
+      <div className="bg-white p-5 rounded-lg border border-[#D3DBDF] flex flex-row sm:flex-col h-fit items-center justify-between sm:justify-normal gap-6 ">
         {[
           { key: "editor", label: "Editor", icon: "Frame_4_vzkhrn" },
           { key: "edit", label: "Edit", icon: "pencil-outline_c6lwsj" },
@@ -48,7 +52,10 @@ const Sidebar = ({
             key={key}
             onClick={() => {
               setActiveTab(key);
+              if (key === "editor") setShowEditorModal(true);
+              if (key === "edit") setShowImageEditModal(true);
               if (key === "text") setShowAddModal(true);
+              if (key === "colors") setShowBgColorsModal(true);
               if (key === "clipart") setShowClipartTab(true);
             }}
             className="flex flex-col gap-2 cursor-pointer"
@@ -58,19 +65,19 @@ const Sidebar = ({
               alt={label}
               className="m-auto w-[23px] h-[23px]"
             />
-            <p className={`text-[12px] text-center font-semibold ${activeTab === key ? "text-blue-600" : ""}`}>
+            <p className={`text-[12px] text-black text-center font-semibold ${activeTab === key ? "text-blue-600" : ""}`}>
               {label}
             </p>
           </div>
         ))}
       </div>
 
-      {activeTab === "editor" && <EditorTab />}
+      {activeTab === "editor" && ( showEditorModal && <EditorTab setShowEditorModal={setShowEditorModal}/>) }
 
       {activeTab === "edit" && lastProduct && (
         <>
           {/* <EditTab /> */}
-          <PreviewTab lastProduct={lastProduct} updateLastProduct={updateLastProduct} />
+          { (showImageEditModal && <PreviewTab setShowImageEditModal={setShowImageEditModal} updateArrange={updateArrange} products={products} lastProduct={lastProduct} updateLastProduct={updateLastProduct} />) }
         </>
       )}
 
@@ -86,6 +93,7 @@ const Sidebar = ({
           )}
           {showEditModal && (
             <EditTextTab
+              editor={editor}
               setShowEditModal={setShowEditModal}
               customText={customText}
               setCustomText={setCustomText}
@@ -98,7 +106,7 @@ const Sidebar = ({
         </>
       )}
 
-      {activeTab === "colors" && <SelectColorsTab handleColorChange={handleColorChange} selectedColor={selectedColor} setSelectedColor={setSelectedColor} />}
+      {activeTab === "colors" && (showBgColorsModal && <SelectColorsTab setShowBgColorsModal={setShowBgColorsModal} handleColorChange={handleColorChange} selectedColor={selectedColor} setSelectedColor={setSelectedColor} />)}
       {activeTab === "clipart" && (showClipartTab && <ClipartTab addEmojiTextToCanvas={addEmojiTextToCanvas} setShowClipartTab={setShowClipartTab} />)}
 
     </div>
