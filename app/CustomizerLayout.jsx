@@ -8,6 +8,18 @@ import { FaMinus, FaPlus } from "react-icons/fa6";
 import { FabricJSCanvas, useFabricJSEditor } from "fabricjs-react";
 
 const CustomizerLayout = () => {
+
+  import("fabric").then(({ Canvas }) => {
+    if (Canvas && !Canvas.prototype.updateZIndices) {
+      Canvas.prototype.updateZIndices = function () {
+        const objects = this.getObjects();
+        objects.forEach((obj, index) => {
+          obj.zIndex = index;
+        });
+      };
+    }
+  });
+
   const [products, setProducts] = useState([]);
   const [showChatBox, setShowChatBox] = useState(false);
   const { editor, onReady } = useFabricJSEditor();
@@ -17,13 +29,14 @@ const CustomizerLayout = () => {
   const [textSize, setTextSize] = useState(28);
   const [textSpacing, setTextSpacing] = useState(0);
   const [textArc, setTextArc] = useState(0);
-
   const [selectedColor, setSelectedColor] = useState({});
+  const [layers, setLayers] = useState([]);
+  const [showSidebar, setShowSidebar] = useState(true);
 
   const handleColorChange = (colorObj) => {
-    setSelectedColor(colorObj); // Update local state
-    updateLastProduct("color", colorObj.color); // Save in product list
-    updateTshirtColor(colorObj.color); // Change canvas color
+    setSelectedColor(colorObj);
+    updateLastProduct("color", colorObj.color);
+    updateTshirtColor(colorObj.color);
   };
 
 
@@ -52,8 +65,6 @@ const CustomizerLayout = () => {
     });
   };
 
-
-
   useEffect(() => {
     const defaultProduct = {
       id: Date.now(),
@@ -67,10 +78,46 @@ const CustomizerLayout = () => {
       textSize: 28,
       textSpacing: 0,
       textArc: 0,
+      flipX: false,
+      flipY: false,
+      alignment: "center",
     };
     setProducts([defaultProduct]);
   }, []);
 
+  // ✅ FIXED: Canvas prototype safely set inside effect
+  useEffect(() => {
+    if (!editor || !editor.canvas) return;
+
+    import("fabric").then(({ Canvas }) => {
+      Canvas.prototype.updateZIndices = function () {
+        const objects = this.getObjects();
+        objects.forEach((obj, index) => {
+          obj.zIndex = index;
+        });
+      };
+    });
+  }, [editor]);
+
+  const updateLayers = () => {
+    if (!editor || !editor.canvas) return;
+
+    const canvas = editor.canvas;
+    canvas.updateZIndices();
+
+    const objects = canvas.getObjects()
+      .filter(
+        (obj) =>
+          obj.id?.startsWith("vertical-") || obj.id?.startsWith("horizontal-")
+      )
+      .map((obj) => ({
+        id: obj.id,
+        zIndex: obj.zIndex,
+        type: obj.type,
+      }));
+
+    setLayers([...objects].reverse());
+  };
 
   useEffect(() => {
     if (!editor || products.length === 0) return;
@@ -78,63 +125,40 @@ const CustomizerLayout = () => {
     const lastProduct = products[products.length - 1];
     if (!lastProduct?.image) return;
 
-    import("fabric").then(({ Image, IText }) => {
-      const img = new window.Image();
-      img.src = lastProduct.image;
-
-      // img.onload = () => {
-      //   const fabricImg = new Image(img, {
-      //     left: editor.canvas.getWidth() / 2,
-      //     top: editor.canvas.getHeight() / 2,
-      //     originX: "center",
-      //     originY: "center",
-      //     angle: lastProduct.rotate || 0,
-      //     opacity: (lastProduct.opacity || 100) / 100,
-      //     selectable: true,
-      //   });
-
-      //   fabricImg.customId = lastProduct.id;
-      //   editor.canvas.add(fabricImg);
-      //   editor.canvas.renderAll();
-      // };
-
+    import("fabric").then(({ Image, IText, filters }) => {
       const img1 = new window.Image();
-      img1.crossOrigin = "anonymous"; // ✅ this MUST be before src
+      img1.crossOrigin = "anonymous";
       img1.src = lastProduct.image;
 
       img1.onload = () => {
-        import("fabric").then(({ Image, filters }) => {
-          const fabricImg = new Image(img1, {
-            left: editor.canvas.getWidth() / 2,
-            top: editor.canvas.getHeight() / 2,
-            originX: "center",
-            originY: "center",
-            angle: lastProduct.rotate || 0,
-            opacity: (lastProduct.opacity || 100) / 100,
-            selectable: true,
+        const fabricImg = new Image(img1, {
+          left: editor.canvas.getWidth() / 2,
+          top: editor.canvas.getHeight() / 2,
+          originX: "center",
+          originY: "center",
+          angle: lastProduct.rotate || 0,
+          opacity: (lastProduct.opacity || 100) / 100,
+          selectable: true,
+          scaleX: lastProduct.flipX ? -1 : 1,
+          scaleY: lastProduct.flipY ? -1 : 1,
+        });
+
+        if (lastProduct.color && lastProduct.color !== "white") {
+          const tintFilter = new filters.BlendColor({
+            color: lastProduct.color,
+            mode: "tint",
+            alpha: 1,
           });
 
-          //  Apply tint filter only if color is not white
-          if (lastProduct.color && lastProduct.color !== "white") {
-            const tintFilter = new filters.BlendColor({
-              color: lastProduct.color,
-              mode: "tint",
-              alpha: 1,
-            });
+          fabricImg.filters = [tintFilter];
+          fabricImg.applyFilters();
+        }
 
-            fabricImg.filters = [tintFilter];
-            fabricImg.applyFilters();
-          }
+        fabricImg.customId = lastProduct.id;
+        editor.canvas.add(fabricImg);
 
-          fabricImg.customId = lastProduct.id;
-          editor.canvas.add(fabricImg);
-          editor.canvas.sendToBack(fabricImg);
-          editor.canvas.renderAll();
-        });
+        editor.canvas.renderAll();
       };
-
-
-
 
       if (lastProduct.text) {
         const text = new IText(lastProduct.text, {
@@ -144,17 +168,17 @@ const CustomizerLayout = () => {
           fill: "#000000",
           originX: "center",
           originY: "center",
+          selectable: true,
+          evented: true,
         });
 
         text.customId = lastProduct.id;
+        text.setCoords();
         editor.canvas.add(text);
         editor.canvas.renderAll();
       }
     });
   }, [editor]);
-
-
-
 
   useEffect(() => {
     if (!editor || !editor.canvas || products.length === 0) return;
@@ -184,25 +208,29 @@ const CustomizerLayout = () => {
         fill: "#000000",
         originX: "center",
         originY: "center",
+        selectable: true,
+        evented: true,
       });
 
       textObject.customId = products[products.length - 1].id;
 
       editor.canvas.add(textObject);
       editor.canvas.setActiveObject(textObject);
+      textObject.setCoords();
       editor.canvas.renderAll();
 
       setProducts((prev) => {
         const updated = [...prev];
         const lastIndex = updated.length - 1;
-        const prod = { ...updated[lastIndex] };
-
-        prod.text = customText;
-        prod.fabricObject = textObject;
-
-        updated[lastIndex] = prod;
+        updated[lastIndex] = {
+          ...updated[lastIndex],
+          text: customText,
+          fabricObject: textObject,
+        };
         return updated;
       });
+
+      console.log("Active Object:", editor.canvas.getActiveObject());
 
       setTextSize(28);
       setTextSpacing(0);
@@ -225,81 +253,152 @@ const CustomizerLayout = () => {
     });
   };
 
-  // ================for emoji============
-//   const addEmojiTextToCanvas = (emojiChar) => {
-//   if (!editor || !editor.canvas) return;
+  const addEmojiTextToCanvas = (emojiChar) => {
+    if (!editor || !editor.canvas) return;
 
-//   import("fabric").then(({ IText }) => {
-//     const emojiText = new IText(emojiChar, {
-//       left: editor.canvas.getWidth() / 2,
-//       top: editor.canvas.getHeight() / 2,
-//       originX: "center",
-//       originY: "center",
-//       fontSize: 40,
-//       fill: "#000000",
-//       selectable: true,
-//     });
+    import("fabric").then(({ IText }) => {
+      const emojiText = new IText(emojiChar, {
+        left: editor.canvas.getWidth() / 2,
+        top: editor.canvas.getHeight() / 2,
+        originX: "center",
+        originY: "center",
+        fontSize: 48,
+        fill: "#000",
+        selectable: true,
+        evented: true,
+      });
 
-//     emojiText.customId = Date.now(); // unique ID
-//     editor.canvas.add(emojiText);
-//     editor.canvas.setActiveObject(emojiText);
-//     editor.canvas.renderAll();
-//   });
-// };
+      emojiText.customId = products[products.length - 1]?.id;
 
-const addEmojiTextToCanvas = (emojiChar) => {
-  if (!editor || !editor.canvas) return;
+      editor.canvas.add(emojiText);
+      editor.canvas.setActiveObject(emojiText);
+      editor.canvas.bringToFront(emojiText);
+      emojiText.setCoords();
+      editor.canvas.renderAll();
+    });
+  };
 
-  import("fabric").then(({ IText }) => {
-    const emojiText = new IText(emojiChar, {
-      left: editor.canvas.getWidth() / 2,
-      top: editor.canvas.getHeight() / 2,
-      originX: "center",
-      originY: "center",
-      fontSize: 48,
-      fill: "#000",
+  useEffect(() => {
+    if (!editor || !editor.canvas || products.length === 0) return;
+
+    const lastProduct = products[products.length - 1];
+
+    editor.canvas.getObjects().forEach((obj) => {
+      if (obj.customId === lastProduct.id) {
+        const canvasW = editor.canvas.getWidth();
+        const canvasH = editor.canvas.getHeight();
+
+        switch (lastProduct.alignment) {
+          case "left":
+            obj.set({ left: 0 });
+            break;
+          case "center":
+            obj.set({ left: canvasW / 2 });
+            break;
+          case "right":
+            obj.set({ left: canvasW });
+            break;
+          case "top":
+            obj.set({ top: 0 });
+            break;
+          case "middle":
+            obj.set({ top: canvasH / 2 });
+            break;
+          case "bottom":
+            obj.set({ top: canvasH });
+            break;
+          default:
+            break;
+        }
+
+        obj.setCoords();
+      }
     });
 
-    emojiText.customId = products[products.length - 1]?.id;
-
-    editor.canvas.add(emojiText);
-    editor.canvas.setActiveObject(emojiText);
-    editor.canvas.bringToFront(emojiText); // 👈 Bring emoji to front layer
     editor.canvas.renderAll();
-  });
-};
+  }, [products[products.length - 1]?.alignment]);
 
+  const updateArrange = (action) => {
+    if (!editor || !editor.canvas) return;
 
+    const canvas = editor.canvas;
+    const objects = canvas.getObjects();
+    const lastProductId = products[products.length - 1]?.id;
+
+    const target = objects.find(o => o.customId === lastProductId);
+    if (!target) return;
+
+    const index = objects.indexOf(target);
+    let newIndex = index;
+
+    switch (action) {
+      case "bringForward":
+        newIndex = Math.min(objects.length - 1, index + 1);
+        break;
+      case "sendBackward":
+        newIndex = Math.max(0, index - 1);
+        break;
+      case "bringToFront":
+        newIndex = objects.length - 1;
+        break;
+      case "sendToBack":
+        newIndex = 0;
+        break;
+      default:
+        return;
+    }
+
+    if (newIndex !== index) {
+      objects.splice(index, 1);
+      objects.splice(newIndex, 0, target);
+      canvas._objects = objects;
+
+      canvas.updateZIndices();
+      updateLayers();
+      canvas.renderAll();
+    }
+  };
+
+  useEffect(() => {
+    if (editor && editor.canvas) {
+      editor.canvas.selection = true;
+      updateLayers();
+    }
+  }, [editor]);
 
 
   return (
     <div className="w-full h-screen flex justify-center items-center bg-gray-100 relative max-w-[1720px] mx-auto">
-      <Topbar />
-      <Sidebar
-        editor={editor}
-        products={products}
-        setProducts={setProducts}
-        handleAddCustomText={handleAddCustomText}
-        customText={customText}
-        setCustomText={setCustomText}
-        updateLastProduct={updateLastProduct}
-        showAddModal={showAddModal}
-        showEditModal={showEditModal}
-        setShowAddModal={setShowAddModal}
-        setShowEditModal={setShowEditModal}
-        textSize={textSize}
-        setTextSize={setTextSize}
-        textSpacing={textSpacing}
-        setTextSpacing={setTextSpacing}
-        textArc={textArc}
-        setTextArc={setTextArc}
-        handleColorChange={handleColorChange}
-        selectedColor={selectedColor}
-        setSelectedColor={setSelectedColor}
-        addEmojiTextToCanvas={addEmojiTextToCanvas}
-      />
+      <Topbar setShowSidebar={setShowSidebar} />
+      {
+        showSidebar && (
+          <Sidebar
+            editor={editor}
+            products={products}
+            setProducts={setProducts}
+            handleAddCustomText={handleAddCustomText}
+            customText={customText}
+            setCustomText={setCustomText}
+            updateLastProduct={updateLastProduct}
+            showAddModal={showAddModal}
+            showEditModal={showEditModal}
+            setShowAddModal={setShowAddModal}
+            setShowEditModal={setShowEditModal}
+            textSize={textSize}
+            setTextSize={setTextSize}
+            textSpacing={textSpacing}
+            setTextSpacing={setTextSpacing}
+            textArc={textArc}
+            setTextArc={setTextArc}
+            handleColorChange={handleColorChange}
+            selectedColor={selectedColor}
+            setSelectedColor={setSelectedColor}
+            addEmojiTextToCanvas={addEmojiTextToCanvas}
+            updateArrange={updateArrange}
+          />
+        )
+      }
       <RightSmallPreview />
-
       <FabricJSCanvas className="!w-screen !h-screen absolute top-0 left-0 z-0" onReady={onReady} />
 
       <div className="bottom-7 left-1/2 transform -translate-x-1/2 absolute flex items-center gap-2 border border-[#D3DBDF] bg-white p-3.5 rounded-lg">

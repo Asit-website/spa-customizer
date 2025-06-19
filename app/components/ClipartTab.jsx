@@ -53,14 +53,14 @@ const ClipartTab = ({ setShowClipartTab,addEmojiTextToCanvas }) => {
                 return (
                     <span className='flex items-center gap-1 cursor-pointer' onClick={handleBack}>
                         <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1750138078/chevron-right_p6kmcp.svg" className="rotate-180 w-4" />
-                        <span className='text-[16px] font-semibold'>Emoji</span>
+                        <span className='text-[16px] text-black font-semibold'>Emoji</span>
                     </span>
                 );
             case 'emoji-list':
                 return (
                     <span className='flex items-center gap-1 cursor-pointer' onClick={handleBack}>
                         <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1750138078/chevron-right_p6kmcp.svg" className="rotate-180 w-4" />
-                        <span className='text-[16px] font-semibold'>Emoji List</span>
+                        <span className='text-[16px] text-black font-semibold'>Emoji List</span>
                     </span>
                 );
             default:
@@ -71,7 +71,7 @@ const ClipartTab = ({ setShowClipartTab,addEmojiTextToCanvas }) => {
     return (
         <div className="bg-white rounded-lg border border-[#D3DBDF] w-72 h-fit max-h-[460px] overflow-y-scroll">
             <div className='flex items-center justify-between py-2 px-3'>
-                <h3 className='text-[16px] font-semibold'>
+                <h3 className='text-[16px] text-black font-semibold'>
                     {getHeaderTitle()}
                 </h3>
                 <div className="cursor-pointer" onClick={() => setShowClipartTab(false)}>
@@ -84,9 +84,9 @@ const ClipartTab = ({ setShowClipartTab,addEmojiTextToCanvas }) => {
                 <>
                     <div className='flex flex-col gap-3 py-3 px-3'>
                         <div className="relative">
-                            <input type="search" id="default-search" className="block w-full p-4 text-sm pr-8 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search Clipart" />
+                            <input type="search" id="default-search" className="block  w-full p-4 text-sm pr-8 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 " placeholder="Search Clipart" />
                             <div className="absolute inset-y-0 end-3 flex items-center ps-3 pointer-events-none">
-                                <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                                <svg className="w-4 h-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
                                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
                                 </svg>
                             </div>
@@ -96,7 +96,7 @@ const ClipartTab = ({ setShowClipartTab,addEmojiTextToCanvas }) => {
                         {clipartList.map((list, i) => (
                             <div key={i} onClick={() => handleClipartClick(list.name)} className="flex flex-col items-center cursor-pointer">
                                 <img src={list.logo} alt={list.name} className='w-7' />
-                                <span className='text-[12px] font-semibold'>{list.name}</span>
+                                <span className='text-[12px] text-black font-semibold'>{list.name}</span>
                             </div>
                         ))}
                     </div>

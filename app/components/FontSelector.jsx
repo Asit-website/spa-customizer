@@ -42,7 +42,7 @@ const FontSelector = ({ setSelectedFont,selectedFont, setShowTextSelectTab }) =>
 
       <div className='flex items-center justify-between py-2 px-3'>
         <div className='flex items-center gap-2'>
-          <h3 className='text-[16px] font-semibold'>Typeface</h3>
+          <h3 className='text-[16px] text-black font-semibold'>Typeface</h3>
         </div>
         <div className="cursor-pointer" onClick={() => setShowTextSelectTab(false)}>
           <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749341803/Vector_hm0yzo.png" alt="Close" />
@@ -63,7 +63,7 @@ const FontSelector = ({ setSelectedFont,selectedFont, setShowTextSelectTab }) =>
             className="px-3"
             onClick={() => setSelectedFont(font)}
           >
-            <p>{font}</p>
+            <p className="text-black">{font}</p>
           </div>
         ))}
       </div>

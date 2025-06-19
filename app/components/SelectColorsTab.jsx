@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-const SelectColorsTab = ({handleColorChange,selectedColor}) => {
+const SelectColorsTab = ({handleColorChange,selectedColor,setShowBgColorsModal}) => {
 
     const colorOptionsWithNames = [
         { color: "#000000", name: "Black" },
@@ -50,9 +50,9 @@ const SelectColorsTab = ({handleColorChange,selectedColor}) => {
         <div className="bg-white rounded-lg border border-[#D3DBDF] w-72 h-fit max-h-[460px] overflow-y-scroll">
             <div className='flex items-center justify-between py-2 px-3'>
                 <div className='flex items-center gap-2'>
-                    <h3 className='text-[16px] font-semibold'>Select Colors</h3>
+                    <h3 className='text-[16px] text-black font-semibold'>Select Colors</h3>
                 </div>
-                <div className="cursor-pointer" >
+                <div onClick={()=> setShowBgColorsModal(false)} className="cursor-pointer" >
                     <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749341803/Vector_hm0yzo.png" alt="Close" />
                 </div>
             </div>
@@ -66,7 +66,7 @@ const SelectColorsTab = ({handleColorChange,selectedColor}) => {
                                 <div className={`w-8 h-8 rounded-full cursor-pointer transition-all duration-150 `} style={{ backgroundColor: color.color }} />
 
                                 <div className='flex flex-col'>
-                                    <p className='text-[16px]'>{color.name}</p>
+                                    <p className='text-[16px] text-black'>{color.name}</p>
                                     <span className='text-gray-500 underline text-[14px]'>8 sizes in stock</span>
                                 </div>
 
