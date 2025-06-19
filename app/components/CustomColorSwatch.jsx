@@ -10,7 +10,7 @@ const colorOptions = [
     "#388e3c", "#004d40", "#006064", "#e0f2f1", "#ffffff"
 ];
 
-export default function CustomColorSwatch({ selectedColor, setSelectedColor, setShowColorTab }) {
+export default function CustomColorSwatch({setTextColor,setChangeTextColor, selectedColor, setSelectedColor, setShowColorTab }) {
 
     return (
         <div className="bg-white rounded-lg border border-[#D3DBDF] w-72 h-fit max-h-[460px] overflow-y-scroll">
@@ -29,8 +29,8 @@ export default function CustomColorSwatch({ selectedColor, setSelectedColor, set
                 <div>
                     <h3 className="text-[12px] text-black font-semibold">USED IN YOUR DESIGN</h3>
                     <div className="mb-4 flex items-center gap-2 mt-2">
-                    <div className={`w-6 h-6 rounded-full cursor-pointer border-2 transition-all duration-150 `} style={{ backgroundColor: selectedColor }} />
-                    <span className="text-sm">{selectedColor}</span>
+                    <div className={`w-6 h-6 rounded-full cursor-pointer border-2 transition-all duration-150 `} style={{ backgroundColor: setTextColor }} />
+                    <span className="text-sm">{setTextColor}</span>
                 </div>
                 </div>
 
@@ -43,7 +43,7 @@ export default function CustomColorSwatch({ selectedColor, setSelectedColor, set
                             className={`w-6 h-6 rounded-full cursor-pointer border-2 transition-all duration-150 ${selectedColor === color ? "border-black scale-110" : "border-transparent"
                                 }`}
                             style={{ backgroundColor: color }}
-                            onClick={() => setSelectedColor(color)}
+                            onClick={() => setChangeTextColor(color)}
                         />
                     ))}
                 </div>

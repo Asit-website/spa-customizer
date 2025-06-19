@@ -1,6 +1,6 @@
 import React from 'react'
 
-const PreviewTab = ({ products, updateArrange, lastProduct, updateLastProduct , setShowImageEditModal}) => {
+const PreviewTab = ({setChangeFlipX,setChangeFlipy, products, updateArrange, lastProduct, updateLastProduct , setShowImageEditModal}) => {
     return (
         <>
             <div className="bg-white rounded-lg border border-[#D3DBDF] w-80 h-fit max-h-[475px] overflow-y-scroll">
@@ -43,13 +43,13 @@ const PreviewTab = ({ products, updateArrange, lastProduct, updateLastProduct , 
                             className='w-[22px] cursor-pointer'
                             src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507255/tune-vertical_ezas8p.png"
                             alt="Flip Horizontal"
-                            onClick={() => updateLastProduct("flipX", !products[products.length - 1]?.flipX)}
+                            onClick={() => setChangeFlipX(prev => !prev)}
                         />
                         <img
                             className='w-[22px] cursor-pointer'
                             src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507254/flip-vertical_ajs5ur.png"
                             alt="Flip Vertical"
-                            onClick={() => updateLastProduct("flipY", !products[products.length - 1]?.flipY)}
+                            onClick={() => setChangeFlipy(prev => !prev)}
                         />
 
                     </div>
