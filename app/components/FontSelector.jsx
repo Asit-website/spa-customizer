@@ -1,7 +1,8 @@
-import React, { useEffect } from "react";
-import WebFont from "webfontloader";
+'use client'
 
-const googleFonts = [
+import React, { useEffect } from "react";
+
+const families = [
   "Roboto", "Open Sans", "Lato", "Montserrat", "Poppins", "Source Sans Pro",
   "Raleway", "Noto Sans", "Ubuntu", "Merriweather", "Nunito", "Playfair Display",
   "Rubik", "Work Sans", "PT Sans", "Oswald", "Inter", "Quicksand", "DM Sans",
@@ -13,16 +14,22 @@ const googleFonts = [
   "Manrope", "Maven Pro", "Muli", "Noto Serif", "Overpass", "PT Serif",
   "Public Sans", "Questrial", "Righteous", "Signika", "Slabo 27px", "Spartan",
   "Sora", "Syne", "Tajawal", "Zilla Slab"
-];
-
+]
 
 const FontSelector = ({ setSelectedFont, selectedFont, setShowTextSelectTab }) => {
   useEffect(() => {
-    WebFont.load({
-      google: {
-        families: googleFonts,
-      },
-    });
+    const loadFont = async () => {
+      if (typeof window !== "undefined") {
+        const WebFont = (await import('webfontloader')).default;
+        WebFont.load({
+          google: {
+            families,
+          },
+        });
+      }
+    };
+
+    loadFont();
   }, []);
 
   return (
@@ -36,7 +43,7 @@ const FontSelector = ({ setSelectedFont, selectedFont, setShowTextSelectTab }) =
       <hr className="border-t border-[#D3DBDF] h-px" />
 
       <div className="p-3 flex flex-col gap-4">
-        {googleFonts.map((font) => (
+        {families.map((font) => (
           <div key={font} className="px-3 cursor-pointer" onClick={() => setSelectedFont(font)}>
             <p className="text-black text-[14px]" style={{ fontFamily: font }}>
               {font}

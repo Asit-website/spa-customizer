@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import FontSelector from './FontSelector';
 import CustomColorSwatch from './CustomColorSwatch';
 
-const EditTextTab = ({ setTextColor, setChangeTextColor, editor, setShowEditModal, customText, setCustomText, textSize, setTextSize, setTextSpacing, textSpacing, setTextFontFamily, setChangeFontFamily, setFontStyle, setChangeFontStyle }) => {
+const EditTextTab = ({setChangeTextFlipX,setChangeTextFlipY, setTextColor, setChangeTextColor, editor, setShowEditModal, customText, setCustomText, textSize, setTextSize, setTextSpacing, textSpacing, setTextFontFamily, setChangeFontFamily, setFontStyle, setChangeFontStyle }) => {
 
     const [showColorTab, setShowColorTab] = useState(false);
     // const [selectedFont, setSelectedFont] = useState("Montserrat");
@@ -34,8 +34,8 @@ const EditTextTab = ({ setTextColor, setChangeTextColor, editor, setShowEditModa
                         <h3 className='text-[14px] text-black font-semibold'>Flip</h3>
                     </div>
                     <div className="flex items-center gap-3">
-                        <img className='w-[22px]' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507255/tune-vertical_ezas8p.png" alt="flip" />
-                        <img className='w-[22px]' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507254/flip-vertical_ajs5ur.png" alt="flip" />
+                        <img onClick={()=> setChangeTextFlipX(prev => !prev)} className='w-[22px] cursor-pointer' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507255/tune-vertical_ezas8p.png" alt="flip" />
+                        <img onClick={()=> setChangeTextFlipY(prev => !prev)} className='w-[22px] cursor-pointer' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507254/flip-vertical_ajs5ur.png" alt="flip" />
                     </div>
                 </div>
 

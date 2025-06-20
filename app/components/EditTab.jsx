@@ -1,6 +1,6 @@
 import React from 'react'
 
-const EditTab = ({fileInputRef,handleFileChange}) => {
+const EditTab = ({ handleImageUpload }) => {
     return (
         <div className="bg-white rounded-lg border border-[#D3DBDF] w-80 h-fit max-h-[530px] overflow-y-scroll">
             <div className='flex items-center justify-between py-2 px-3'>
@@ -17,7 +17,7 @@ const EditTab = ({fileInputRef,handleFileChange}) => {
                 <div className='flex flex-col gap-2'>
                     <h3 className='text-[14px]'>Original vector artwork best, if you have?</h3>
                     <label className="block bg-[#E4E9EC] py-8 px-4 rounded-lg cursor-pointer">
-                        <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleFileChange} />
+                        <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
                         <p className="text-[#3559C7] font-semibold text-center text-[14px]">Choose a file</p>
                         <p className=' text-gray-500 mt-1 text-center text-[14px]'>We support JPG, PNG, EAPS<br />Max 5MB</p>
                     </label>

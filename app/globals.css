@@ -45,3 +45,10 @@ body {
   width: 100% !important;
   height: 100% !important;
 }
+
+canvas {
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}

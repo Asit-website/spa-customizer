@@ -1,6 +1,27 @@
-import React from 'react'
+"use client"
 
-const PreviewTab = ({setChangeFlipX,setChangeFlipy, products, updateArrange, lastProduct, updateLastProduct , setShowImageEditModal}) => {
+import React from 'react'
+import { useFabricJSEditor } from "fabricjs-react";
+
+const PreviewTab = ({ alignFabricObject, setChangeFlipX, setChangeFlipy, products, updateArrange, lastProduct, updateLastProduct, setShowImageEditModal }) => {
+
+    const { editor } = useFabricJSEditor();
+    const canvas = editor?.canvas;
+
+    const handleAlign = (alignment) => {
+        if (!canvas) return;
+
+        const lastProductId = products[products.length - 1]?.id;
+        const obj = canvas.getObjects().find(o => o.customId === lastProductId);
+
+        if (!obj) {
+            console.warn("No object found to align.");
+            return;
+        }
+
+        alignFabricObject(obj, canvas, alignment);
+    };
+
     return (
         <>
             <div className="bg-white rounded-lg border border-[#D3DBDF] w-80 h-fit max-h-[475px] overflow-y-scroll">
@@ -8,7 +29,7 @@ const PreviewTab = ({setChangeFlipX,setChangeFlipy, products, updateArrange, las
                     <div className='flex items-center gap-2'>
                         <h3 className='text-[16px] text-black font-semibold'>Preview</h3>
                     </div>
-                    <div onClick={()=> setShowImageEditModal(false)} className='cursor-pointer'>
+                    <div onClick={() => setShowImageEditModal(false)} className='cursor-pointer'>
                         <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749341803/Vector_hm0yzo.png" alt="Close" />
                     </div>
                 </div>
@@ -60,12 +81,12 @@ const PreviewTab = ({setChangeFlipX,setChangeFlipy, products, updateArrange, las
                 <div className='flex flex-col gap-3 justify-between py-3 px-3'>
                     <h3 className='text-[14px] text-black font-semibold'>Alignment</h3>
                     <div className="grid grid-cols-7 gap-5">
-                        <img onClick={() => updateLastProduct("alignment", "left")} className='w-[20px] cursor-pointer' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507255/align-horizontal-left_fbsuoo.png" alt="" />
-                        <img onClick={() => updateLastProduct("alignment", "center")} className='w-[20px] cursor-pointer' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507255/Frame_46_rrtm82.png" alt="" />
-                        <img onClick={() => updateLastProduct("alignment", "right")} className='w-[20px] cursor-pointer' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507254/align-horizontal-right_adq5ap.png" alt="" />
-                        <img onClick={() => updateLastProduct("alignment", "top")} className='w-[20px] cursor-pointer' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507254/align-vertical-top_nmalzx.png" alt="" />
-                        <img onClick={() => updateLastProduct("alignment", "middle")} className='w-[20px] cursor-pointer' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507254/align-vertical-center_wguxnj.png" alt="" />
-                        <img onClick={() => updateLastProduct("alignment", "bottom")} className='w-[20px] cursor-pointer' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507254/align-vertical-bottom_damnnr.png" alt="" />
+                        <img onClick={() => handleAlign("left")} className='w-[20px] cursor-pointer' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507255/align-horizontal-left_fbsuoo.png" alt="" />
+                        <img onClick={() => handleAlign("center")} className='w-[20px] cursor-pointer' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507255/Frame_46_rrtm82.png" alt="" />
+                        <img onClick={() => handleAlign("right")} className='w-[20px] cursor-pointer' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507254/align-horizontal-right_adq5ap.png" alt="" />
+                        <img onClick={() => handleAlign("top")} className='w-[20px] cursor-pointer' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507254/align-vertical-top_nmalzx.png" alt="" />
+                        <img onClick={() => handleAlign("middle")} className='w-[20px] cursor-pointer' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507254/align-vertical-center_wguxnj.png" alt="" />
+                        <img onClick={() => handleAlign("bottom")} className='w-[20px] cursor-pointer' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507254/align-vertical-bottom_damnnr.png" alt="" />
                         <img onClick={() => updateLastProduct("textAlign", "justify")} className='w-[20px] cursor-pointer' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507254/format-align-justify_qzuiww.png" alt="" />
                     </div>
                 </div>
@@ -74,24 +95,34 @@ const PreviewTab = ({setChangeFlipX,setChangeFlipy, products, updateArrange, las
 
                 <div className='flex flex-col gap-3 justify-between py-3 px-3'>
                     <label className="text-[14px] text-black font-medium">Opacity</label>
-                    <input
+                    <div className='flex items-center gap-2'>
+                        <input
                         type="range"
                         min="0"
                         max="100"
                         value={lastProduct.opacity}
                         onChange={(e) => updateLastProduct("opacity", e.target.value)}
-                        className="w-full"
+                        className="w-full flex-1"
                     />
+                    <span className='border border-[#D3DBDF] min-w-10 text-center rounded-md text-[14px] p-1'>
+                        {lastProduct.opacity}%
+                    </span>
+                    </div>
 
                     <label className="text-[14px] text-black font-medium">Rotate</label>
-                    <input
+                    <div className='flex items-center gap-2'>
+                        <input
                         type="range"
                         min="0"
                         max="360"
                         value={lastProduct.rotate}
                         onChange={(e) => updateLastProduct("rotate", e.target.value)}
-                        className="w-full"
+                        className="w-full flex-1"
                     />
+                    <span className='border border-[#D3DBDF] min-w-10 text-center rounded-md text-[14px] p-1'>
+                        {lastProduct.rotate}°
+                    </span>
+                    </div>
                 </div>
                 <hr className="border-t border-[#D3DBDF] h-px" />
 

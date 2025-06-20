@@ -37,7 +37,11 @@ const Sidebar = ({
   setFontStyle,
   setChangeFontStyle,
   setChangeFlipX,
-  setChangeFlipy
+  setChangeFlipy,
+  alignFabricObject,
+  setChangeTextFlipX,
+  setChangeTextFlipY,
+  handleImageUpload
 }) => {
   const [activeTab, setActiveTab] = useState("editor");
   const lastProduct = products[products.length - 1];
@@ -84,8 +88,8 @@ const Sidebar = ({
 
       {activeTab === "edit" && lastProduct && (
         <>
-          {/* <EditTab /> */}
-          {(showImageEditModal && <PreviewTab setChangeFlipX={setChangeFlipX} setChangeFlipy={setChangeFlipy}  setShowImageEditModal={setShowImageEditModal} updateArrange={updateArrange} products={products} lastProduct={lastProduct} updateLastProduct={updateLastProduct} />)}
+          <EditTab handleImageUpload={handleImageUpload}/>
+          {(showImageEditModal && <PreviewTab alignFabricObject={alignFabricObject} setChangeFlipX={setChangeFlipX} setChangeFlipy={setChangeFlipy}  setShowImageEditModal={setShowImageEditModal} updateArrange={updateArrange} products={products} lastProduct={lastProduct} updateLastProduct={updateLastProduct} />)}
         </>
       )}
 
@@ -115,6 +119,8 @@ const Sidebar = ({
               setChangeFontFamily={setChangeFontFamily}
               setChangeFontStyle={setChangeFontStyle}
               setFontStyle={setFontStyle}
+              setChangeTextFlipX={setChangeTextFlipX}
+              setChangeTextFlipY={setChangeTextFlipY}
             />
           )}
         </>
