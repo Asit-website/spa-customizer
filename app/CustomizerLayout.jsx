@@ -40,6 +40,8 @@ const CustomizerLayout = () => {
   const [setTextFlipX, setChangeTextFlipX] = useState(false);
   const [setTextFlipY, setChangeTextFlipY] = useState(false);
 
+  
+
   useEffect(() => {
     const defaultProduct = {
       id: Date.now(),
@@ -322,7 +324,7 @@ const CustomizerLayout = () => {
         });
 
         fabricImg.customId = lastProduct.id;
-        editor.canvas.add(fabricImg); 
+        editor.canvas.add(fabricImg);
 
         if (lastProduct.text && lastProduct.text.trim()) {
           const textObject = new IText(lastProduct.text, {
@@ -345,7 +347,7 @@ const CustomizerLayout = () => {
           });
 
           textObject.customId = lastProduct.id;
-          editor.canvas.add(textObject); 
+          editor.canvas.add(textObject);
           editor.canvas.setActiveObject(textObject);
         }
 
@@ -513,6 +515,39 @@ const CustomizerLayout = () => {
     });
   }, [editor]);
 
+   const bringForward = () => {
+  const activeObj = editor?.canvas?.getActiveObject();
+  if (activeObj && typeof editor.canvas.bringForward === "function") {
+    editor.canvas.bringForward(activeObj);
+    editor.canvas.renderAll();
+  }
+};
+
+const sendBackward = () => {
+  const activeObj = editor?.canvas?.getActiveObject();
+  if (activeObj && typeof editor.canvas.sendBackwards === "function") {
+    editor.canvas.sendBackwards(activeObj);
+    editor.canvas.renderAll();
+  }
+};
+
+const bringToFront = () => {
+  const activeObj = editor?.canvas?.getActiveObject();
+  if (activeObj) {
+    editor.canvas.bringToFront(activeObj);
+    editor.canvas.renderAll();
+  }
+};
+
+const sendToBack = () => {
+  const activeObj = editor?.canvas?.getActiveObject();
+  if (activeObj) {
+    editor.canvas.sendToBack(activeObj);
+    editor.canvas.renderAll();
+  }
+};
+
+
 
   return (
     <div className="w-full h-screen flex justify-center items-center bg-gray-100 relative max-w-[1720px] mx-auto">
@@ -520,6 +555,7 @@ const CustomizerLayout = () => {
       {
         showSidebar && (
           <Sidebar
+            bringForward={bringForward}
             editor={editor}
             products={products}
             setProducts={setProducts}

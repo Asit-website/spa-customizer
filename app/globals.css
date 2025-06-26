@@ -31,7 +31,10 @@ body {
   background-color: rgba(0, 0, 0, 0.2);
   border-radius: 4px;
 }
-
+canvas {
+  pointer-events: auto !important;
+  touch-action: auto;
+}
 .canvas-container {
   width: 100vw !important;
   height: 100vh !important;

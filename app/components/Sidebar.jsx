@@ -41,7 +41,8 @@ const Sidebar = ({
   alignFabricObject,
   setChangeTextFlipX,
   setChangeTextFlipY,
-  handleImageUpload
+  handleImageUpload,
+   bringForward
 }) => {
   const [activeTab, setActiveTab] = useState("editor");
   const lastProduct = products[products.length - 1];
@@ -121,6 +122,7 @@ const Sidebar = ({
               setFontStyle={setFontStyle}
               setChangeTextFlipX={setChangeTextFlipX}
               setChangeTextFlipY={setChangeTextFlipY}
+              bringForward={bringForward}
             />
           )}
         </>

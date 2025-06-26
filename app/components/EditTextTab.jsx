@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import FontSelector from './FontSelector';
 import CustomColorSwatch from './CustomColorSwatch';
 
-const EditTextTab = ({setChangeTextFlipX,setChangeTextFlipY, setTextColor, setChangeTextColor, editor, setShowEditModal, customText, setCustomText, textSize, setTextSize, setTextSpacing, textSpacing, setTextFontFamily, setChangeFontFamily, setFontStyle, setChangeFontStyle }) => {
+const EditTextTab = ({setChangeTextFlipX,setChangeTextFlipY, setTextColor, setChangeTextColor, editor, setShowEditModal, customText, setCustomText, textSize, setTextSize, setTextSpacing, textSpacing, setTextFontFamily, setChangeFontFamily, setFontStyle, setChangeFontStyle, bringForward }) => {
 
     const [showColorTab, setShowColorTab] = useState(false);
     // const [selectedFont, setSelectedFont] = useState("Montserrat");
@@ -113,7 +113,7 @@ const EditTextTab = ({setChangeTextFlipX,setChangeTextFlipY, setTextColor, setCh
                 <div className='flex flex-col gap-3 justify-between py-3 px-3'>
                     <h3 className='text-[14px] font-semibold text-black'>Arrange</h3>
                     <div className="flex items-center gap-7">
-                        <img className='w-[20px]' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508122/arrange-bring-forward_vigco4.png" alt="" />
+                        <img onClick={bringForward} className='w-[20px]' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508122/arrange-bring-forward_vigco4.png" alt="" />
                         <img className='w-[20px]' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508122/arrange-bring-to-front_povosv.png" alt="" />
                         <img className='w-[20px]' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508122/arrange-send-backward_buzw6f.png" alt="" />
                         <img className='w-[20px]' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508121/arrange-send-to-back_bcyzlu.png" alt="" />
