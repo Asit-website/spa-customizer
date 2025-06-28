@@ -40,12 +40,12 @@ const CustomizerLayout = () => {
   const [setTextFlipX, setChangeTextFlipX] = useState(false);
   const [setTextFlipY, setChangeTextFlipY] = useState(false);
 
-  
+
 
   useEffect(() => {
     const defaultProduct = {
       id: Date.now(),
-      image: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1749339416/dbc0bb00825d26e862a94ed6222ab51c6c2c6c08_ky92hj.png",
+      image: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751090639/168e035a-9303-40ec-a455-351ddfb4cd9d_z4oxn2.png",
       size: "M",
       color: "white",
       text: customText,
@@ -76,25 +76,19 @@ const CustomizerLayout = () => {
 
 
   const updateTshirtColor = (color) => {
-    if (!editor || !editor.canvas) return;
-
-    editor.canvas.getObjects().forEach((obj) => {
-      if (obj.type === "image") {
+    const canvas = editor.canvas;
+    canvas.getObjects().forEach((obj) => {
+      if (obj.type === "image" && obj.isTshirtBase) {
         import("fabric").then(({ filters }) => {
-          obj.filters = [];
-
-          if (color && color !== "white") {
-            obj.filters.push(
-              new filters.BlendColor({
-                color,
-                mode: "tint",
-                alpha: 1,
-              })
-            );
-          }
-
+          obj.filters = [
+            new filters.BlendColor({
+              color: color,
+              mode: "multiply",
+              alpha: 1,
+            }),
+          ];
           obj.applyFilters();
-          editor.canvas.renderAll();
+          canvas.renderAll();
         });
       }
     });
@@ -112,29 +106,35 @@ const CustomizerLayout = () => {
         }
       });
 
-      const textObject = new fabric.IText(customText, {
-        left: canvas.getWidth() / 2,
-        top: canvas.getHeight() / 2,
+      const imageObj = canvas.getObjects().find((obj) => obj.type === "image");
+      if (!imageObj) return;
+
+      const imageBounds = imageObj.getBoundingRect();
+
+      const textObject = new fabric.IText(customText.slice(0, 9), {
+        left: imageBounds.left + imageBounds.width / 2,
+        top: imageBounds.top + imageBounds.height / 3.5,
+        originX: "center",
+        originY: "center",
         fontSize: 28,
         fill: setTextColor,
         fontFamily: setTextFontFamily,
         fontStyle: setFontStyle,
-        originX: "center",
-        originY: "center",
-        selectable: true,
-        evented: true,
-        hasControls: true,
-        hasBorders: true,
+        hasControls: false,
+        hasBorders: false,
         lockMovementX: false,
         lockMovementY: false,
+        editable: false
       });
 
-      textObject.customId = products[products.length - 1]?.id;
+      textObject.setControlsVisibility({
+        mt: true, mb: true, ml: true, mr: true,
+        bl: true, br: true, tl: true, tr: true,
+        mtr: true
+      });
 
       canvas.add(textObject);
-      canvas.bringToFront(textObject);
       canvas.setActiveObject(textObject);
-      textObject.bringToFront?.();
       textObject.setCoords();
       canvas.renderAll();
 
@@ -143,7 +143,7 @@ const CustomizerLayout = () => {
         const lastIndex = updated.length - 1;
         updated[lastIndex] = {
           ...updated[lastIndex],
-          text: customText,
+          text: customText.slice(0, 9),
           fabricObject: textObject,
         };
         return updated;
@@ -173,8 +173,8 @@ const CustomizerLayout = () => {
 
       img.onload = () => {
         import("fabric").then(({ Image }) => {
-
           const canvas = editor.canvas;
+
           canvas.getObjects().forEach((obj) => {
             if (obj.type === "image") {
               canvas.remove(obj);
@@ -182,11 +182,24 @@ const CustomizerLayout = () => {
           });
 
           const fabricImg = new Image(img, {
-            left: canvas.getWidth() / 2,
-            top: canvas.getHeight() / 2,
             originX: "center",
             originY: "center",
-            selectable: true,
+            selectable: false,
+            isTshirtBase: true,
+          });
+
+          const desiredWidth = 300;
+          const desiredHeight = 300;
+
+          const scaleX = desiredWidth / img.width;
+          const scaleY = desiredHeight / img.height;
+
+          fabricImg.set({
+            left: canvas.getWidth() / 2,
+            top: canvas.getHeight() / 2,
+            isTshirtBase: true,
+            scaleX,
+            scaleY,
           });
 
           canvas.add(fabricImg);
@@ -281,21 +294,34 @@ const CustomizerLayout = () => {
     if (!editor || !editor.canvas) return;
 
     import("fabric").then(({ IText }) => {
+      const canvas = editor.canvas;
+
+      const existingEmoji = canvas.getObjects().find(
+        (obj) => obj.isEmoji === true
+      );
+      if (existingEmoji) {
+        canvas.remove(existingEmoji);
+      }
+
       const emojiText = new IText(emojiChar, {
-        left: editor.canvas.getWidth() / 2,
-        top: editor.canvas.getHeight() / 2,
+        left: canvas.getWidth() / 2,
+        top: canvas.getHeight() / 2,
         originX: "center",
         originY: "center",
         fontSize: 48,
         fill: "#000",
-        selectable: true,
-        evented: true,
+        selectable: false,
+        evented: false,
+        hasBorders: false,
+        hasControls: false,
       });
 
-      emojiText.customId = products[products.length - 1]?.id;
+      emojiText.isEmoji = true; 
+
       addAndBringToFront(emojiText);
     });
   };
+
 
   useEffect(() => {
     if (!editor || products.length === 0) return;
@@ -309,19 +335,25 @@ const CustomizerLayout = () => {
       img1.src = lastProduct.image;
 
       img1.onload = () => {
+
+        const scaleX = 300 / img1.width;
+        const scaleY = 300 / img1.height;
+
         const fabricImg = new Image(img1, {
           left: editor.canvas.getWidth() / 2,
           top: editor.canvas.getHeight() / 2,
+          isTshirtBase: true,
           originX: "center",
           originY: "center",
           flipX: lastProduct.flipX,
           flipY: lastProduct.flipY,
           angle: lastProduct.rotate || 0,
           opacity: (lastProduct.opacity || 100) / 100,
-          selectable: true,
-          scaleX: lastProduct.flipX ? -1 : 1,
-          scaleY: lastProduct.flipY ? -1 : 1,
+          selectable: false,
+          scaleX,
+          scaleY,
         });
+
 
         fabricImg.customId = lastProduct.id;
         editor.canvas.add(fabricImg);
@@ -329,7 +361,7 @@ const CustomizerLayout = () => {
         if (lastProduct.text && lastProduct.text.trim()) {
           const textObject = new IText(lastProduct.text, {
             left: editor.canvas.getWidth() / 2,
-            top: editor.canvas.getHeight() / 2,
+            top: editor.canvas.getHeight() / 3.5,
             fontSize: lastProduct.textSize || 28,
             fill: lastProduct.fill || "#000",
             fontFamily: lastProduct.fontFamily || "Ubuntu",
@@ -373,13 +405,13 @@ const CustomizerLayout = () => {
           });
         } else if (obj.type === "i-text") {
           obj.set({
-            selectable: true,
-            evented: true,
-            hasControls: true,
-            hasBorders: true,
+            selectable: false,
+            evented: false,
+            hasControls: false,
+            hasBorders: false,
             lockMovementX: false,
             lockMovementY: false,
-            editable: true
+            editable: false
           });
         }
       }
@@ -490,62 +522,37 @@ const CustomizerLayout = () => {
     editor.canvas.renderAll();
   }, [editor]);
 
-  useEffect(() => {
-    if (!editor || !editor.canvas) return;
+  const bringForward = () => {
+    const activeObj = editor?.canvas?.getActiveObject();
+    if (activeObj && typeof editor.canvas.bringForward === "function") {
+      editor.canvas.bringForward(activeObj);
+      editor.canvas.renderAll();
+    }
+  };
 
-    const canvas = editor.canvas;
+  const sendBackward = () => {
+    const activeObj = editor?.canvas?.getActiveObject();
+    if (activeObj && typeof editor.canvas.sendBackwards === "function") {
+      editor.canvas.sendBackwards(activeObj);
+      editor.canvas.renderAll();
+    }
+  };
 
-    console.log("Canvas Objects:", canvas.getObjects().map((obj, idx) => ({
-      idx,
-      type: obj.type,
-      selectable: obj.selectable,
-      evented: obj.evented,
-      left: obj.left,
-      top: obj.top,
-      width: obj.width,
-      height: obj.height,
-      zIndex: obj.zIndex
-    })));
+  const bringToFront = () => {
+    const activeObj = editor?.canvas?.getActiveObject();
+    if (activeObj) {
+      editor.canvas.bringToFront(activeObj);
+      editor.canvas.renderAll();
+    }
+  };
 
-    canvas.on("mouse:down", (e) => {
-      console.log("Clicked on:", e.target);
-      if (!e.target) {
-        console.log("❌ Nothing selected — probably text is under image or not interactive.");
-      }
-    });
-  }, [editor]);
-
-   const bringForward = () => {
-  const activeObj = editor?.canvas?.getActiveObject();
-  if (activeObj && typeof editor.canvas.bringForward === "function") {
-    editor.canvas.bringForward(activeObj);
-    editor.canvas.renderAll();
-  }
-};
-
-const sendBackward = () => {
-  const activeObj = editor?.canvas?.getActiveObject();
-  if (activeObj && typeof editor.canvas.sendBackwards === "function") {
-    editor.canvas.sendBackwards(activeObj);
-    editor.canvas.renderAll();
-  }
-};
-
-const bringToFront = () => {
-  const activeObj = editor?.canvas?.getActiveObject();
-  if (activeObj) {
-    editor.canvas.bringToFront(activeObj);
-    editor.canvas.renderAll();
-  }
-};
-
-const sendToBack = () => {
-  const activeObj = editor?.canvas?.getActiveObject();
-  if (activeObj) {
-    editor.canvas.sendToBack(activeObj);
-    editor.canvas.renderAll();
-  }
-};
+  const sendToBack = () => {
+    const activeObj = editor?.canvas?.getActiveObject();
+    if (activeObj) {
+      editor.canvas.sendToBack(activeObj);
+      editor.canvas.renderAll();
+    }
+  };
 
 
 
@@ -594,7 +601,8 @@ const sendToBack = () => {
         )
       }
       <RightSmallPreview />
-      <FabricJSCanvas className="!w-screen !h-screen absolute top-0 left-0 z-10 pointer-events-auto" onReady={onReady} />
+      {/* <FabricJSCanvas className="!w-screen !h-screen absolute top-0 left-0 z-10 pointer-events-auto" onReady={onReady} /> */}
+      <FabricJSCanvas className="canvas-container" onReady={onReady} />
 
 
       <div className="bottom-7 left-1/2 transform -translate-x-1/2 absolute flex items-center gap-2 border border-[#D3DBDF] bg-white p-3.5 rounded-lg">
