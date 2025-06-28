@@ -68,8 +68,8 @@ const EditTextTab = ({setChangeTextFlipX,setChangeTextFlipY, setTextColor, setCh
                     <label className="text-[14px] text-black font-medium">Size</label>
                     <input
                         type="range"
-                        min={10}
-                        max={100}
+                        min={23}
+                        max={40}
                         value={textSize}
                         onChange={(e) => {
                             const newSize = parseInt(e.target.value);
