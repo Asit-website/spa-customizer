@@ -20,6 +20,16 @@ const CustomizerLayout = () => {
     }
   });
 
+  const textColor = "#000";
+  const fontFamily = "Ubuntu";
+  const fontStyle = "normal";
+  const flipX = false;
+  const flipY = false;
+  const textFlipX = false;
+  const textFlipY = false;
+
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [allProducts, setAllProducts] = useState([]);
   const [products, setProducts] = useState([]);
   const [showChatBox, setShowChatBox] = useState(false);
   const { editor, onReady } = useFabricJSEditor();
@@ -31,42 +41,65 @@ const CustomizerLayout = () => {
   const [textArc, setTextArc] = useState(0);
   const [selectedColor, setSelectedColor] = useState({});
   const [showSidebar, setShowSidebar] = useState(true);
+
+
   const [setTextColor, setChangeTextColor] = useState("#000");
   const [setTextFontFamily, setChangeFontFamily] = useState("Ubuntu");
   const [setFontStyle, setChangeFontStyle] = useState("normal");
   const [setFlipX, setChangeFlipX] = useState(false);
   const [setFlipY, setChangeFlipy] = useState(false);
-
   const [setTextFlipX, setChangeTextFlipX] = useState(false);
   const [setTextFlipY, setChangeTextFlipY] = useState(false);
 
 
-
   useEffect(() => {
-    const defaultProduct = {
-      id: Date.now(),
-      image: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751090639/168e035a-9303-40ec-a455-351ddfb4cd9d_z4oxn2.png",
-      size: "M",
-      color: "white",
+    const backendProducts = [
+      {
+        id: 1,
+        image: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751090639/168e035a-9303-40ec-a455-351ddfb4cd9d_z4oxn2.png",
+        size: "M",
+        color: "White",
+        width: 300,
+        description: "White T-Shirt",
+        textTopRatio: 3.5,
+      },
+      {
+        id: 2,
+        image: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751272152/Capture-2_ba0stc.png",
+        size: "L",
+        color: "White",
+        width: 300,
+        description: "Black Sando",
+        textTopRatio: 2.8,
+      }
+    ];
+
+
+    setAllProducts(backendProducts);
+
+    const mergedProduct = {
+      ...backendProducts[0],
       text: customText,
-      description: "Default product image",
-      rotate: 0,
+      textSize,
+      textSpacing,
+      textArc,
+      fontFamily,
+      fontStyle,
+      fill: textColor,
+      imgflipX: flipX,
+      imgflipY: flipY,
+      flipX: textFlipX,
+      flipY: textFlipY,
       opacity: 100,
-      textSize: textSize || 28,
-      textSpacing: textSpacing || 0,
-      textArc: textArc || 0,
-      fontFamily: setTextFontFamily,
-      fontStyle: setFontStyle,
-      fill: setTextColor,
-      imgflipX: setFlipX,
-      imgflipY: setFlipY,
-      flipX: setTextFlipX,
-      flipY: setTextFlipY,
+      rotate: 0,
       alignment: "center",
     };
 
-    setProducts([defaultProduct]);
+    setProducts([mergedProduct]);
   }, []);
+
+
+
 
   const handleColorChange = (colorObj) => {
     setSelectedColor(colorObj);
@@ -111,9 +144,12 @@ const CustomizerLayout = () => {
 
       const imageBounds = imageObj.getBoundingRect();
 
+      const currentProduct = products[products.length - 1];
+      const topRatio = currentProduct?.textTopRatio || 3.5;
+
       const textObject = new fabric.IText(customText.slice(0, 9), {
         left: imageBounds.left + imageBounds.width / 2,
-        top: imageBounds.top + imageBounds.height / 3.5,
+        top: imageBounds.top + imageBounds.height / topRatio,
         originX: "center",
         originY: "center",
         fontSize: 28,
@@ -166,7 +202,6 @@ const CustomizerLayout = () => {
     const reader = new FileReader();
     reader.onload = (f) => {
       const dataUrl = f.target.result;
-
       const img = new window.Image();
       img.crossOrigin = "anonymous";
       img.src = dataUrl;
@@ -176,34 +211,25 @@ const CustomizerLayout = () => {
           const canvas = editor.canvas;
 
           canvas.getObjects().forEach((obj) => {
-            if (obj.type === "image") {
-              canvas.remove(obj);
-            }
+            if (obj.isTshirtBase) canvas.remove(obj);
           });
+
+          const desiredWidth = 300;
+          const scale = desiredWidth / img.width;
 
           const fabricImg = new Image(img, {
             originX: "center",
             originY: "center",
             selectable: false,
             isTshirtBase: true,
-          });
-
-          const desiredWidth = 300;
-          const desiredHeight = 300;
-
-          const scaleX = desiredWidth / img.width;
-          const scaleY = desiredHeight / img.height;
-
-          fabricImg.set({
+            scaleX: scale,
+            scaleY: scale,
             left: canvas.getWidth() / 2,
             top: canvas.getHeight() / 2,
-            isTshirtBase: true,
-            scaleX,
-            scaleY,
           });
 
           canvas.add(fabricImg);
-          canvas.setActiveObject(fabricImg);
+          canvas.sendToBack(fabricImg);
           canvas.renderAll();
 
           setProducts((prev) => {
@@ -212,6 +238,7 @@ const CustomizerLayout = () => {
             updated[lastIndex] = {
               ...updated[lastIndex],
               image: dataUrl,
+              width: desiredWidth,
             };
             return updated;
           });
@@ -221,6 +248,7 @@ const CustomizerLayout = () => {
 
     reader.readAsDataURL(file);
   };
+
 
 
   const alignFabricObject = (_, canvas, alignment) => {
@@ -316,7 +344,7 @@ const CustomizerLayout = () => {
         hasControls: false,
       });
 
-      emojiText.isEmoji = true; 
+      emojiText.isEmoji = true;
 
       addAndBringToFront(emojiText);
     });
@@ -336,8 +364,8 @@ const CustomizerLayout = () => {
 
       img1.onload = () => {
 
-        const scaleX = 300 / img1.width;
-        const scaleY = 300 / img1.height;
+        const desiredWidth = 300;
+        const scale = desiredWidth / img1.width;
 
         const fabricImg = new Image(img1, {
           left: editor.canvas.getWidth() / 2,
@@ -350,8 +378,8 @@ const CustomizerLayout = () => {
           angle: lastProduct.rotate || 0,
           opacity: (lastProduct.opacity || 100) / 100,
           selectable: false,
-          scaleX,
-          scaleY,
+          scaleX: scale,
+          scaleY: scale,
         });
 
 
@@ -554,13 +582,14 @@ const CustomizerLayout = () => {
     }
   };
 
-
+  console.log("productr", products)
+  console.log("allproducts", allProducts)
 
   return (
     <div className="w-full h-screen flex justify-center items-center bg-gray-100 relative max-w-[1720px] mx-auto">
       <Topbar setShowSidebar={setShowSidebar} />
       {
-        showSidebar && (
+        (showSidebar && selectedProduct) && (
           <Sidebar
             bringForward={bringForward}
             editor={editor}
@@ -600,23 +629,75 @@ const CustomizerLayout = () => {
           />
         )
       }
-      <RightSmallPreview />
-      {/* <FabricJSCanvas className="!w-screen !h-screen absolute top-0 left-0 z-10 pointer-events-auto" onReady={onReady} /> */}
-      <FabricJSCanvas className="canvas-container" onReady={onReady} />
+
+      {
+        selectedProduct && <RightSmallPreview />
+      }
+
+      {
+        selectedProduct && <FabricJSCanvas className="canvas-container" onReady={onReady} />
+      }
+
+      {
+        !selectedProduct && (
+          <div className="flex gap-4">
+            {allProducts.map((product) => (
+              <div
+                key={product.id}
+                className={`p-3 border rounded cursor-pointer w-44 transition hover:shadow-lg ${selectedProduct?.id === product.id ? "border-blue-600 ring-2 ring-blue-300" : "border-gray-300"
+                  }`}
+                onClick={() => {
+                  const mergedProduct = {
+                    ...product,
+                    text: customText,
+                    textSize,
+                    textSpacing,
+                    textArc,
+                    fontFamily: setTextFontFamily,
+                    fontStyle: setFontStyle,
+                    fill: setTextColor,
+                    imgflipX: setFlipX,
+                    imgflipY: setFlipY,
+                    flipX: setTextFlipX,
+                    flipY: setTextFlipY,
+                    opacity: 100,
+                    rotate: 0,
+                    alignment: "center",
+                  };
+                  setSelectedProduct(product);
+                  setProducts([mergedProduct]);
+                }}
+              >
+                <img src={product.image} alt={product.description} className="w-full h-44 object-contain" />
+                <div className="mt-2 text-center">
+                  <p className="font-semibold text-sm">{product.description}</p>
+                  <p className="text-xs text-gray-500">Size: {product.size}</p>
+                  <p className="text-xs text-gray-500">Color: {product.color}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )
+      }
 
 
-      <div className="bottom-7 left-1/2 transform -translate-x-1/2 absolute flex items-center gap-2 border border-[#D3DBDF] bg-white p-3.5 rounded-lg">
-        <div className="flex items-center gap-2">
-          <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749345256/undo_kp3eto.png" alt="undo" />
-          <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749345256/undo_kp3eto.png" alt="redo" className="transform scale-x-[-1]" />
-        </div>
-        <hr className="rotate-90 border-t border-[#D3DBDF] h-px w-[20px]" />
-        <div className="flex items-center gap-3">
-          <FaMinus />
-          <span>100%</span>
-          <FaPlus />
-        </div>
-      </div>
+
+      {
+        selectedProduct && (
+          <div className="bottom-7 left-1/2 transform -translate-x-1/2 absolute flex items-center gap-2 border border-[#D3DBDF] bg-white p-3.5 rounded-lg">
+            <div className="flex items-center gap-2">
+              <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749345256/undo_kp3eto.png" alt="undo" />
+              <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749345256/undo_kp3eto.png" alt="redo" className="transform scale-x-[-1]" />
+            </div>
+            <hr className="rotate-90 border-t border-[#D3DBDF] h-px w-[20px]" />
+            <div className="flex items-center gap-3">
+              <FaMinus />
+              <span>100%</span>
+              <FaPlus />
+            </div>
+          </div>
+        )
+      }
 
       {showChatBox && (
         <div className="w-[350px] h-[430px] absolute right-7 bottom-28 rounded-xl shadow-lg bg-white border border-gray-200 overflow-hidden z-70">

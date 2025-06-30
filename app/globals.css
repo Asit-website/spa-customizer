@@ -68,7 +68,7 @@ canvas {
   top: 50%;
   left: 50%;
   width: 60vw !important;
-  height: 60vh !important;
+  height: 80vh !important;
   transform: translate(-50%, -50%);
   /* background: aqua; */
   z-index: 0;
