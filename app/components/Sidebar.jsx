@@ -42,12 +42,13 @@ const Sidebar = ({
   setChangeTextFlipX,
   setChangeTextFlipY,
   handleImageUpload,
-   bringForward
+   bringForward,
+   handleAddDesignToCanvas
 }) => {
   const [activeTab, setActiveTab] = useState("editor");
   const lastProduct = products[products.length - 1];
   const [showClipartTab, setShowClipartTab] = useState(false);
-  const [showEditorModal, setShowEditorModal] = useState(false);
+  const [showEditorModal, setShowEditorModal] = useState(true);
   const [showImageEditModal, setShowImageEditModal] = useState(false);
   const [showBgColorsModal, setShowBgColorsModal] = useState(false);
 
@@ -129,7 +130,7 @@ const Sidebar = ({
       )}
 
       {activeTab === "colors" && (showBgColorsModal && <SelectColorsTab setShowBgColorsModal={setShowBgColorsModal} handleColorChange={handleColorChange} selectedColor={selectedColor} setSelectedColor={setSelectedColor} />)}
-      {activeTab === "clipart" && (showClipartTab && <ClipartTab addEmojiTextToCanvas={addEmojiTextToCanvas} setShowClipartTab={setShowClipartTab} />)}
+      {activeTab === "clipart" && (showClipartTab && <ClipartTab addEmojiTextToCanvas={addEmojiTextToCanvas} setShowClipartTab={setShowClipartTab} lastProduct={lastProduct} handleAddDesignToCanvas={handleAddDesignToCanvas}/>)}
 
     </div>
   );
