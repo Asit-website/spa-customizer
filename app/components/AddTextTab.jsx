@@ -16,9 +16,8 @@ const AddTextTab = ({ setShowAddModal, customText, setCustomText, handleAddCusto
                 <div className='flex flex-col gap-2'>
                     <input type="text" value={customText}
                         onChange={(e) => setCustomText(e.target.value)} name="" id="" placeholder="Add Headline" className="border border-[#D3DBDF] text-black rounded-lg p-3 min-h-20 placeholder:font-semibold" />
-                    <input type="text" name="" id="" placeholder="Add Paragraph" className="border border-[#D3DBDF] text-black rounded-lg p-3 placeholder:font-semibold" />
                 </div>
-                <button onClick={handleAddCustomText} className={` rounded-md mt-5 py-3  w-full text-[16px] cursor-pointer ${customText.trim() !== "" ? "text-white bg-blue-600" : "bg-[#D7DEF4] text-[#AEBDEA]"}`}>Add text</button>
+                <button onClick={handleAddCustomText} className={` rounded-md mt-3 py-3  w-full text-[16px] cursor-pointer ${customText.trim() !== "" ? "text-white bg-blue-600" : "bg-[#D7DEF4] text-[#AEBDEA]"}`}>Add text</button>
             </div>
         </div>
     )

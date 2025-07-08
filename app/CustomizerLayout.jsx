@@ -71,6 +71,112 @@ const CustomizerLayout = () => {
         width: 300,
         description: "Black Sando",
         textTopRatio: 2.8,
+        designs: [
+          {
+            id: 1,
+            name: "Angry Doberman",
+            position: "center-top",
+            offsetX: 0,
+            offsetY: 40,
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967112/2234.preview_gd75zf.png"
+          },
+          {
+            id: 2,
+            name: "Bulldog Growl",
+            position: "center-top",
+            offsetX: 0,
+            offsetY: 40,
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2237.preview_okqvhu.png"
+          },
+          {
+            id: 3,
+            name: "Spiked Bulldog",
+            position: "center-top",
+            offsetX: 0,
+            offsetY: 40,
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2236.preview_xkl5hf.png"
+          },
+          {
+            id: 4,
+            name: "Wild Wolf",
+            position: "center-top",
+            offsetX: 0,
+            offsetY: 40,
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2238.preview_bhedmv.png"
+          },
+          {
+            id: 5,
+            name: "Roaring Tiger",
+            position: "center",
+            offsetX: 0,
+            offsetY: -15,
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2243.preview_cgju7z.png"
+          },
+          {
+            id: 6,
+            name: "Snarling Tiger",
+            position: "center",
+            offsetX: 0,
+            offsetY: -15,
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967112/2235.preview_pftmvw.png"
+          },
+          {
+            id: 7,
+            name: "Angry Husky",
+            position: "center-top",
+            offsetX: 0,
+            offsetY: 40,
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2241.preview_h9pntb.png"
+          },
+          {
+            id: 8,
+            name: "Viking Beard",
+            position: "center",
+            offsetX: 0,
+            offsetY: -15,
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967112/2242.preview_gtqo2w.png"
+          },
+          {
+            id: 9,
+            name: "Buzzing Bee",
+            position: "center",
+            offsetX: 15,
+            offsetY: -45,
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2240.preview_zbpw5z.png"
+          },
+          {
+            id: 10,
+            name: "Red Devil",
+            position: "top-center",
+            offsetX: 0,
+            offsetY: 60,
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2239.preview_nrrieg.png"
+          },
+          {
+            id: 11,
+            name: "Dino Roar",
+            position: "bottom-left",
+            offsetX: 45,
+            offsetY: -60,
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967114/2246.preview_rx4u62.png"
+          },
+          {
+            id: 12,
+            name: "Cardinal Bird",
+            position: "center-top",
+            offsetX: -15,
+            offsetY: 20,
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967114/2245.preview_g7s5ml.png"
+          },
+          {
+            id: 13,
+            name: "Pirate Face",
+            position: "bottom-left",
+            offsetX: 55,
+            offsetY: -60,
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967114/2244.preview_f4vowr.png"
+          }
+        ]
       }
     ];
 
@@ -97,8 +203,6 @@ const CustomizerLayout = () => {
 
     setProducts([mergedProduct]);
   }, []);
-
-
 
 
   const handleColorChange = (colorObj) => {
@@ -156,8 +260,11 @@ const CustomizerLayout = () => {
         fill: setTextColor,
         fontFamily: setTextFontFamily,
         fontStyle: setFontStyle,
-        hasControls: false,
-        hasBorders: false,
+        selectable: true,
+        evented: true,
+        moveCursor: "move",
+        hasControls: true,
+        hasBorders: true,
         lockMovementX: false,
         lockMovementY: false,
         editable: false
@@ -338,15 +445,104 @@ const CustomizerLayout = () => {
         originY: "center",
         fontSize: 48,
         fill: "#000",
-        selectable: false,
-        evented: false,
-        hasBorders: false,
-        hasControls: false,
+        selectable: true,
+        evented: true,
+        hasBorders: true,
+        hasControls: true,
       });
 
       emojiText.isEmoji = true;
 
       addAndBringToFront(emojiText);
+    });
+  };
+
+
+  const handleAddDesignToCanvas = (url, position = "center", offsetX = 0, offsetY = 0) => {
+    if (!editor || !url) return;
+
+    import("fabric").then((fabric) => {
+      const canvas = editor.canvas;
+      const productImage = canvas.getObjects().find((obj) => obj.isTshirtBase);
+      if (!productImage) return;
+
+      const imageBounds = productImage.getBoundingRect();
+      const imgElement = new Image();
+      imgElement.crossOrigin = "anonymous";
+      imgElement.src = url;
+
+      imgElement.onload = () => {
+        const maxWidth = imageBounds.width * 0.4;
+        const maxHeight = imageBounds.height * 0.4;
+        const scale = Math.min(maxWidth / imgElement.width, maxHeight / imgElement.height);
+
+        const imgInstance = new fabric.Image(imgElement, {
+          originX: "center",
+          originY: "center",
+          scaleX: scale,
+          scaleY: scale,
+          name: "design-image",
+          selectable: false,
+          evented: false,
+          hasControls: false,
+          hasBorders: false,
+          moveCursor: "move"
+        });
+
+        const existing = canvas.getObjects().find(obj => obj.name === "design-image");
+        if (existing) canvas.remove(existing);
+
+        let left = imageBounds.left + imageBounds.width / 2;
+        let top = imageBounds.top + imageBounds.height / 2;
+
+        switch (position) {
+          case "top-left":
+            left = imageBounds.left + maxWidth / 2;
+            top = imageBounds.top + maxHeight / 2;
+            break;
+          case "top-right":
+            left = imageBounds.left + imageBounds.width - maxWidth / 2;
+            top = imageBounds.top + maxHeight / 2;
+            break;
+          case "bottom-left":
+            left = imageBounds.left + maxWidth / 2;
+            top = imageBounds.top + imageBounds.height - maxHeight / 2;
+            break;
+          case "bottom-right":
+            left = imageBounds.left + imageBounds.width - maxWidth / 2;
+            top = imageBounds.top + imageBounds.height - maxHeight / 2;
+            break;
+          case "top-center":
+            top = imageBounds.top + maxHeight / 2;
+            break;
+          case "bottom-center":
+            top = imageBounds.top + imageBounds.height - maxHeight / 2;
+            break;
+          case "center-top":
+            top = imageBounds.top + imageBounds.height * 0.3;
+            break;
+          case "center-left":
+            left = imageBounds.left + maxWidth / 2;
+            break;
+          case "center-right":
+            left = imageBounds.left + imageBounds.width - maxWidth / 2;
+            break;
+          case "center":
+          default:
+            break;
+        }
+
+        imgInstance.set({
+          left: left + offsetX,
+          top: top + offsetY
+        });
+
+        canvas.add(imgInstance);
+        canvas.bringToFront(imgInstance);
+        canvas.setActiveObject(imgInstance);
+        imgInstance.setCoords();
+        canvas.renderAll();
+      };
     });
   };
 
@@ -402,8 +598,9 @@ const CustomizerLayout = () => {
             evented: true,
             hasControls: true,
             hasBorders: true,
-            lockMovementX: false,
-            lockMovementY: false,
+            lockMovementX: true,
+            lockMovementY: true,
+            moveCursor: "move"
           });
 
           textObject.customId = lastProduct.id;
@@ -433,13 +630,14 @@ const CustomizerLayout = () => {
           });
         } else if (obj.type === "i-text") {
           obj.set({
-            selectable: false,
-            evented: false,
-            hasControls: false,
-            hasBorders: false,
+            selectable: true,
+            evented: true,
+            hasControls: true,
+            hasBorders: true,
             lockMovementX: false,
             lockMovementY: false,
-            editable: false
+            editable: false,
+            moveCursor: "move",
           });
         }
       }
@@ -558,32 +756,6 @@ const CustomizerLayout = () => {
     }
   };
 
-  const sendBackward = () => {
-    const activeObj = editor?.canvas?.getActiveObject();
-    if (activeObj && typeof editor.canvas.sendBackwards === "function") {
-      editor.canvas.sendBackwards(activeObj);
-      editor.canvas.renderAll();
-    }
-  };
-
-  const bringToFront = () => {
-    const activeObj = editor?.canvas?.getActiveObject();
-    if (activeObj) {
-      editor.canvas.bringToFront(activeObj);
-      editor.canvas.renderAll();
-    }
-  };
-
-  const sendToBack = () => {
-    const activeObj = editor?.canvas?.getActiveObject();
-    if (activeObj) {
-      editor.canvas.sendToBack(activeObj);
-      editor.canvas.renderAll();
-    }
-  };
-
-  console.log("productr", products)
-  console.log("allproducts", allProducts)
 
   return (
     <div className="w-full h-screen flex justify-center items-center bg-gray-100 relative max-w-[1720px] mx-auto">
@@ -626,6 +798,7 @@ const CustomizerLayout = () => {
             setChangeTextFlipX={setChangeTextFlipX}
             setChangeTextFlipY={setChangeTextFlipY}
             handleImageUpload={handleImageUpload}
+            handleAddDesignToCanvas={handleAddDesignToCanvas}
           />
         )
       }
