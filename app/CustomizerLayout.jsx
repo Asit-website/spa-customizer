@@ -98,7 +98,7 @@ const CustomizerLayout = () => {
           },
           {
             id: 4,
-            name: "Wild Wolf",
+            name: "Roaring Wolf",
             position: "center-top",
             offsetX: 0,
             offsetY: 40,
@@ -106,7 +106,7 @@ const CustomizerLayout = () => {
           },
           {
             id: 5,
-            name: "Roaring Tiger",
+            name: "Fighter",
             position: "center",
             offsetX: 0,
             offsetY: -15,
@@ -114,7 +114,7 @@ const CustomizerLayout = () => {
           },
           {
             id: 6,
-            name: "Snarling Tiger",
+            name: "Husky Dog",
             position: "center",
             offsetX: 0,
             offsetY: -15,
@@ -122,7 +122,7 @@ const CustomizerLayout = () => {
           },
           {
             id: 7,
-            name: "Angry Husky",
+            name: "Bird",
             position: "center-top",
             offsetX: 0,
             offsetY: 40,
@@ -130,7 +130,7 @@ const CustomizerLayout = () => {
           },
           {
             id: 8,
-            name: "Viking Beard",
+            name: "Devil",
             position: "center",
             offsetX: 0,
             offsetY: -15,
@@ -138,7 +138,7 @@ const CustomizerLayout = () => {
           },
           {
             id: 9,
-            name: "Buzzing Bee",
+            name: "Roaring Tiger",
             position: "center",
             offsetX: 15,
             offsetY: -45,
@@ -146,7 +146,7 @@ const CustomizerLayout = () => {
           },
           {
             id: 10,
-            name: "Red Devil",
+            name: "Tiger",
             position: "top-center",
             offsetX: 0,
             offsetY: 60,
@@ -154,7 +154,7 @@ const CustomizerLayout = () => {
           },
           {
             id: 11,
-            name: "Dino Roar",
+            name: "Bee",
             position: "bottom-left",
             offsetX: 45,
             offsetY: -60,
@@ -162,7 +162,7 @@ const CustomizerLayout = () => {
           },
           {
             id: 12,
-            name: "Cardinal Bird",
+            name: "Dragon",
             position: "center-top",
             offsetX: -15,
             offsetY: 20,
