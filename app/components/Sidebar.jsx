@@ -53,7 +53,7 @@ const Sidebar = ({
   const [showBgColorsModal, setShowBgColorsModal] = useState(false);
 
   return (
-    <div className="absolute top-24 sm:top-28 left-7 w-[90%]  flex gap-5 z-50 flex-col sm:flex-row">
+    <div className="absolute top-24 sm:top-28 left-7 w-[35%]  flex gap-5 z-50 flex-col sm:flex-row">
       <div className="bg-white p-5 rounded-lg border border-[#D3DBDF] flex flex-row sm:flex-col h-fit items-center justify-between sm:justify-normal gap-6 ">
         {[
           { key: "editor", label: "Editor", icon: "Frame_4_vzkhrn" },
