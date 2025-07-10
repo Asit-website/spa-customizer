@@ -962,14 +962,12 @@ const CustomizerLayout = () => {
   const [setTextFlipX, setChangeTextFlipX] = useState(false);
   const [setTextFlipY, setChangeTextFlipY] = useState(false);
 
-  // Function to create clipping path based on t-shirt image
   const createClippingPath = (imageObj) => {
     if (!imageObj || !editor?.canvas) return null;
 
     import("fabric").then(({ Rect }) => {
       const imageBounds = imageObj.getBoundingRect();
-      
-      // Create a rectangle that matches the t-shirt boundaries
+
       const clipPath = new Rect({
         left: imageBounds.left,
         top: imageBounds.top,
@@ -987,33 +985,28 @@ const CustomizerLayout = () => {
     });
   };
 
-  // Function to create mask from t-shirt image
   const createTshirtMask = (imageObj, callback) => {
     if (!imageObj) return;
 
-    // Create a canvas to process the image and extract its shape
     const tempCanvas = document.createElement('canvas');
     const tempCtx = tempCanvas.getContext('2d');
-    
+
     const img = imageObj.getElement();
     tempCanvas.width = img.width;
     tempCanvas.height = img.height;
-    
-    // Draw the image
+
     tempCtx.drawImage(img, 0, 0);
-    
-    // Get image data to detect non-transparent pixels
+
     const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
     const data = imageData.data;
-    
-    // Find the actual boundaries of the t-shirt (non-transparent areas)
+
     let minX = tempCanvas.width, minY = tempCanvas.height;
     let maxX = 0, maxY = 0;
-    
+
     for (let y = 0; y < tempCanvas.height; y++) {
       for (let x = 0; x < tempCanvas.width; x++) {
         const alpha = data[(y * tempCanvas.width + x) * 4 + 3];
-        if (alpha > 0) { // Non-transparent pixel
+        if (alpha > 0) {
           minX = Math.min(minX, x);
           minY = Math.min(minY, y);
           maxX = Math.max(maxX, x);
@@ -1021,14 +1014,12 @@ const CustomizerLayout = () => {
         }
       }
     }
-    
-    // Create mask image with just the t-shirt shape
+
     const maskCanvas = document.createElement('canvas');
     const maskCtx = maskCanvas.getContext('2d');
     maskCanvas.width = tempCanvas.width;
     maskCanvas.height = tempCanvas.height;
-    
-    // Create mask - white where t-shirt exists, transparent elsewhere
+
     maskCtx.fillStyle = 'white';
     for (let y = 0; y < tempCanvas.height; y++) {
       for (let x = 0; x < tempCanvas.width; x++) {
@@ -1038,7 +1029,7 @@ const CustomizerLayout = () => {
         }
       }
     }
-    
+
     callback(maskCanvas.toDataURL(), {
       minX, minY, maxX, maxY,
       width: maxX - minX,
@@ -1046,7 +1037,6 @@ const CustomizerLayout = () => {
     });
   };
 
-  // Function to apply clipping to an object using t-shirt shape
   const applyClippingToObject = (obj, imageObj) => {
     if (!imageObj || !obj) return;
 
@@ -1055,8 +1045,7 @@ const CustomizerLayout = () => {
         const maskImg = new window.Image();
         maskImg.onload = () => {
           const imageBounds = imageObj.getBoundingRect();
-          
-          // Create fabric image from mask
+
           const maskFabricImg = new Image(maskImg, {
             left: imageBounds.left - obj.left,
             top: imageBounds.top - obj.top,
@@ -1066,7 +1055,7 @@ const CustomizerLayout = () => {
             originY: 'top',
             absolutePositioned: false
           });
-          
+
           obj.clipPath = maskFabricImg;
           obj.dirty = true;
           editor.canvas.requestRenderAll();
@@ -1076,7 +1065,6 @@ const CustomizerLayout = () => {
     });
   };
 
-  // Enhanced function to update clipping when object moves
   const updateClippingForObject = (obj) => {
     const canvas = editor?.canvas;
     if (!canvas || !obj || obj.isTshirtBase) return;
@@ -1104,7 +1092,7 @@ const CustomizerLayout = () => {
         size: "L",
         color: "White",
         width: 300,
-        description: "Black Sando",
+        description: "White Sando",
         textTopRatio: 2.8,
         designs: [
           {
@@ -1211,6 +1199,83 @@ const CustomizerLayout = () => {
             offsetY: -60,
             url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967114/2244.preview_f4vowr.png"
           }
+        ],
+        patterns: [
+          {
+            id: 1,
+            name: "Pattern 1",
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143460/2217.preview_d8hp5o.png"
+          },
+          {
+            id: 2,
+            name: "Pattern 2",
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143460/2218.preview_pjeqc7.png"
+          },
+          {
+            id: 3,
+            name: "Pattern 3",
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143461/2219.preview_p5wup6.png"
+          },
+          {
+            id: 4,
+            name: "Pattern 4",
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143461/2221.preview_ij7u1b.png"
+          },
+          {
+            id: 5,
+            name: "Pattern 5",
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143461/2223.preview_zpedw7.png"
+          },
+          {
+            id: 6,
+            name: "Pattern 6",
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143461/2220.preview_uzy9xy.png"
+          },
+          {
+            id: 7,
+            name: "Pattern 7",
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2226.preview_dkhkth.png"
+          },
+          {
+            id: 8,
+            name: "Pattern 8",
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2225.preview_jopp92.png"
+          },
+          {
+            id: 9,
+            name: "Pattern 9",
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2224.preview_fwheor.png"
+          },
+          {
+            id: 10,
+            name: "Pattern 10",
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2229.preview_yemknx.png"
+          },
+          {
+            id: 11,
+            name: "Pattern 11",
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2227.preview_ixqzpl.png"
+          },
+          {
+            id: 12,
+            name: "Pattern 12",
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2230.preview_mjhidt.png"
+          },
+          {
+            id: 13,
+            name: "Pattern 13",
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2222.preview_poqyfa.png"
+          },
+          {
+            id: 14,
+            name: "Pattern 14",
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143463/2231.preview_eozedv.png"
+          },
+          {
+            id: 15,
+            name: "Pattern 15",
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2228.preview_sy0c6v.png"
+          }
         ]
       }
     ];
@@ -1269,7 +1334,6 @@ const CustomizerLayout = () => {
     import("fabric").then((fabric) => {
       const canvas = editor.canvas;
 
-      // Remove existing text
       canvas.getObjects().forEach((obj) => {
         if (obj.type === "i-text") {
           canvas.remove(obj);
@@ -1292,17 +1356,17 @@ const CustomizerLayout = () => {
         fill: setTextColor,
         fontFamily: setTextFontFamily,
         fontStyle: setFontStyle,
-        selectable: true,          // Text selectable hai
-        evented: true,             // Events enabled hain
-        moveCursor: "move",        // Move cursor
-        hasControls: true,         // Controls visible hain
-        hasBorders: true,          // Borders visible hain
-        lockMovementX: false,      // Movement allowed
-        lockMovementY: false,      // Movement allowed
-        lockScalingX: false,       // Scaling allowed
-        lockScalingY: false,       // Scaling allowed
-        lockRotation: false,       // Rotation allowed
-        editable: true             // Text editing allowed
+        selectable: true,
+        evented: true,
+        moveCursor: "move",
+        hasControls: true,
+        hasBorders: true,
+        lockMovementX: false,
+        lockMovementY: false,
+        lockScalingX: false,
+        lockScalingY: false,
+        lockRotation: false,
+        editable: true
       });
 
       textObject.setControlsVisibility({
@@ -1313,8 +1377,7 @@ const CustomizerLayout = () => {
 
       canvas.add(textObject);
       canvas.setActiveObject(textObject);
-      
-      // Apply clipping immediately
+
       applyClippingToObject(textObject, imageObj);
       canvas.requestRenderAll();
 
@@ -1363,26 +1426,27 @@ const CustomizerLayout = () => {
           const fabricImg = new Image(img, {
             originX: "center",
             originY: "center",
-            selectable: false,      // T-shirt ko selectable nahi banaya
-            evented: false,         // T-shirt ko evented nahi banaya
+            selectable: false,
+            evented: false,
             isTshirtBase: true,
             scaleX: scale,
             scaleY: scale,
             left: canvas.getWidth() / 2,
             top: canvas.getHeight() / 2,
-            hasControls: false,     // Controls nahi honge
-            hasBorders: false,      // Borders nahi honge
-            lockMovementX: true,    // Movement lock kiya
-            lockMovementY: true,    // Movement lock kiya
-            lockScalingX: true,     // Scaling lock kiya
-            lockScalingY: true,     // Scaling lock kiya
-            lockRotation: true      // Rotation lock kiya
+            hasControls: false,
+            hasBorders: false,
+            lockMovementX: true,
+            lockMovementY: true,
+            lockScalingX: true,
+            lockScalingY: true,
+            lockRotation: true
           });
+
+          console.log("imgObj", fabricImg)
 
           canvas.add(fabricImg);
           canvas.sendToBack(fabricImg);
-          
-          // Update clipping for all existing objects immediately
+
           canvas.getObjects().forEach((obj) => {
             if (obj !== fabricImg && !obj.isTshirtBase) {
               applyClippingToObject(obj, fabricImg);
@@ -1468,16 +1532,15 @@ const CustomizerLayout = () => {
 
   const addAndBringToFront = (obj) => {
     const imageObj = editor.canvas.getObjects().find((o) => o.type === "image" && o.isTshirtBase);
-    
+
     editor.canvas.add(obj);
     editor.canvas.bringToFront?.(obj);
     editor.canvas.setActiveObject(obj);
-    
-    // Apply clipping immediately if t-shirt exists
+
     if (imageObj) {
       applyClippingToObject(obj, imageObj);
     }
-    
+
     editor.canvas.requestRenderAll();
   };
 
@@ -1501,17 +1564,17 @@ const CustomizerLayout = () => {
         originY: "center",
         fontSize: 48,
         fill: "#000",
-        selectable: true,          // Emoji selectable hai
-        evented: true,             // Events enabled hain
-        hasBorders: true,          // Borders visible hain
-        hasControls: true,         // Controls visible hain
-        moveCursor: "move",        // Move cursor
-        lockMovementX: false,      // Movement allowed
-        lockMovementY: false,      // Movement allowed
-        lockScalingX: false,       // Scaling allowed
-        lockScalingY: false,       // Scaling allowed
-        lockRotation: false,       // Rotation allowed
-        editable: true             // Editing allowed
+        selectable: true,
+        evented: true,
+        hasBorders: true,
+        hasControls: true,
+        moveCursor: "move",
+        lockMovementX: false,
+        lockMovementY: false,
+        lockScalingX: false,
+        lockScalingY: false,
+        lockRotation: false,
+        editable: true
       });
 
       emojiText.isEmoji = true;
@@ -1543,16 +1606,16 @@ const CustomizerLayout = () => {
           scaleX: scale,
           scaleY: scale,
           name: "design-image",
-          selectable: true,          // Design images movable hain
-          evented: true,             // Events enabled hain
-          hasControls: true,         // Controls visible hain
-          hasBorders: true,          // Borders visible hain
-          moveCursor: "move",        // Move cursor
-          lockMovementX: false,      // Movement allowed
-          lockMovementY: false,      // Movement allowed
-          lockScalingX: false,       // Scaling allowed
-          lockScalingY: false,       // Scaling allowed
-          lockRotation: false        // Rotation allowed
+          selectable: true,
+          evented: true,
+          hasControls: true,
+          hasBorders: true,
+          moveCursor: "move",
+          lockMovementX: false,
+          lockMovementY: false,
+          lockScalingX: false,
+          lockScalingY: false,
+          lockRotation: false
         });
 
         const existing = canvas.getObjects().find(obj => obj.name === "design-image");
@@ -1603,12 +1666,10 @@ const CustomizerLayout = () => {
           top: top + offsetY
         });
 
-        // Apply clipping to design image
         canvas.add(imgInstance);
         canvas.bringToFront(imgInstance);
         canvas.setActiveObject(imgInstance);
-        
-        // Apply clipping immediately
+
         applyClippingToObject(imgInstance, productImage);
         canvas.requestRenderAll();
       };
@@ -1640,17 +1701,17 @@ const CustomizerLayout = () => {
           flipY: lastProduct.flipY,
           angle: lastProduct.rotate || 0,
           opacity: (lastProduct.opacity || 100) / 100,
-          selectable: false,        // Base t-shirt selectable nahi
-          evented: false,           // Events disabled
+          selectable: false,
+          evented: false,
           scaleX: scale,
           scaleY: scale,
-          hasControls: false,       // Controls nahi honge
-          hasBorders: false,        // Borders nahi honge
-          lockMovementX: true,      // Movement locked
-          lockMovementY: true,      // Movement locked
-          lockScalingX: true,       // Scaling locked
-          lockScalingY: true,       // Scaling locked
-          lockRotation: true        // Rotation locked
+          hasControls: false,
+          hasBorders: false,
+          lockMovementX: true,
+          lockMovementY: true,
+          lockScalingX: true,
+          lockScalingY: true,
+          lockRotation: true
         });
 
         fabricImg.customId = lastProduct.id;
@@ -1668,23 +1729,23 @@ const CustomizerLayout = () => {
             originY: "center",
             flipX: lastProduct.flipX,
             flipY: lastProduct.flipY,
-            selectable: true,          // Text selectable hai
-            evented: true,             // Events enabled hain
-            hasControls: true,         // Controls visible hain
-            hasBorders: true,          // Borders visible hain
-            lockMovementX: false,      // Movement allowed
-            lockMovementY: false,      // Movement allowed
-            lockScalingX: false,       // Scaling allowed
-            lockScalingY: false,       // Scaling allowed
-            lockRotation: false,       // Rotation allowed
-            moveCursor: "move",        // Move cursor
-            editable: true             // Text editing allowed
+            selectable: true,
+            evented: true,
+            hasControls: true,
+            hasBorders: true,
+            lockMovementX: false,
+            lockMovementY: false,
+            lockScalingX: false,
+            lockScalingY: false,
+            lockRotation: false,
+            moveCursor: "move",
+            editable: true
           });
 
           textObject.customId = lastProduct.id;
           editor.canvas.add(textObject);
           editor.canvas.setActiveObject(textObject);
-          
+
           // Apply clipping immediately
           applyClippingToObject(textObject, fabricImg);
           editor.canvas.requestRenderAll();
@@ -1818,8 +1879,7 @@ const CustomizerLayout = () => {
 
   useEffect(() => {
     if (!editor || !editor.canvas) return;
-    
-    // Set up canvas properties
+
     editor.canvas.selection = true;
     editor.canvas.skipTargetFind = false;
     editor.canvas.hoverCursor = 'move';
@@ -1827,9 +1887,8 @@ const CustomizerLayout = () => {
     editor.canvas.allowTouchScrolling = false;
     editor.canvas.targetFindTolerance = 10;
 
-    // Add event listeners for object movement and scaling
     const canvas = editor.canvas;
-    
+
     const handleObjectMoving = (e) => {
       updateClippingForObject(e.target);
     };
@@ -1846,7 +1905,6 @@ const CustomizerLayout = () => {
       updateClippingForObject(e.target);
     };
 
-    // Add event listeners
     canvas.on('object:moving', handleObjectMoving);
     canvas.on('object:scaling', handleObjectScaling);
     canvas.on('object:rotating', handleObjectRotating);
@@ -1854,7 +1912,6 @@ const CustomizerLayout = () => {
 
     canvas.renderAll();
 
-    // Cleanup function
     return () => {
       canvas.off('object:moving', handleObjectMoving);
       canvas.off('object:scaling', handleObjectScaling);
