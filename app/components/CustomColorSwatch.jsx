@@ -10,11 +10,17 @@ const colorOptions = [
     "#388e3c", "#004d40", "#006064", "#e0f2f1", "#ffffff"
 ];
 
-export default function CustomColorSwatch({setTextColor,setChangeTextColor, selectedColor, setSelectedColor, setShowColorTab }) {
+export default function CustomColorSwatch({setTextColor, setChangeTextColor, selectedColor, setSelectedColor, setShowColorTab }) {
+    
+    // Handle color selection - automatically close and return to edit text
+    const handleColorClick = (color) => {
+        setChangeTextColor(color); // This will trigger the parent's handleColorSelection
+        // setShowColorTab(false) will be called from parent's handleColorSelection
+    };
 
     return (
         <div className="bg-white rounded-lg border border-[#D3DBDF] w-72 h-fit max-h-[460px] overflow-y-scroll">
-
+            
             <div className='flex items-center justify-between py-2 px-3'>
                 <div className='flex items-center gap-2'>
                     <h3 className='text-[16px] text-black font-semibold'>Choose Color</h3>
@@ -24,29 +30,34 @@ export default function CustomColorSwatch({setTextColor,setChangeTextColor, sele
                 </div>
             </div>
             <hr className="border-t border-[#D3DBDF] h-px" />
-
+            
             <div className="p-3 flex flex-col gap-2">
                 <div>
                     <h3 className="text-[12px] text-black font-semibold">USED IN YOUR DESIGN</h3>
                     <div className="mb-4 flex items-center gap-2 mt-2">
-                    <div className={`w-6 h-6 rounded-full cursor-pointer border-2 transition-all duration-150 `} style={{ backgroundColor: setTextColor }} />
-                    <span className="text-sm">{setTextColor}</span>
+                        <div 
+                            className={`w-6 h-6 rounded-full cursor-pointer border-2 transition-all duration-150`} 
+                            style={{ backgroundColor: setTextColor }} 
+                            onClick={() => handleColorClick(setTextColor)}
+                        />
+                        <span className="text-sm">{setTextColor}</span>
+                    </div>
                 </div>
-                </div>
-
+                
                 <div>
                     <h3 className="text-[12px] font-semibold text-black">ALL COLORS</h3>
                     <div className="grid grid-cols-6 items-center gap-2 mt-2">
-                    {colorOptions.map((color) => (
-                        <div
-                            key={color}
-                            className={`w-6 h-6 rounded-full cursor-pointer border-2 transition-all duration-150 ${selectedColor === color ? "border-black scale-110" : "border-transparent"
+                        {colorOptions.map((color) => (
+                            <div
+                                key={color}
+                                className={`w-6 h-6 rounded-full cursor-pointer border-2 transition-all duration-150 ${
+                                    selectedColor === color ? "border-black scale-110" : "border-transparent"
                                 }`}
-                            style={{ backgroundColor: color }}
-                            onClick={() => setChangeTextColor(color)}
-                        />
-                    ))}
-                </div>
+                                style={{ backgroundColor: color }}
+                                onClick={() => handleColorClick(color)}
+                            />
+                        ))}
+                    </div>
                 </div>
             </div>
         </div>

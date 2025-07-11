@@ -1204,12 +1204,12 @@ const CustomizerLayout = () => {
           {
             id: 1,
             name: "Pattern 1",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143460/2217.preview_d8hp5o.png"
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752239240/2_1_oazqo6.jpg"
           },
           {
             id: 2,
             name: "Pattern 2",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143460/2218.preview_pjeqc7.png"
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752239240/1_mvfosf.jpg"
           },
           {
             id: 3,
@@ -1416,19 +1416,20 @@ const CustomizerLayout = () => {
         import("fabric").then(({ Image }) => {
           const canvas = editor.canvas;
 
-          canvas.getObjects().forEach((obj) => {
-            if (obj.isTshirtBase) canvas.remove(obj);
-          });
+          // Remove ALL existing objects (clear canvas completely)
+          canvas.clear();
 
+          // Calculate scale to fit the uploaded image properly
           const desiredWidth = 300;
           const scale = desiredWidth / img.width;
 
+          // Create new t-shirt base from uploaded image
           const fabricImg = new Image(img, {
             originX: "center",
             originY: "center",
             selectable: false,
             evented: false,
-            isTshirtBase: true,
+            isTshirtBase: true, // Mark as t-shirt base
             scaleX: scale,
             scaleY: scale,
             left: canvas.getWidth() / 2,
@@ -1442,28 +1443,44 @@ const CustomizerLayout = () => {
             lockRotation: true
           });
 
-          console.log("imgObj", fabricImg)
-
+          // Add the new t-shirt base to canvas
           canvas.add(fabricImg);
           canvas.sendToBack(fabricImg);
+          canvas.renderAll();
 
-          canvas.getObjects().forEach((obj) => {
-            if (obj !== fabricImg && !obj.isTshirtBase) {
-              applyClippingToObject(obj, fabricImg);
-            }
-          });
-          canvas.requestRenderAll();
+          // Create a completely new product
+          const newProduct = {
+            id: Date.now(), // Unique ID
+            image: dataUrl,
+            size: "Custom",
+            color: "Custom",
+            width: desiredWidth,
+            description: "Custom Upload",
+            textTopRatio: 3.5, // Default text positioning
+            opacity: 100,
+            rotate: 0,
+            alignment: "center",
+            // Copy current text settings if any
+            text: customText,
+            textSize,
+            textSpacing,
+            textArc,
+            fontFamily: setTextFontFamily,
+            fontStyle: setFontStyle,
+            fill: setTextColor,
+            imgflipX: setFlipX,
+            imgflipY: setFlipY,
+            flipX: setTextFlipX,
+            flipY: setTextFlipY,
+          };
 
-          setProducts((prev) => {
-            const updated = [...prev];
-            const lastIndex = updated.length - 1;
-            updated[lastIndex] = {
-              ...updated[lastIndex],
-              image: dataUrl,
-              width: desiredWidth,
-            };
-            return updated;
-          });
+          // Replace current products with the new uploaded product
+          setProducts([newProduct]);
+
+          // Update selected product to the new one
+          setSelectedProduct(newProduct);
+
+          console.log("New product created from upload:", newProduct);
         });
       };
     };
@@ -1505,30 +1522,62 @@ const CustomizerLayout = () => {
     canvas.renderAll();
   };
 
+
+
   const updateArrange = (action) => {
-    if (!editor || !editor.canvas) return;
+  if (!editor || !editor.canvas) return;
 
-    const canvas = editor.canvas;
-    const obj = canvas.getActiveObject();
-    if (!obj) return;
+  const canvas = editor.canvas;
+  const obj = canvas.getActiveObject();
+  if (!obj) return;
 
-    switch (action) {
-      case "bringToFront":
-        canvas.bringToFront(obj);
-        break;
-      case "sendToBack":
-        canvas.sendToBack(obj);
-        break;
-      case "bringForward":
-        canvas.bringForward(obj);
-        break;
-      case "sendBackward":
-        canvas.sendBackwards(obj);
-        break;
-    }
+  const objects = canvas.getObjects();
+  const currentIndex = objects.indexOf(obj);
+  
+  if (currentIndex === -1) return;
 
-    canvas.renderAll();
-  };
+  switch (action) {
+    case "bringToFront":
+      // Move to end of array (top layer)
+      if (currentIndex < objects.length - 1) {
+        canvas.remove(obj);
+        canvas.add(obj);
+      }
+      break;
+      
+    case "sendToBack":
+      // Move to beginning of array (bottom layer)
+      if (currentIndex > 0) {
+        canvas.remove(obj);
+        const newObjects = [obj, ...objects.filter(o => o !== obj)];
+        canvas._objects = newObjects;
+        canvas.renderAll();
+      }
+      break;
+      
+    case "bringForward":
+      // Move one step forward
+      if (currentIndex < objects.length - 1) {
+        const nextIndex = currentIndex + 1;
+        [objects[currentIndex], objects[nextIndex]] = [objects[nextIndex], objects[currentIndex]];
+        canvas.renderAll();
+      }
+      break;
+      
+    case "sendBackward":
+      // Move one step backward
+      if (currentIndex > 0) {
+        const prevIndex = currentIndex - 1;
+        [objects[currentIndex], objects[prevIndex]] = [objects[prevIndex], objects[currentIndex]];
+        canvas.renderAll();
+      }
+      break;
+  }
+
+  // Ensure object coordinates are updated
+  obj.setCoords();
+  canvas.renderAll();
+};
 
   const addAndBringToFront = (obj) => {
     const imageObj = editor.canvas.getObjects().find((o) => o.type === "image" && o.isTshirtBase);
@@ -1858,24 +1907,74 @@ const CustomizerLayout = () => {
   }, [setTextColor, setTextFontFamily, setFontStyle, setTextFlipX, setTextFlipY]);
 
   useEffect(() => {
-    if (!editor || !editor.canvas) return;
+  if (!editor || !editor.canvas) return;
 
-    import("fabric").then(({ Canvas }) => {
-      if (!Canvas.prototype.bringToFront) {
-        Canvas.prototype.bringToFront = function (object) {
+  import("fabric").then(({ Canvas }) => {
+    // Fix bringToFront method
+    if (!Canvas.prototype.bringToFront) {
+      Canvas.prototype.bringToFront = function (object) {
+        const objects = this.getObjects();
+        const currentIndex = objects.indexOf(object);
+        if (currentIndex !== -1 && currentIndex < objects.length - 1) {
           this.remove(object);
           this.add(object);
-        };
-      }
+        }
+        return this;
+      };
+    }
 
-      if (!Canvas.prototype.sendToBack) {
-        Canvas.prototype.sendToBack = function (object) {
+    // Fix sendToBack method - use proper insertAt method
+    if (!Canvas.prototype.sendToBack) {
+      Canvas.prototype.sendToBack = function (object) {
+        const objects = this.getObjects();
+        const currentIndex = objects.indexOf(object);
+        if (currentIndex !== -1 && currentIndex > 0) {
           this.remove(object);
-          this.insertAt(object, 0);
-        };
-      }
-    });
-  }, [editor]);
+          // Use the correct method based on Fabric.js version
+          if (typeof this.insertAt === 'function') {
+            this.insertAt(object, 0);
+          } else {
+            // Alternative method for newer versions
+            objects.splice(0, 0, object);
+            this._objects = objects;
+            this.renderAll();
+          }
+        }
+        return this;
+      };
+    }
+
+    // Fix bringForward method
+    if (!Canvas.prototype.bringForward) {
+      Canvas.prototype.bringForward = function (object) {
+        const objects = this.getObjects();
+        const currentIndex = objects.indexOf(object);
+        if (currentIndex !== -1 && currentIndex < objects.length - 1) {
+          // Swap with next object
+          const nextIndex = currentIndex + 1;
+          [objects[currentIndex], objects[nextIndex]] = [objects[nextIndex], objects[currentIndex]];
+          this.renderAll();
+        }
+        return this;
+      };
+    }
+
+    // Fix sendBackwards method
+    if (!Canvas.prototype.sendBackwards) {
+      Canvas.prototype.sendBackwards = function (object) {
+        const objects = this.getObjects();
+        const currentIndex = objects.indexOf(object);
+        if (currentIndex !== -1 && currentIndex > 0) {
+          // Swap with previous object
+          const prevIndex = currentIndex - 1;
+          [objects[currentIndex], objects[prevIndex]] = [objects[prevIndex], objects[currentIndex]];
+          this.renderAll();
+        }
+        return this;
+      };
+    }
+  });
+}, [editor]);
 
   useEffect(() => {
     if (!editor || !editor.canvas) return;
@@ -1921,12 +2020,34 @@ const CustomizerLayout = () => {
   }, [editor]);
 
   const bringForward = () => {
-    const activeObj = editor?.canvas?.getActiveObject();
-    if (activeObj && typeof editor.canvas.bringForward === "function") {
-      editor.canvas.bringForward(activeObj);
-      editor.canvas.renderAll();
-    }
-  };
+  const canvas = editor?.canvas;
+  const activeObj = canvas?.getActiveObject();
+  
+  if (!activeObj || !canvas) return;
+
+  const objects = canvas.getObjects();
+  const currentIndex = objects.indexOf(activeObj);
+  
+  // Check if object can be moved forward
+  if (currentIndex !== -1 && currentIndex < objects.length - 1) {
+    // Swap with next object
+    const nextIndex = currentIndex + 1;
+    [objects[currentIndex], objects[nextIndex]] = [objects[nextIndex], objects[currentIndex]];
+    
+    // Update canvas objects array
+    canvas._objects = objects;
+    activeObj.setCoords();
+    canvas.renderAll();
+  }
+};
+
+
+useEffect(() => {
+  if (editor?.canvas) {
+    console.log("Canvas initialized with", editor.canvas.getObjects().length, "objects");
+    console.log("Canvas objects:", editor.canvas.getObjects());
+  }
+}, [editor?.canvas]);
 
   return (
     <div className="w-full h-screen flex justify-center items-center bg-gray-100 relative max-w-[1720px] mx-auto">
@@ -1938,30 +2059,36 @@ const CustomizerLayout = () => {
             editor={editor}
             products={products}
             setProducts={setProducts}
+            selectedProduct={selectedProduct}           // Add this
+            setSelectedProduct={setSelectedProduct}     // Add this
+            customText={customText}                     // Add this
+            textSize={textSize}                         // Add this
+            textSpacing={textSpacing}                   // Add this
+            textArc={textArc}                           // Add this
+            setTextFontFamily={setTextFontFamily}       // Add this
+            setFontStyle={setFontStyle}                 // Add this
+            setTextColor={setTextColor}                 // Add this
+            setFlipX={setFlipX}                         // Add this
+            setFlipY={setFlipY}                         // Add this
+            setTextFlipX={setTextFlipX}                 // Add this
+            setTextFlipY={setTextFlipY}                 // Add this
             handleAddCustomText={handleAddCustomText}
-            customText={customText}
             setCustomText={setCustomText}
             updateLastProduct={updateLastProduct}
             showAddModal={showAddModal}
             showEditModal={showEditModal}
             setShowAddModal={setShowAddModal}
             setShowEditModal={setShowEditModal}
-            textSize={textSize}
             setTextSize={setTextSize}
-            textSpacing={textSpacing}
             setTextSpacing={setTextSpacing}
-            textArc={textArc}
             setTextArc={setTextArc}
             handleColorChange={handleColorChange}
             selectedColor={selectedColor}
             setSelectedColor={setSelectedColor}
             addEmojiTextToCanvas={addEmojiTextToCanvas}
             updateArrange={updateArrange}
-            setTextColor={setTextColor}
             setChangeTextColor={setChangeTextColor}
-            setTextFontFamily={setTextFontFamily}
             setChangeFontFamily={setChangeFontFamily}
-            setFontStyle={setFontStyle}
             setChangeFontStyle={setChangeFontStyle}
             setChangeFlipX={setChangeFlipX}
             setChangeFlipy={setChangeFlipy}
