@@ -1,5 +1,4 @@
 'use client'
-
 import React, { useEffect } from "react";
 
 const families = [
@@ -28,9 +27,15 @@ const FontSelector = ({ setSelectedFont, selectedFont, setShowTextSelectTab }) =
         });
       }
     };
-
+    
     loadFont();
   }, []);
+
+  // Handle font selection - automatically close and return to edit text
+  const handleFontClick = (font) => {
+    setSelectedFont(font); // This will trigger the parent's handleFontSelection
+    // setShowTextSelectTab(false) will be called from parent's handleFontSelection
+  };
 
   return (
     <div className="bg-white rounded-lg border border-[#D3DBDF] w-80 h-fit max-h-[460px] overflow-y-scroll">
@@ -41,10 +46,10 @@ const FontSelector = ({ setSelectedFont, selectedFont, setShowTextSelectTab }) =
         </div>
       </div>
       <hr className="border-t border-[#D3DBDF] h-px" />
-
+      
       <div className="p-3 flex flex-col gap-4">
         {families.map((font) => (
-          <div key={font} className="px-3 cursor-pointer" onClick={() => setSelectedFont(font)}>
+          <div key={font} className="px-3 cursor-pointer" onClick={() => handleFontClick(font)}>
             <p className="text-black text-[14px]" style={{ fontFamily: font }}>
               {font}
             </p>

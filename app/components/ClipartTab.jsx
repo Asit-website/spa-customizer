@@ -18,6 +18,9 @@ const ClipartTab = ({ setShowClipartTab, addEmojiTextToCanvas, lastProduct, hand
         ...(lastProduct?.designs?.length > 0
             ? [{ logo: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1750165738/0cda6dd4b34dca3f32358dac9ac0d83ce0c89488_tujyyl.png", name: "Designs" }]
             : []),
+        ...(lastProduct?.patterns?.length > 0
+            ? [{ logo: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1750165738/0cda6dd4b34dca3f32358dac9ac0d83ce0c89488_tujyyl.png", name: "Patterns" }]
+            : []),
         { logo: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1750165739/6ee41a6c790e3241b5fcae87139cfc2c34867022_r0tmbn.png", name: "Emoji" },
         { logo: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1750165738/0cda6dd4b34dca3f32358dac9ac0d83ce0c89488_tujyyl.png", name: "Shape" },
         { logo: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1750165737/2e2a09a694982b0069fbe4e8f22647b412021def_rpbyjg.png", name: "Illustrations" },
@@ -34,6 +37,8 @@ const ClipartTab = ({ setShowClipartTab, addEmojiTextToCanvas, lastProduct, hand
             setView('emoji-categories');
         } else if (name === 'Designs') {
             setView('designs');
+        } else if (name === 'Patterns') {
+            setView('patterns');
         }
     };
 
@@ -46,7 +51,7 @@ const ClipartTab = ({ setShowClipartTab, addEmojiTextToCanvas, lastProduct, hand
     const handleBack = () => {
         if (view === 'emoji-list') {
             setView('emoji-categories');
-        } else if (view === 'emoji-categories' || view === 'designs') {
+        } else if (view === 'emoji-categories' || view === 'designs' || view === 'patterns') {
             setView('main');
         }
     };
@@ -74,6 +79,13 @@ const ClipartTab = ({ setShowClipartTab, addEmojiTextToCanvas, lastProduct, hand
                     <span className='flex items-center gap-1 cursor-pointer' onClick={handleBack}>
                         <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1750138078/chevron-right_p6kmcp.svg" className="rotate-180 w-4" />
                         <span className='text-[16px] text-black font-semibold'>Designs</span>
+                    </span>
+                );
+            case 'patterns':
+                return (
+                    <span className='flex items-center gap-1 cursor-pointer' onClick={handleBack}>
+                        <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1750138078/chevron-right_p6kmcp.svg" className="rotate-180 w-4" />
+                        <span className='text-[16px] text-black font-semibold'>Patterns</span>
                     </span>
                 );
             default:
@@ -133,6 +145,20 @@ const ClipartTab = ({ setShowClipartTab, addEmojiTextToCanvas, lastProduct, hand
                             alt={`design-${index}`}
                             className="w-16 h-16 object-contain cursor-pointer border border-gray-200 rounded hover:border-blue-500"
                             onClick={() => handleAddDesignToCanvas(design.url, design.position, design.offsetX, design.offsetY)}
+                        />
+                    ))}
+                </div>
+            )}
+
+            {view === 'patterns' && (
+                <div className="grid grid-cols-3 gap-2 p-3">
+                    {lastProduct.patterns?.map((pattern, index) => (
+                        <img
+                            key={index}
+                            src={pattern.url}
+                            alt={`pattern-${index}`}
+                            className="w-16 h-16 object-contain cursor-pointer border border-gray-200 rounded hover:border-blue-500"
+                            onClick={() => handleAddDesignToCanvas(pattern.url)}
                         />
                     ))}
                 </div>

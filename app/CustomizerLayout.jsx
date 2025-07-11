@@ -962,14 +962,12 @@ const CustomizerLayout = () => {
   const [setTextFlipX, setChangeTextFlipX] = useState(false);
   const [setTextFlipY, setChangeTextFlipY] = useState(false);
 
-  // Function to create clipping path based on t-shirt image
   const createClippingPath = (imageObj) => {
     if (!imageObj || !editor?.canvas) return null;
 
     import("fabric").then(({ Rect }) => {
       const imageBounds = imageObj.getBoundingRect();
-      
-      // Create a rectangle that matches the t-shirt boundaries
+
       const clipPath = new Rect({
         left: imageBounds.left,
         top: imageBounds.top,
@@ -987,33 +985,28 @@ const CustomizerLayout = () => {
     });
   };
 
-  // Function to create mask from t-shirt image
   const createTshirtMask = (imageObj, callback) => {
     if (!imageObj) return;
 
-    // Create a canvas to process the image and extract its shape
     const tempCanvas = document.createElement('canvas');
     const tempCtx = tempCanvas.getContext('2d');
-    
+
     const img = imageObj.getElement();
     tempCanvas.width = img.width;
     tempCanvas.height = img.height;
-    
-    // Draw the image
+
     tempCtx.drawImage(img, 0, 0);
-    
-    // Get image data to detect non-transparent pixels
+
     const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
     const data = imageData.data;
-    
-    // Find the actual boundaries of the t-shirt (non-transparent areas)
+
     let minX = tempCanvas.width, minY = tempCanvas.height;
     let maxX = 0, maxY = 0;
-    
+
     for (let y = 0; y < tempCanvas.height; y++) {
       for (let x = 0; x < tempCanvas.width; x++) {
         const alpha = data[(y * tempCanvas.width + x) * 4 + 3];
-        if (alpha > 0) { // Non-transparent pixel
+        if (alpha > 0) {
           minX = Math.min(minX, x);
           minY = Math.min(minY, y);
           maxX = Math.max(maxX, x);
@@ -1021,14 +1014,12 @@ const CustomizerLayout = () => {
         }
       }
     }
-    
-    // Create mask image with just the t-shirt shape
+
     const maskCanvas = document.createElement('canvas');
     const maskCtx = maskCanvas.getContext('2d');
     maskCanvas.width = tempCanvas.width;
     maskCanvas.height = tempCanvas.height;
-    
-    // Create mask - white where t-shirt exists, transparent elsewhere
+
     maskCtx.fillStyle = 'white';
     for (let y = 0; y < tempCanvas.height; y++) {
       for (let x = 0; x < tempCanvas.width; x++) {
@@ -1038,7 +1029,7 @@ const CustomizerLayout = () => {
         }
       }
     }
-    
+
     callback(maskCanvas.toDataURL(), {
       minX, minY, maxX, maxY,
       width: maxX - minX,
@@ -1046,7 +1037,6 @@ const CustomizerLayout = () => {
     });
   };
 
-  // Function to apply clipping to an object using t-shirt shape
   const applyClippingToObject = (obj, imageObj) => {
     if (!imageObj || !obj) return;
 
@@ -1055,8 +1045,7 @@ const CustomizerLayout = () => {
         const maskImg = new window.Image();
         maskImg.onload = () => {
           const imageBounds = imageObj.getBoundingRect();
-          
-          // Create fabric image from mask
+
           const maskFabricImg = new Image(maskImg, {
             left: imageBounds.left - obj.left,
             top: imageBounds.top - obj.top,
@@ -1066,7 +1055,7 @@ const CustomizerLayout = () => {
             originY: 'top',
             absolutePositioned: false
           });
-          
+
           obj.clipPath = maskFabricImg;
           obj.dirty = true;
           editor.canvas.requestRenderAll();
@@ -1076,7 +1065,6 @@ const CustomizerLayout = () => {
     });
   };
 
-  // Enhanced function to update clipping when object moves
   const updateClippingForObject = (obj) => {
     const canvas = editor?.canvas;
     if (!canvas || !obj || obj.isTshirtBase) return;
@@ -1104,7 +1092,7 @@ const CustomizerLayout = () => {
         size: "L",
         color: "White",
         width: 300,
-        description: "Black Sando",
+        description: "White Sando",
         textTopRatio: 2.8,
         designs: [
           {
@@ -1211,6 +1199,83 @@ const CustomizerLayout = () => {
             offsetY: -60,
             url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967114/2244.preview_f4vowr.png"
           }
+        ],
+        patterns: [
+          {
+            id: 1,
+            name: "Pattern 1",
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752239240/2_1_oazqo6.jpg"
+          },
+          {
+            id: 2,
+            name: "Pattern 2",
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752239240/1_mvfosf.jpg"
+          },
+          {
+            id: 3,
+            name: "Pattern 3",
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143461/2219.preview_p5wup6.png"
+          },
+          {
+            id: 4,
+            name: "Pattern 4",
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143461/2221.preview_ij7u1b.png"
+          },
+          {
+            id: 5,
+            name: "Pattern 5",
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143461/2223.preview_zpedw7.png"
+          },
+          {
+            id: 6,
+            name: "Pattern 6",
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143461/2220.preview_uzy9xy.png"
+          },
+          {
+            id: 7,
+            name: "Pattern 7",
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2226.preview_dkhkth.png"
+          },
+          {
+            id: 8,
+            name: "Pattern 8",
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2225.preview_jopp92.png"
+          },
+          {
+            id: 9,
+            name: "Pattern 9",
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2224.preview_fwheor.png"
+          },
+          {
+            id: 10,
+            name: "Pattern 10",
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2229.preview_yemknx.png"
+          },
+          {
+            id: 11,
+            name: "Pattern 11",
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2227.preview_ixqzpl.png"
+          },
+          {
+            id: 12,
+            name: "Pattern 12",
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2230.preview_mjhidt.png"
+          },
+          {
+            id: 13,
+            name: "Pattern 13",
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2222.preview_poqyfa.png"
+          },
+          {
+            id: 14,
+            name: "Pattern 14",
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143463/2231.preview_eozedv.png"
+          },
+          {
+            id: 15,
+            name: "Pattern 15",
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2228.preview_sy0c6v.png"
+          }
         ]
       }
     ];
@@ -1269,7 +1334,6 @@ const CustomizerLayout = () => {
     import("fabric").then((fabric) => {
       const canvas = editor.canvas;
 
-      // Remove existing text
       canvas.getObjects().forEach((obj) => {
         if (obj.type === "i-text") {
           canvas.remove(obj);
@@ -1292,17 +1356,17 @@ const CustomizerLayout = () => {
         fill: setTextColor,
         fontFamily: setTextFontFamily,
         fontStyle: setFontStyle,
-        selectable: true,          // Text selectable hai
-        evented: true,             // Events enabled hain
-        moveCursor: "move",        // Move cursor
-        hasControls: true,         // Controls visible hain
-        hasBorders: true,          // Borders visible hain
-        lockMovementX: false,      // Movement allowed
-        lockMovementY: false,      // Movement allowed
-        lockScalingX: false,       // Scaling allowed
-        lockScalingY: false,       // Scaling allowed
-        lockRotation: false,       // Rotation allowed
-        editable: true             // Text editing allowed
+        selectable: true,
+        evented: true,
+        moveCursor: "move",
+        hasControls: true,
+        hasBorders: true,
+        lockMovementX: false,
+        lockMovementY: false,
+        lockScalingX: false,
+        lockScalingY: false,
+        lockRotation: false,
+        editable: true
       });
 
       textObject.setControlsVisibility({
@@ -1313,8 +1377,7 @@ const CustomizerLayout = () => {
 
       canvas.add(textObject);
       canvas.setActiveObject(textObject);
-      
-      // Apply clipping immediately
+
       applyClippingToObject(textObject, imageObj);
       canvas.requestRenderAll();
 
@@ -1353,53 +1416,71 @@ const CustomizerLayout = () => {
         import("fabric").then(({ Image }) => {
           const canvas = editor.canvas;
 
-          canvas.getObjects().forEach((obj) => {
-            if (obj.isTshirtBase) canvas.remove(obj);
-          });
+          // Remove ALL existing objects (clear canvas completely)
+          canvas.clear();
 
+          // Calculate scale to fit the uploaded image properly
           const desiredWidth = 300;
           const scale = desiredWidth / img.width;
 
+          // Create new t-shirt base from uploaded image
           const fabricImg = new Image(img, {
             originX: "center",
             originY: "center",
-            selectable: false,      // T-shirt ko selectable nahi banaya
-            evented: false,         // T-shirt ko evented nahi banaya
-            isTshirtBase: true,
+            selectable: false,
+            evented: false,
+            isTshirtBase: true, // Mark as t-shirt base
             scaleX: scale,
             scaleY: scale,
             left: canvas.getWidth() / 2,
             top: canvas.getHeight() / 2,
-            hasControls: false,     // Controls nahi honge
-            hasBorders: false,      // Borders nahi honge
-            lockMovementX: true,    // Movement lock kiya
-            lockMovementY: true,    // Movement lock kiya
-            lockScalingX: true,     // Scaling lock kiya
-            lockScalingY: true,     // Scaling lock kiya
-            lockRotation: true      // Rotation lock kiya
+            hasControls: false,
+            hasBorders: false,
+            lockMovementX: true,
+            lockMovementY: true,
+            lockScalingX: true,
+            lockScalingY: true,
+            lockRotation: true
           });
 
+          // Add the new t-shirt base to canvas
           canvas.add(fabricImg);
           canvas.sendToBack(fabricImg);
-          
-          // Update clipping for all existing objects immediately
-          canvas.getObjects().forEach((obj) => {
-            if (obj !== fabricImg && !obj.isTshirtBase) {
-              applyClippingToObject(obj, fabricImg);
-            }
-          });
-          canvas.requestRenderAll();
+          canvas.renderAll();
 
-          setProducts((prev) => {
-            const updated = [...prev];
-            const lastIndex = updated.length - 1;
-            updated[lastIndex] = {
-              ...updated[lastIndex],
-              image: dataUrl,
-              width: desiredWidth,
-            };
-            return updated;
-          });
+          // Create a completely new product
+          const newProduct = {
+            id: Date.now(), // Unique ID
+            image: dataUrl,
+            size: "Custom",
+            color: "Custom",
+            width: desiredWidth,
+            description: "Custom Upload",
+            textTopRatio: 3.5, // Default text positioning
+            opacity: 100,
+            rotate: 0,
+            alignment: "center",
+            // Copy current text settings if any
+            text: customText,
+            textSize,
+            textSpacing,
+            textArc,
+            fontFamily: setTextFontFamily,
+            fontStyle: setFontStyle,
+            fill: setTextColor,
+            imgflipX: setFlipX,
+            imgflipY: setFlipY,
+            flipX: setTextFlipX,
+            flipY: setTextFlipY,
+          };
+
+          // Replace current products with the new uploaded product
+          setProducts([newProduct]);
+
+          // Update selected product to the new one
+          setSelectedProduct(newProduct);
+
+          console.log("New product created from upload:", newProduct);
         });
       };
     };
@@ -1441,43 +1522,74 @@ const CustomizerLayout = () => {
     canvas.renderAll();
   };
 
+
+
   const updateArrange = (action) => {
-    if (!editor || !editor.canvas) return;
+  if (!editor || !editor.canvas) return;
 
-    const canvas = editor.canvas;
-    const obj = canvas.getActiveObject();
-    if (!obj) return;
+  const canvas = editor.canvas;
+  const obj = canvas.getActiveObject();
+  if (!obj) return;
 
-    switch (action) {
-      case "bringToFront":
-        canvas.bringToFront(obj);
-        break;
-      case "sendToBack":
-        canvas.sendToBack(obj);
-        break;
-      case "bringForward":
-        canvas.bringForward(obj);
-        break;
-      case "sendBackward":
-        canvas.sendBackwards(obj);
-        break;
-    }
+  const objects = canvas.getObjects();
+  const currentIndex = objects.indexOf(obj);
+  
+  if (currentIndex === -1) return;
 
-    canvas.renderAll();
-  };
+  switch (action) {
+    case "bringToFront":
+      // Move to end of array (top layer)
+      if (currentIndex < objects.length - 1) {
+        canvas.remove(obj);
+        canvas.add(obj);
+      }
+      break;
+      
+    case "sendToBack":
+      // Move to beginning of array (bottom layer)
+      if (currentIndex > 0) {
+        canvas.remove(obj);
+        const newObjects = [obj, ...objects.filter(o => o !== obj)];
+        canvas._objects = newObjects;
+        canvas.renderAll();
+      }
+      break;
+      
+    case "bringForward":
+      // Move one step forward
+      if (currentIndex < objects.length - 1) {
+        const nextIndex = currentIndex + 1;
+        [objects[currentIndex], objects[nextIndex]] = [objects[nextIndex], objects[currentIndex]];
+        canvas.renderAll();
+      }
+      break;
+      
+    case "sendBackward":
+      // Move one step backward
+      if (currentIndex > 0) {
+        const prevIndex = currentIndex - 1;
+        [objects[currentIndex], objects[prevIndex]] = [objects[prevIndex], objects[currentIndex]];
+        canvas.renderAll();
+      }
+      break;
+  }
+
+  // Ensure object coordinates are updated
+  obj.setCoords();
+  canvas.renderAll();
+};
 
   const addAndBringToFront = (obj) => {
     const imageObj = editor.canvas.getObjects().find((o) => o.type === "image" && o.isTshirtBase);
-    
+
     editor.canvas.add(obj);
     editor.canvas.bringToFront?.(obj);
     editor.canvas.setActiveObject(obj);
-    
-    // Apply clipping immediately if t-shirt exists
+
     if (imageObj) {
       applyClippingToObject(obj, imageObj);
     }
-    
+
     editor.canvas.requestRenderAll();
   };
 
@@ -1501,17 +1613,17 @@ const CustomizerLayout = () => {
         originY: "center",
         fontSize: 48,
         fill: "#000",
-        selectable: true,          // Emoji selectable hai
-        evented: true,             // Events enabled hain
-        hasBorders: true,          // Borders visible hain
-        hasControls: true,         // Controls visible hain
-        moveCursor: "move",        // Move cursor
-        lockMovementX: false,      // Movement allowed
-        lockMovementY: false,      // Movement allowed
-        lockScalingX: false,       // Scaling allowed
-        lockScalingY: false,       // Scaling allowed
-        lockRotation: false,       // Rotation allowed
-        editable: true             // Editing allowed
+        selectable: true,
+        evented: true,
+        hasBorders: true,
+        hasControls: true,
+        moveCursor: "move",
+        lockMovementX: false,
+        lockMovementY: false,
+        lockScalingX: false,
+        lockScalingY: false,
+        lockRotation: false,
+        editable: true
       });
 
       emojiText.isEmoji = true;
@@ -1543,16 +1655,16 @@ const CustomizerLayout = () => {
           scaleX: scale,
           scaleY: scale,
           name: "design-image",
-          selectable: true,          // Design images movable hain
-          evented: true,             // Events enabled hain
-          hasControls: true,         // Controls visible hain
-          hasBorders: true,          // Borders visible hain
-          moveCursor: "move",        // Move cursor
-          lockMovementX: false,      // Movement allowed
-          lockMovementY: false,      // Movement allowed
-          lockScalingX: false,       // Scaling allowed
-          lockScalingY: false,       // Scaling allowed
-          lockRotation: false        // Rotation allowed
+          selectable: true,
+          evented: true,
+          hasControls: true,
+          hasBorders: true,
+          moveCursor: "move",
+          lockMovementX: false,
+          lockMovementY: false,
+          lockScalingX: false,
+          lockScalingY: false,
+          lockRotation: false
         });
 
         const existing = canvas.getObjects().find(obj => obj.name === "design-image");
@@ -1603,12 +1715,10 @@ const CustomizerLayout = () => {
           top: top + offsetY
         });
 
-        // Apply clipping to design image
         canvas.add(imgInstance);
         canvas.bringToFront(imgInstance);
         canvas.setActiveObject(imgInstance);
-        
-        // Apply clipping immediately
+
         applyClippingToObject(imgInstance, productImage);
         canvas.requestRenderAll();
       };
@@ -1640,17 +1750,17 @@ const CustomizerLayout = () => {
           flipY: lastProduct.flipY,
           angle: lastProduct.rotate || 0,
           opacity: (lastProduct.opacity || 100) / 100,
-          selectable: false,        // Base t-shirt selectable nahi
-          evented: false,           // Events disabled
+          selectable: false,
+          evented: false,
           scaleX: scale,
           scaleY: scale,
-          hasControls: false,       // Controls nahi honge
-          hasBorders: false,        // Borders nahi honge
-          lockMovementX: true,      // Movement locked
-          lockMovementY: true,      // Movement locked
-          lockScalingX: true,       // Scaling locked
-          lockScalingY: true,       // Scaling locked
-          lockRotation: true        // Rotation locked
+          hasControls: false,
+          hasBorders: false,
+          lockMovementX: true,
+          lockMovementY: true,
+          lockScalingX: true,
+          lockScalingY: true,
+          lockRotation: true
         });
 
         fabricImg.customId = lastProduct.id;
@@ -1668,23 +1778,23 @@ const CustomizerLayout = () => {
             originY: "center",
             flipX: lastProduct.flipX,
             flipY: lastProduct.flipY,
-            selectable: true,          // Text selectable hai
-            evented: true,             // Events enabled hain
-            hasControls: true,         // Controls visible hain
-            hasBorders: true,          // Borders visible hain
-            lockMovementX: false,      // Movement allowed
-            lockMovementY: false,      // Movement allowed
-            lockScalingX: false,       // Scaling allowed
-            lockScalingY: false,       // Scaling allowed
-            lockRotation: false,       // Rotation allowed
-            moveCursor: "move",        // Move cursor
-            editable: true             // Text editing allowed
+            selectable: true,
+            evented: true,
+            hasControls: true,
+            hasBorders: true,
+            lockMovementX: false,
+            lockMovementY: false,
+            lockScalingX: false,
+            lockScalingY: false,
+            lockRotation: false,
+            moveCursor: "move",
+            editable: true
           });
 
           textObject.customId = lastProduct.id;
           editor.canvas.add(textObject);
           editor.canvas.setActiveObject(textObject);
-          
+
           // Apply clipping immediately
           applyClippingToObject(textObject, fabricImg);
           editor.canvas.requestRenderAll();
@@ -1797,29 +1907,78 @@ const CustomizerLayout = () => {
   }, [setTextColor, setTextFontFamily, setFontStyle, setTextFlipX, setTextFlipY]);
 
   useEffect(() => {
-    if (!editor || !editor.canvas) return;
+  if (!editor || !editor.canvas) return;
 
-    import("fabric").then(({ Canvas }) => {
-      if (!Canvas.prototype.bringToFront) {
-        Canvas.prototype.bringToFront = function (object) {
+  import("fabric").then(({ Canvas }) => {
+    // Fix bringToFront method
+    if (!Canvas.prototype.bringToFront) {
+      Canvas.prototype.bringToFront = function (object) {
+        const objects = this.getObjects();
+        const currentIndex = objects.indexOf(object);
+        if (currentIndex !== -1 && currentIndex < objects.length - 1) {
           this.remove(object);
           this.add(object);
-        };
-      }
+        }
+        return this;
+      };
+    }
 
-      if (!Canvas.prototype.sendToBack) {
-        Canvas.prototype.sendToBack = function (object) {
+    // Fix sendToBack method - use proper insertAt method
+    if (!Canvas.prototype.sendToBack) {
+      Canvas.prototype.sendToBack = function (object) {
+        const objects = this.getObjects();
+        const currentIndex = objects.indexOf(object);
+        if (currentIndex !== -1 && currentIndex > 0) {
           this.remove(object);
-          this.insertAt(object, 0);
-        };
-      }
-    });
-  }, [editor]);
+          // Use the correct method based on Fabric.js version
+          if (typeof this.insertAt === 'function') {
+            this.insertAt(object, 0);
+          } else {
+            // Alternative method for newer versions
+            objects.splice(0, 0, object);
+            this._objects = objects;
+            this.renderAll();
+          }
+        }
+        return this;
+      };
+    }
+
+    // Fix bringForward method
+    if (!Canvas.prototype.bringForward) {
+      Canvas.prototype.bringForward = function (object) {
+        const objects = this.getObjects();
+        const currentIndex = objects.indexOf(object);
+        if (currentIndex !== -1 && currentIndex < objects.length - 1) {
+          // Swap with next object
+          const nextIndex = currentIndex + 1;
+          [objects[currentIndex], objects[nextIndex]] = [objects[nextIndex], objects[currentIndex]];
+          this.renderAll();
+        }
+        return this;
+      };
+    }
+
+    // Fix sendBackwards method
+    if (!Canvas.prototype.sendBackwards) {
+      Canvas.prototype.sendBackwards = function (object) {
+        const objects = this.getObjects();
+        const currentIndex = objects.indexOf(object);
+        if (currentIndex !== -1 && currentIndex > 0) {
+          // Swap with previous object
+          const prevIndex = currentIndex - 1;
+          [objects[currentIndex], objects[prevIndex]] = [objects[prevIndex], objects[currentIndex]];
+          this.renderAll();
+        }
+        return this;
+      };
+    }
+  });
+}, [editor]);
 
   useEffect(() => {
     if (!editor || !editor.canvas) return;
-    
-    // Set up canvas properties
+
     editor.canvas.selection = true;
     editor.canvas.skipTargetFind = false;
     editor.canvas.hoverCursor = 'move';
@@ -1827,9 +1986,8 @@ const CustomizerLayout = () => {
     editor.canvas.allowTouchScrolling = false;
     editor.canvas.targetFindTolerance = 10;
 
-    // Add event listeners for object movement and scaling
     const canvas = editor.canvas;
-    
+
     const handleObjectMoving = (e) => {
       updateClippingForObject(e.target);
     };
@@ -1846,7 +2004,6 @@ const CustomizerLayout = () => {
       updateClippingForObject(e.target);
     };
 
-    // Add event listeners
     canvas.on('object:moving', handleObjectMoving);
     canvas.on('object:scaling', handleObjectScaling);
     canvas.on('object:rotating', handleObjectRotating);
@@ -1854,7 +2011,6 @@ const CustomizerLayout = () => {
 
     canvas.renderAll();
 
-    // Cleanup function
     return () => {
       canvas.off('object:moving', handleObjectMoving);
       canvas.off('object:scaling', handleObjectScaling);
@@ -1864,12 +2020,34 @@ const CustomizerLayout = () => {
   }, [editor]);
 
   const bringForward = () => {
-    const activeObj = editor?.canvas?.getActiveObject();
-    if (activeObj && typeof editor.canvas.bringForward === "function") {
-      editor.canvas.bringForward(activeObj);
-      editor.canvas.renderAll();
-    }
-  };
+  const canvas = editor?.canvas;
+  const activeObj = canvas?.getActiveObject();
+  
+  if (!activeObj || !canvas) return;
+
+  const objects = canvas.getObjects();
+  const currentIndex = objects.indexOf(activeObj);
+  
+  // Check if object can be moved forward
+  if (currentIndex !== -1 && currentIndex < objects.length - 1) {
+    // Swap with next object
+    const nextIndex = currentIndex + 1;
+    [objects[currentIndex], objects[nextIndex]] = [objects[nextIndex], objects[currentIndex]];
+    
+    // Update canvas objects array
+    canvas._objects = objects;
+    activeObj.setCoords();
+    canvas.renderAll();
+  }
+};
+
+
+useEffect(() => {
+  if (editor?.canvas) {
+    console.log("Canvas initialized with", editor.canvas.getObjects().length, "objects");
+    console.log("Canvas objects:", editor.canvas.getObjects());
+  }
+}, [editor?.canvas]);
 
   return (
     <div className="w-full h-screen flex justify-center items-center bg-gray-100 relative max-w-[1720px] mx-auto">
@@ -1881,30 +2059,36 @@ const CustomizerLayout = () => {
             editor={editor}
             products={products}
             setProducts={setProducts}
+            selectedProduct={selectedProduct}           // Add this
+            setSelectedProduct={setSelectedProduct}     // Add this
+            customText={customText}                     // Add this
+            textSize={textSize}                         // Add this
+            textSpacing={textSpacing}                   // Add this
+            textArc={textArc}                           // Add this
+            setTextFontFamily={setTextFontFamily}       // Add this
+            setFontStyle={setFontStyle}                 // Add this
+            setTextColor={setTextColor}                 // Add this
+            setFlipX={setFlipX}                         // Add this
+            setFlipY={setFlipY}                         // Add this
+            setTextFlipX={setTextFlipX}                 // Add this
+            setTextFlipY={setTextFlipY}                 // Add this
             handleAddCustomText={handleAddCustomText}
-            customText={customText}
             setCustomText={setCustomText}
             updateLastProduct={updateLastProduct}
             showAddModal={showAddModal}
             showEditModal={showEditModal}
             setShowAddModal={setShowAddModal}
             setShowEditModal={setShowEditModal}
-            textSize={textSize}
             setTextSize={setTextSize}
-            textSpacing={textSpacing}
             setTextSpacing={setTextSpacing}
-            textArc={textArc}
             setTextArc={setTextArc}
             handleColorChange={handleColorChange}
             selectedColor={selectedColor}
             setSelectedColor={setSelectedColor}
             addEmojiTextToCanvas={addEmojiTextToCanvas}
             updateArrange={updateArrange}
-            setTextColor={setTextColor}
             setChangeTextColor={setChangeTextColor}
-            setTextFontFamily={setTextFontFamily}
             setChangeFontFamily={setChangeFontFamily}
-            setFontStyle={setFontStyle}
             setChangeFontStyle={setChangeFontStyle}
             setChangeFlipX={setChangeFlipX}
             setChangeFlipy={setChangeFlipy}
