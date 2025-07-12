@@ -44,7 +44,7 @@ const Sidebar = ({
   handleImageUpload,
   bringForward,
   handleAddDesignToCanvas,
-  // New props needed for upload functionality
+
   setProducts,
   selectedProduct,
   setSelectedProduct,
@@ -59,53 +59,41 @@ const Sidebar = ({
   const [showEditorModal, setShowEditorModal] = useState(true);
   const [showImageEditModal, setShowImageEditModal] = useState(false);
   const [showBgColorsModal, setShowBgColorsModal] = useState(false);
-  
-  // Track flow state
+
   const [hasUploadedImage, setHasUploadedImage] = useState(false);
   const [hasAddedText, setHasAddedText] = useState(false);
 
-  // Modified image upload handler
   const handleImageUploadWithTracking = (event) => {
-    // Call the original upload handler which will:
-    // 1. Clear the canvas
-    // 2. Add the new image as t-shirt base
-    // 3. Create a new product
-    // 4. Update products and selectedProduct
     handleImageUpload(event);
-    
     setHasUploadedImage(true);
-    // Auto-switch to preview after upload
     setShowImageEditModal(true);
   };
 
-  // Modified text add handler
   const handleAddCustomTextWithTracking = () => {
     if (customText.trim() !== "") {
       handleAddCustomText();
       setHasAddedText(true);
       setShowAddModal(false);
-      setShowEditModal(true); // Auto-switch to edit text
+      setShowEditModal(true); 
     }
   };
 
-  // Handle tab clicks with flow logic
   const handleTabClick = (key) => {
-    // Reset all modals first
     setShowEditorModal(false);
     setShowImageEditModal(false);
     setShowAddModal(false);
     setShowEditModal(false);
     setShowBgColorsModal(false);
     setShowClipartTab(false);
-    
+
     setActiveTab(key);
-    
+
     if (key === "editor") {
       setShowEditorModal(true);
     }
     if (key === "edit") {
       if (hasUploadedImage) {
-        setShowImageEditModal(true); // Show preview if image uploaded
+        setShowImageEditModal(true); 
       } else {
         // Show edit tab first (for upload)
         // We'll handle this in the render logic
@@ -165,15 +153,16 @@ const Sidebar = ({
             <EditTab handleImageUpload={handleImageUploadWithTracking} />
           )}
           {hasUploadedImage && lastProduct && showImageEditModal && (
-            <PreviewTab 
-              alignFabricObject={alignFabricObject} 
-              setChangeFlipX={setChangeFlipX} 
-              setChangeFlipy={setChangeFlipy}  
-              setShowImageEditModal={setShowImageEditModal} 
-              updateArrange={updateArrange} 
-              products={products} 
-              lastProduct={lastProduct} 
-              updateLastProduct={updateLastProduct} 
+            <PreviewTab
+              editor={editor}
+              alignFabricObject={alignFabricObject}
+              setChangeFlipX={setChangeFlipX}
+              setChangeFlipy={setChangeFlipy}
+              setShowImageEditModal={setShowImageEditModal}
+              updateArrange={updateArrange}
+              products={products}
+              lastProduct={lastProduct}
+              updateLastProduct={updateLastProduct}
             />
           )}
         </>
@@ -216,20 +205,20 @@ const Sidebar = ({
 
       {/* Colors Tab */}
       {activeTab === "colors" && showBgColorsModal && (
-        <SelectColorsTab 
-          setShowBgColorsModal={setShowBgColorsModal} 
-          handleColorChange={handleColorChange} 
-          selectedColor={selectedColor} 
-          setSelectedColor={setSelectedColor} 
+        <SelectColorsTab
+          setShowBgColorsModal={setShowBgColorsModal}
+          handleColorChange={handleColorChange}
+          selectedColor={selectedColor}
+          setSelectedColor={setSelectedColor}
         />
       )}
 
       {/* Clipart Tab */}
       {activeTab === "clipart" && showClipartTab && (
-        <ClipartTab 
-          addEmojiTextToCanvas={addEmojiTextToCanvas} 
-          setShowClipartTab={setShowClipartTab} 
-          lastProduct={lastProduct} 
+        <ClipartTab
+          addEmojiTextToCanvas={addEmojiTextToCanvas}
+          setShowClipartTab={setShowClipartTab}
+          lastProduct={lastProduct}
           handleAddDesignToCanvas={handleAddDesignToCanvas}
         />
       )}

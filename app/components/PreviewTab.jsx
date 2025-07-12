@@ -1,7 +1,6 @@
 "use client"
 
 import React, { useEffect, useCallback } from 'react'
-import { useFabricJSEditor } from "fabricjs-react";
 
 const PreviewTab = ({ 
     alignFabricObject, 
@@ -11,25 +10,25 @@ const PreviewTab = ({
     updateArrange, 
     lastProduct, 
     updateLastProduct, 
-    setShowImageEditModal 
+    setShowImageEditModal,
+    editor 
 }) => {
 
-    const { editor } = useFabricJSEditor();
+    const apiKey = process.env.NEXT_PUBLIC_API_KEY;
     const canvas = editor?.canvas;
+    
+    const [isRemovingBg, setIsRemovingBg] = React.useState(false);
 
-    // Check if canvas is properly initialized
     const isCanvasReady = useCallback(() => {
         return canvas && canvas._objects !== undefined && editor && editor.canvas;
     }, [canvas, editor]);
 
-    // Get only the base layer (t-shirt/product image)
     const getBaseLayerObject = useCallback(() => {
         if (!isCanvasReady()) {
             console.warn("Canvas not ready yet");
             return null;
         }
         
-        // Find the t-shirt base object
         const objects = canvas.getObjects();
         console.log("Available objects:", objects.length);
         console.log("Objects:", objects.map(obj => ({ type: obj.type, isTshirtBase: obj.isTshirtBase })));
@@ -56,57 +55,43 @@ const PreviewTab = ({
         }
 
         try {
-            // Temporarily make base layer selectable for alignment
-            baseObj.set({
-                selectable: true,
-                evented: true
-            });
-            
-            canvas.setActiveObject(baseObj);
-            
-            // If alignFabricObject function exists, use it
-            if (alignFabricObject && typeof alignFabricObject === 'function') {
-                alignFabricObject(baseObj, canvas, alignment);
-            } else {
-                // Fallback alignment logic
-                const canvasCenter = canvas.getCenter();
-                
-                switch (alignment) {
-                    case 'left':
-                        baseObj.set({ left: 0 });
-                        break;
-                    case 'center':
-                        baseObj.set({ left: canvasCenter.left - (baseObj.width * baseObj.scaleX) / 2 });
-                        break;
-                    case 'right':
-                        baseObj.set({ left: canvas.width - (baseObj.width * baseObj.scaleX) });
-                        break;
-                    case 'top':
-                        baseObj.set({ top: 0 });
-                        break;
-                    case 'middle':
-                        baseObj.set({ top: canvasCenter.top - (baseObj.height * baseObj.scaleY) / 2 });
-                        break;
-                    case 'bottom':
-                        baseObj.set({ top: canvas.height - (baseObj.height * baseObj.scaleY) });
-                        break;
-                }
-                console.log(`Aligned object to ${alignment}`);
+            const canvasWidth = canvas.getWidth();
+            const canvasHeight = canvas.getHeight();
+            const objWidth = baseObj.width * baseObj.scaleX;
+            const objHeight = baseObj.height * baseObj.scaleY;
+
+            switch (alignment) {
+                case 'left':
+                    baseObj.set({ left: objWidth / 2 });
+                    break;
+                case 'center':
+                    baseObj.set({ left: canvasWidth / 2 });
+                    break;
+                case 'right':
+                    baseObj.set({ left: canvasWidth - objWidth / 2 });
+                    break;
+                case 'top':
+                    baseObj.set({ top: objHeight / 2 });
+                    break;
+                case 'middle':
+                    baseObj.set({ top: canvasHeight / 2 });
+                    break;
+                case 'bottom':
+                    baseObj.set({ top: canvasHeight - objHeight / 2 });
+                    break;
             }
             
-            // Make it non-selectable again
-            baseObj.set({
-                selectable: false,
-                evented: false
-            });
-            
-            canvas.discardActiveObject();
             baseObj.setCoords();
             canvas.renderAll();
+            console.log(`Aligned object to ${alignment}`);
+            
+            if (updateLastProduct && typeof updateLastProduct === 'function') {
+                updateLastProduct("alignment", alignment);
+            }
         } catch (error) {
             console.error("Error aligning object:", error);
         }
-    }, [canvas, getBaseLayerObject, alignFabricObject, isCanvasReady]);
+    }, [canvas, getBaseLayerObject, updateLastProduct, isCanvasReady]);
 
     const handleFlip = useCallback((direction) => {
         if (!isCanvasReady()) {
@@ -126,7 +111,6 @@ const PreviewTab = ({
                 baseObj.set('flipX', newFlipX);
                 console.log(`Flipped horizontally: ${newFlipX}`);
                 
-                // Update state functions if they exist
                 if (setChangeFlipX && typeof setChangeFlipX === 'function') {
                     setChangeFlipX(newFlipX);
                 }
@@ -138,7 +122,6 @@ const PreviewTab = ({
                 baseObj.set('flipY', newFlipY);
                 console.log(`Flipped vertically: ${newFlipY}`);
                 
-                // Update state functions if they exist
                 if (setChangeFlipy && typeof setChangeFlipy === 'function') {
                     setChangeFlipy(newFlipY);
                 }
@@ -173,7 +156,6 @@ const PreviewTab = ({
             canvas.renderAll();
             console.log(`Opacity changed to: ${value}%`);
             
-            // Update the product state
             if (updateLastProduct && typeof updateLastProduct === 'function') {
                 updateLastProduct("opacity", value);
             }
@@ -201,7 +183,6 @@ const PreviewTab = ({
             canvas.renderAll();
             console.log(`Rotation changed to: ${rotationValue}°`);
             
-            // Update the product state
             if (updateLastProduct && typeof updateLastProduct === 'function') {
                 updateLastProduct("rotate", rotationValue);
             }
@@ -223,50 +204,53 @@ const PreviewTab = ({
         }
 
         try {
-            // Temporarily make selectable for arrange function
-            baseObj.set({
-                selectable: true,
-                evented: true
-            });
-            
-            canvas.setActiveObject(baseObj);
-            
-            // Call the arrange function if it exists
             if (updateArrange && typeof updateArrange === 'function') {
+                baseObj.set({
+                    selectable: true,
+                    evented: true
+                });
+                
+                canvas.setActiveObject(baseObj);
                 updateArrange(action);
+                
+                baseObj.set({
+                    selectable: false,
+                    evented: false
+                });
+                
+                canvas.discardActiveObject();
             } else {
-                // Fallback arrangement logic
                 switch (action) {
                     case 'bringForward':
-                        canvas.bringForward(baseObj);
+                        if (canvas.bringForward) {
+                            canvas.bringForward(baseObj);
+                        }
                         break;
                     case 'bringToFront':
-                        canvas.bringToFront(baseObj);
+                        if (canvas.bringToFront) {
+                            canvas.bringToFront(baseObj);
+                        }
                         break;
                     case 'sendBackward':
-                        canvas.sendBackwards(baseObj);
+                        if (canvas.sendBackwards) {
+                            canvas.sendBackwards(baseObj);
+                        }
                         break;
                     case 'sendToBack':
-                        canvas.sendToBack(baseObj);
+                        if (canvas.sendToBack) {
+                            canvas.sendToBack(baseObj);
+                        }
                         break;
                 }
                 console.log(`Arranged object: ${action}`);
             }
             
-            // Make it non-selectable again
-            baseObj.set({
-                selectable: false,
-                evented: false
-            });
-            
-            canvas.discardActiveObject();
             canvas.renderAll();
         } catch (error) {
             console.error("Error arranging object:", error);
         }
     }, [canvas, getBaseLayerObject, updateArrange, isCanvasReady]);
 
-    // Apply changes from product state to base layer object
     useEffect(() => {
         if (!isCanvasReady() || !lastProduct) return;
 
@@ -276,7 +260,6 @@ const PreviewTab = ({
         try {
             let needsUpdate = false;
 
-            // Apply opacity
             if (lastProduct.opacity !== undefined) {
                 const opacityValue = Math.max(0, Math.min(100, lastProduct.opacity)) / 100;
                 if (Math.abs(baseObj.opacity - opacityValue) > 0.01) {
@@ -285,7 +268,6 @@ const PreviewTab = ({
                 }
             }
 
-            // Apply rotation
             if (lastProduct.rotate !== undefined) {
                 const rotationValue = parseInt(lastProduct.rotate) || 0;
                 if (baseObj.angle !== rotationValue) {
@@ -294,7 +276,6 @@ const PreviewTab = ({
                 }
             }
 
-            // Apply flips
             if (lastProduct.imgflipX !== undefined) {
                 if (baseObj.flipX !== lastProduct.imgflipX) {
                     baseObj.set('flipX', lastProduct.imgflipX);
@@ -319,7 +300,6 @@ const PreviewTab = ({
         }
     }, [canvas, lastProduct, getBaseLayerObject, isCanvasReady]);
 
-    // Get current flip states from base object for UI display
     const getFlipStates = useCallback(() => {
         const baseObj = getBaseLayerObject();
         return {
@@ -330,16 +310,101 @@ const PreviewTab = ({
 
     const flipStates = getFlipStates();
 
-    const handleRemoveBackground = useCallback(() => {
-        console.log("Remove product background clicked");
-        // Add your background removal logic here
-        // You might want to call an API or use a library like @imgly/background-removal
-    }, []);
+    const handleRemoveBackground = useCallback(async () => {
+        if (!isCanvasReady()) {
+            console.warn("Canvas not ready for background removal");
+            return;
+        }
+
+        const baseObj = getBaseLayerObject();
+        if (!baseObj) {
+            console.warn("No base layer object found for background removal");
+            return;
+        }
+
+        try {
+            setIsRemovingBg(true);
+            console.log("Starting background removal...");
+            
+            const currentImageSrc = baseObj.getSrc();
+            if (!currentImageSrc) {
+                console.error("No image source found");
+                return;
+            }
+
+            const response = await fetch(currentImageSrc);
+            const blob = await response.blob();
+            
+            const form = new FormData();
+            form.append("image_file", blob);
+            
+            const clipdropResponse = await fetch("https://clipdrop-api.co/remove-background/v1", {
+                method: "POST",
+                headers: {
+                    "x-api-key": apiKey, 
+                },
+                body: form,
+            });
+
+            if (clipdropResponse.ok) {
+                const buffer = await clipdropResponse.arrayBuffer();
+                const resultBlob = new Blob([buffer], { type: "image/png" });
+                const resultImageUrl = URL.createObjectURL(resultBlob);
+                
+                import("fabric").then(({ Image }) => {
+                    const img = new window.Image();
+                    img.crossOrigin = "anonymous";
+                    img.onload = () => {
+                        const newFabricImg = new Image(img, {
+                            left: baseObj.left,
+                            top: baseObj.top,
+                            originX: baseObj.originX,
+                            originY: baseObj.originY,
+                            scaleX: baseObj.scaleX,
+                            scaleY: baseObj.scaleY,
+                            angle: baseObj.angle,
+                            opacity: baseObj.opacity,
+                            flipX: baseObj.flipX,
+                            flipY: baseObj.flipY,
+                            isTshirtBase: true,
+                            selectable: false,
+                            evented: false,
+                            hasControls: false,
+                            hasBorders: false,
+                            lockMovementX: true,
+                            lockMovementY: true,
+                            lockScalingX: true,
+                            lockScalingY: true,
+                            lockRotation: true
+                        });
+
+                        canvas.remove(baseObj);
+                        canvas.add(newFabricImg);
+                        canvas.sendToBack(newFabricImg);
+                        canvas.renderAll();
+
+                        if (updateLastProduct && typeof updateLastProduct === 'function') {
+                            updateLastProduct("image", resultImageUrl);
+                        }
+
+                        console.log("Background removed successfully!");
+                    };
+                    img.src = resultImageUrl;
+                });
+            } else {
+                console.error("Error removing background:", clipdropResponse.statusText);
+                alert("Failed to remove the background. Please try again.");
+            }
+        } catch (error) {
+            console.error("Remove background error:", error);
+            alert("An error occurred while removing the background. Please try again.");
+        } finally {
+            setIsRemovingBg(false);
+        }
+    }, [canvas, getBaseLayerObject, updateLastProduct, isCanvasReady]);
 
     const handleUpscale = useCallback(() => {
         console.log("Upscale product clicked");
-        // Add your upscaling logic here
-        // You might want to call an AI upscaling API
     }, []);
 
     return (
@@ -487,12 +552,22 @@ const PreviewTab = ({
                     <h3 className='text-[14px] text-black font-semibold'>Product Tools</h3>
 
                     <button 
-                        className='border-[#D3DBDF] border rounded-md py-3 px-8 text-[14px] flex items-center justify-start gap-2 hover:bg-gray-50 transition-colors'
+                        className={`border-[#D3DBDF] border rounded-md py-3 px-8 text-[14px] flex items-center justify-start gap-2 hover:bg-gray-50 transition-colors ${isRemovingBg ? 'opacity-50 cursor-not-allowed' : ''}`}
                         onClick={handleRemoveBackground}
+                        disabled={isRemovingBg}
                     >
                         <span className='flex text-black items-center gap-2'>
-                            <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508617/circle-opacity_zvwbfk.png" alt="" /> 
-                            Remove Background
+                            {isRemovingBg ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                                    Removing...
+                                </>
+                            ) : (
+                                <>
+                                    <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508617/circle-opacity_zvwbfk.png" alt="" /> 
+                                    Remove Background
+                                </>
+                            )}
                         </span>
                     </button>
                     
