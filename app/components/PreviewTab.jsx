@@ -3,13 +3,7 @@
 import React, { useEffect, useCallback } from 'react'
 
 const PreviewTab = ({ 
-    alignFabricObject, 
-    setChangeFlipX, 
-    setChangeFlipy, 
-    products, 
     updateArrange, 
-    lastProduct, 
-    updateLastProduct, 
     setShowImageEditModal,
     editor 
 }) => {
@@ -23,310 +17,189 @@ const PreviewTab = ({
         return canvas && canvas._objects !== undefined && editor && editor.canvas;
     }, [canvas, editor]);
 
-    const getBaseLayerObject = useCallback(() => {
+    const getActiveDesignObject = useCallback(() => {
         if (!isCanvasReady()) {
-            console.warn("Canvas not ready yet");
             return null;
         }
         
-        const objects = canvas.getObjects();
-        console.log("Available objects:", objects.length);
-        console.log("Objects:", objects.map(obj => ({ type: obj.type, isTshirtBase: obj.isTshirtBase })));
-        
-        const baseObj = objects.find(obj => obj.isTshirtBase === true);
-        
-        if (!baseObj) {
-            console.warn("No object with isTshirtBase=true found. Available objects:", objects.length);
+        const activeObj = canvas.getActiveObject();
+        if (activeObj && activeObj.type === "image" && !activeObj.isTshirtBase) {
+            return activeObj;
         }
         
-        return baseObj || null;
+        // If no active object, try to find the most recently added design
+        const objects = canvas.getObjects();
+        const designObjects = objects.filter(obj => 
+            obj.type === "image" && 
+            !obj.isTshirtBase && 
+            obj.name === "design-image"
+        );
+        
+        if (designObjects.length > 0) {
+            return designObjects[designObjects.length - 1];
+        }
+        
+        return null;
     }, [canvas, isCanvasReady]);
 
     const handleAlign = useCallback((alignment) => {
-        if (!isCanvasReady()) {
-            console.warn("Canvas not ready for alignment");
-            return;
-        }
+        if (!isCanvasReady()) return;
 
-        const baseObj = getBaseLayerObject();
-        if (!baseObj) {
-            console.warn("No base layer object found to align. Make sure your base object has isTshirtBase: true");
-            return;
-        }
+        const designObj = getActiveDesignObject();
+        if (!designObj) return;
 
         try {
             const canvasWidth = canvas.getWidth();
             const canvasHeight = canvas.getHeight();
-            const objWidth = baseObj.width * baseObj.scaleX;
-            const objHeight = baseObj.height * baseObj.scaleY;
+            const objWidth = designObj.width * designObj.scaleX;
+            const objHeight = designObj.height * designObj.scaleY;
 
             switch (alignment) {
                 case 'left':
-                    baseObj.set({ left: objWidth / 2 });
+                    designObj.set({ left: objWidth / 2 });
                     break;
                 case 'center':
-                    baseObj.set({ left: canvasWidth / 2 });
+                    designObj.set({ left: canvasWidth / 2 });
                     break;
                 case 'right':
-                    baseObj.set({ left: canvasWidth - objWidth / 2 });
+                    designObj.set({ left: canvasWidth - objWidth / 2 });
                     break;
                 case 'top':
-                    baseObj.set({ top: objHeight / 2 });
+                    designObj.set({ top: objHeight / 2 });
                     break;
                 case 'middle':
-                    baseObj.set({ top: canvasHeight / 2 });
+                    designObj.set({ top: canvasHeight / 2 });
                     break;
                 case 'bottom':
-                    baseObj.set({ top: canvasHeight - objHeight / 2 });
+                    designObj.set({ top: canvasHeight - objHeight / 2 });
                     break;
             }
             
-            baseObj.setCoords();
+            designObj.setCoords();
             canvas.renderAll();
-            console.log(`Aligned object to ${alignment}`);
-            
-            if (updateLastProduct && typeof updateLastProduct === 'function') {
-                updateLastProduct("alignment", alignment);
-            }
         } catch (error) {
-            console.error("Error aligning object:", error);
+            console.error("Error aligning design:", error);
         }
-    }, [canvas, getBaseLayerObject, updateLastProduct, isCanvasReady]);
+    }, [canvas, getActiveDesignObject, isCanvasReady]);
 
     const handleFlip = useCallback((direction) => {
-        if (!isCanvasReady()) {
-            console.warn("Canvas not ready for flipping");
-            return;
-        }
+        if (!isCanvasReady()) return;
 
-        const baseObj = getBaseLayerObject();
-        if (!baseObj) {
-            console.warn("No base layer object found to flip. Make sure your base object has isTshirtBase: true");
-            return;
-        }
+        const designObj = getActiveDesignObject();
+        if (!designObj) return;
 
         try {
             if (direction === 'horizontal') {
-                const newFlipX = !baseObj.flipX;
-                baseObj.set('flipX', newFlipX);
-                console.log(`Flipped horizontally: ${newFlipX}`);
-                
-                if (setChangeFlipX && typeof setChangeFlipX === 'function') {
-                    setChangeFlipX(newFlipX);
-                }
-                if (updateLastProduct && typeof updateLastProduct === 'function') {
-                    updateLastProduct("imgflipX", newFlipX);
-                }
+                const newFlipX = !designObj.flipX;
+                designObj.set('flipX', newFlipX);
             } else if (direction === 'vertical') {
-                const newFlipY = !baseObj.flipY;
-                baseObj.set('flipY', newFlipY);
-                console.log(`Flipped vertically: ${newFlipY}`);
-                
-                if (setChangeFlipy && typeof setChangeFlipy === 'function') {
-                    setChangeFlipy(newFlipY);
-                }
-                if (updateLastProduct && typeof updateLastProduct === 'function') {
-                    updateLastProduct("imgflipY", newFlipY);
-                }
+                const newFlipY = !designObj.flipY;
+                designObj.set('flipY', newFlipY);
             }
             
-            baseObj.setCoords();
+            designObj.setCoords();
             canvas.renderAll();
         } catch (error) {
-            console.error("Error flipping object:", error);
+            console.error("Error flipping design:", error);
         }
-    }, [canvas, getBaseLayerObject, setChangeFlipX, setChangeFlipy, updateLastProduct, isCanvasReady]);
+    }, [canvas, getActiveDesignObject, isCanvasReady]);
 
     const handleOpacityChange = useCallback((value) => {
-        if (!isCanvasReady()) {
-            console.warn("Canvas not ready for opacity change");
-            return;
-        }
+        if (!isCanvasReady()) return;
 
-        const baseObj = getBaseLayerObject();
-        if (!baseObj) {
-            console.warn("No base layer object found to change opacity. Make sure your base object has isTshirtBase: true");
-            return;
-        }
+        const designObj = getActiveDesignObject();
+        if (!designObj) return;
 
         try {
             const opacityValue = Math.max(0, Math.min(100, value)) / 100;
-            baseObj.set('opacity', opacityValue);
-            baseObj.setCoords();
+            designObj.set('opacity', opacityValue);
+            designObj.setCoords();
             canvas.renderAll();
-            console.log(`Opacity changed to: ${value}%`);
-            
-            if (updateLastProduct && typeof updateLastProduct === 'function') {
-                updateLastProduct("opacity", value);
-            }
         } catch (error) {
-            console.error("Error changing opacity:", error);
+            console.error("Error changing design opacity:", error);
         }
-    }, [canvas, getBaseLayerObject, updateLastProduct, isCanvasReady]);
+    }, [canvas, getActiveDesignObject, isCanvasReady]);
 
     const handleRotateChange = useCallback((value) => {
-        if (!isCanvasReady()) {
-            console.warn("Canvas not ready for rotation");
-            return;
-        }
+        if (!isCanvasReady()) return;
 
-        const baseObj = getBaseLayerObject();
-        if (!baseObj) {
-            console.warn("No base layer object found to rotate. Make sure your base object has isTshirtBase: true");
-            return;
-        }
+        const designObj = getActiveDesignObject();
+        if (!designObj) return;
 
         try {
             const rotationValue = parseInt(value) || 0;
-            baseObj.set('angle', rotationValue);
-            baseObj.setCoords();
+            designObj.set('angle', rotationValue);
+            designObj.setCoords();
             canvas.renderAll();
-            console.log(`Rotation changed to: ${rotationValue}°`);
-            
-            if (updateLastProduct && typeof updateLastProduct === 'function') {
-                updateLastProduct("rotate", rotationValue);
-            }
         } catch (error) {
-            console.error("Error rotating object:", error);
+            console.error("Error rotating design:", error);
         }
-    }, [canvas, getBaseLayerObject, updateLastProduct, isCanvasReady]);
+    }, [canvas, getActiveDesignObject, isCanvasReady]);
 
     const handleArrange = useCallback((action) => {
-        if (!isCanvasReady()) {
-            console.warn("Canvas not ready for arranging");
-            return;
-        }
+        if (!isCanvasReady()) return;
 
-        const baseObj = getBaseLayerObject();
-        if (!baseObj) {
-            console.warn("No base layer object found to arrange. Make sure your base object has isTshirtBase: true");
-            return;
-        }
+        const designObj = getActiveDesignObject();
+        if (!designObj) return;
 
         try {
             if (updateArrange && typeof updateArrange === 'function') {
-                baseObj.set({
-                    selectable: true,
-                    evented: true
-                });
-                
-                canvas.setActiveObject(baseObj);
+                canvas.setActiveObject(designObj);
                 updateArrange(action);
-                
-                baseObj.set({
-                    selectable: false,
-                    evented: false
-                });
-                
-                canvas.discardActiveObject();
-            } else {
-                switch (action) {
-                    case 'bringForward':
-                        if (canvas.bringForward) {
-                            canvas.bringForward(baseObj);
-                        }
-                        break;
-                    case 'bringToFront':
-                        if (canvas.bringToFront) {
-                            canvas.bringToFront(baseObj);
-                        }
-                        break;
-                    case 'sendBackward':
-                        if (canvas.sendBackwards) {
-                            canvas.sendBackwards(baseObj);
-                        }
-                        break;
-                    case 'sendToBack':
-                        if (canvas.sendToBack) {
-                            canvas.sendToBack(baseObj);
-                        }
-                        break;
-                }
-                console.log(`Arranged object: ${action}`);
             }
-            
             canvas.renderAll();
         } catch (error) {
-            console.error("Error arranging object:", error);
+            console.error("Error arranging design:", error);
         }
-    }, [canvas, getBaseLayerObject, updateArrange, isCanvasReady]);
-
-    useEffect(() => {
-        if (!isCanvasReady() || !lastProduct) return;
-
-        const baseObj = getBaseLayerObject();
-        if (!baseObj) return;
-
-        try {
-            let needsUpdate = false;
-
-            if (lastProduct.opacity !== undefined) {
-                const opacityValue = Math.max(0, Math.min(100, lastProduct.opacity)) / 100;
-                if (Math.abs(baseObj.opacity - opacityValue) > 0.01) {
-                    baseObj.set('opacity', opacityValue);
-                    needsUpdate = true;
-                }
-            }
-
-            if (lastProduct.rotate !== undefined) {
-                const rotationValue = parseInt(lastProduct.rotate) || 0;
-                if (baseObj.angle !== rotationValue) {
-                    baseObj.set('angle', rotationValue);
-                    needsUpdate = true;
-                }
-            }
-
-            if (lastProduct.imgflipX !== undefined) {
-                if (baseObj.flipX !== lastProduct.imgflipX) {
-                    baseObj.set('flipX', lastProduct.imgflipX);
-                    needsUpdate = true;
-                }
-            }
-            
-            if (lastProduct.imgflipY !== undefined) {
-                if (baseObj.flipY !== lastProduct.imgflipY) {
-                    baseObj.set('flipY', lastProduct.imgflipY);
-                    needsUpdate = true;
-                }
-            }
-
-            if (needsUpdate) {
-                baseObj.setCoords();
-                canvas.renderAll();
-                console.log("Applied product state changes to base object");
-            }
-        } catch (error) {
-            console.error("Error applying product changes:", error);
-        }
-    }, [canvas, lastProduct, getBaseLayerObject, isCanvasReady]);
+    }, [canvas, getActiveDesignObject, updateArrange, isCanvasReady]);
 
     const getFlipStates = useCallback(() => {
-        const baseObj = getBaseLayerObject();
+        const designObj = getActiveDesignObject();
         return {
-            flipX: baseObj?.flipX || false,
-            flipY: baseObj?.flipY || false
+            flipX: designObj?.flipX || false,
+            flipY: designObj?.flipY || false
         };
-    }, [getBaseLayerObject]);
+    }, [getActiveDesignObject]);
+
+    const getDesignProperties = useCallback(() => {
+        const designObj = getActiveDesignObject();
+        if (!designObj) return null;
+        
+        return {
+            opacity: Math.round((designObj.opacity || 1) * 100),
+            rotation: Math.round(designObj.angle || 0),
+            width: Math.round(designObj.width || 0),
+            height: Math.round(designObj.height || 0),
+            imageSrc: designObj.getSrc ? designObj.getSrc() : null
+        };
+    }, [getActiveDesignObject]);
 
     const flipStates = getFlipStates();
+    const designProps = getDesignProperties();
+
+    // Force re-render when design properties change
+    const [, forceUpdate] = React.useReducer(x => x + 1, 0);
+    
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (getActiveDesignObject()) {
+                forceUpdate();
+            }
+        }, 100);
+        
+        return () => clearInterval(interval);
+    }, [getActiveDesignObject]);
 
     const handleRemoveBackground = useCallback(async () => {
-        if (!isCanvasReady()) {
-            console.warn("Canvas not ready for background removal");
-            return;
-        }
+        if (!isCanvasReady()) return;
 
-        const baseObj = getBaseLayerObject();
-        if (!baseObj) {
-            console.warn("No base layer object found for background removal");
-            return;
-        }
+        const designObj = getActiveDesignObject();
+        if (!designObj) return;
 
         try {
             setIsRemovingBg(true);
-            console.log("Starting background removal...");
             
-            const currentImageSrc = baseObj.getSrc();
+            const currentImageSrc = designObj.getSrc();
             if (!currentImageSrc) {
                 console.error("No image source found");
                 return;
@@ -356,233 +229,266 @@ const PreviewTab = ({
                     img.crossOrigin = "anonymous";
                     img.onload = () => {
                         const newFabricImg = new Image(img, {
-                            left: baseObj.left,
-                            top: baseObj.top,
-                            originX: baseObj.originX,
-                            originY: baseObj.originY,
-                            scaleX: baseObj.scaleX,
-                            scaleY: baseObj.scaleY,
-                            angle: baseObj.angle,
-                            opacity: baseObj.opacity,
-                            flipX: baseObj.flipX,
-                            flipY: baseObj.flipY,
-                            isTshirtBase: true,
-                            selectable: false,
-                            evented: false,
-                            hasControls: false,
-                            hasBorders: false,
-                            lockMovementX: true,
-                            lockMovementY: true,
-                            lockScalingX: true,
-                            lockScalingY: true,
-                            lockRotation: true
+                            left: designObj.left,
+                            top: designObj.top,
+                            originX: designObj.originX,
+                            originY: designObj.originY,
+                            scaleX: designObj.scaleX,
+                            scaleY: designObj.scaleY,
+                            angle: designObj.angle,
+                            opacity: designObj.opacity,
+                            flipX: designObj.flipX,
+                            flipY: designObj.flipY,
+                            name: "design-image",
+                            selectable: true,
+                            evented: true,
+                            hasControls: true,
+                            hasBorders: true,
+                            moveCursor: "move",
+                            lockMovementX: false,
+                            lockMovementY: false,
+                            lockScalingX: false,
+                            lockScalingY: false,
+                            lockRotation: false
                         });
 
-                        canvas.remove(baseObj);
+                        canvas.remove(designObj);
                         canvas.add(newFabricImg);
-                        canvas.sendToBack(newFabricImg);
+                        canvas.setActiveObject(newFabricImg);
                         canvas.renderAll();
-
-                        if (updateLastProduct && typeof updateLastProduct === 'function') {
-                            updateLastProduct("image", resultImageUrl);
-                        }
-
-                        console.log("Background removed successfully!");
                     };
                     img.src = resultImageUrl;
                 });
             } else {
-                console.error("Error removing background:", clipdropResponse.statusText);
                 alert("Failed to remove the background. Please try again.");
             }
         } catch (error) {
-            console.error("Remove background error:", error);
             alert("An error occurred while removing the background. Please try again.");
         } finally {
             setIsRemovingBg(false);
         }
-    }, [canvas, getBaseLayerObject, updateLastProduct, isCanvasReady]);
+    }, [canvas, getActiveDesignObject, isCanvasReady]);
 
     const handleUpscale = useCallback(() => {
-        console.log("Upscale product clicked");
+        console.log("Upscale design clicked");
     }, []);
 
     return (
-        <>
-            <div className="bg-white rounded-lg border border-[#D3DBDF] w-80 h-fit max-h-[475px] overflow-y-scroll">
-                <div className='flex items-center justify-between py-2 px-3'>
-                    <div className='flex items-center gap-2'>
-                        <h3 className='text-[16px] text-black font-semibold'>Product Preview</h3>
-                    </div>
-                    <div 
-                        onClick={() => setShowImageEditModal && setShowImageEditModal(false)} 
-                        className='cursor-pointer'
-                    >
-                        <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749341803/Vector_hm0yzo.png" alt="Close" />
-                    </div>
+        <div className="bg-white rounded-lg border border-[#D3DBDF] w-80 h-fit max-h-[600px] overflow-y-auto">
+            <style jsx>{`
+                .slider::-webkit-slider-thumb {
+                    appearance: none;
+                    height: 16px;
+                    width: 16px;
+                    border-radius: 50%;
+                    background: #3559C7;
+                    cursor: pointer;
+                    border: 2px solid #ffffff;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                }
+                .slider::-moz-range-thumb {
+                    height: 16px;
+                    width: 16px;
+                    border-radius: 50%;
+                    background: #3559C7;
+                    cursor: pointer;
+                    border: 2px solid #ffffff;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                }
+            `}</style>
+            <div className='flex items-center justify-between py-2 px-3'>
+                <div className='flex items-center gap-2'>
+                    <h3 className='text-[16px] text-black font-semibold'>Preview</h3>
                 </div>
-                <hr className="border-t border-[#D3DBDF] h-px" />
+                <div 
+                    onClick={() => setShowImageEditModal && setShowImageEditModal(false)} 
+                    className='cursor-pointer'
+                >
+                    <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749341803/Vector_hm0yzo.png" alt="Close" />
+                </div>
+            </div>
+            <hr className="border-t border-[#D3DBDF] h-px" />
 
-                <div className='flex items-center gap-2 py-1 px-3'>
-                    <div className="border border-[#D3DBDF] rounded-lg p-2 w-[35%]">
-                        <img
-                            src={lastProduct?.image || '/placeholder-image.jpg'}
-                            alt="Product Preview"
-                            className="max-h-14 object-contain m-auto"
-                        />
+            {designProps ? (
+                <>
+                    {/* Width x Height Section */}
+                    <div className='flex items-center gap-3 py-3 px-3'>
+                        <div className="border border-[#D3DBDF] rounded-lg p-2 w-[30%]">
+                            {designProps.imageSrc ? (
+                                <img 
+                                    src={designProps.imageSrc} 
+                                    alt="Design" 
+                                    className="w-full h-12 object-contain rounded"
+                                />
+                            ) : (
+                                <div className="w-full h-12 bg-gray-100 rounded flex items-center justify-center">
+                                    <span className="text-xs text-gray-500">Design</span>
+                                </div>
+                            )}
+                        </div>
+                        <div className="flex-1">
+                            <p className="font-semibold text-[12px] text-gray-600 mb-2">Width x Height</p>
+                            <div className='flex items-center gap-2'>
+                                <span className='rounded-full bg-gray-100 py-1 px-2 text-gray-600 text-[11px]'>
+                                    {(designProps.width / 50).toFixed(2)} in
+                                </span>
+                                <span className='rounded-full bg-gray-100 py-1 px-2 text-gray-600 text-[11px]'>
+                                    {(designProps.height / 50).toFixed(2)} in
+                                </span>
+                            </div>
+                        </div>
                     </div>
+                    <hr className="border-t border-[#D3DBDF] h-px" />
 
-                    <div className="p-2 w-[65%]">
-                        <p className="font-semibold text-[14px] text-gray-500">Width x Height</p>
-                        <div className='my-2 flex items-center gap-3'>
-                            <span className='rounded-full bg-gray-100 py-1.5 px-3 text-gray-500 text-[13px]'>
-                                {lastProduct?.width ? (lastProduct.width / 50).toFixed(2) : '6.00'} in
-                            </span>
-                            <span className='rounded-full bg-gray-100 py-1.5 px-3 text-gray-500 text-[13px]'>
-                                {lastProduct?.height ? (lastProduct.height / 50).toFixed(2) : '6.00'} in
+                    {/* Flip Section */}
+                    <div className='flex items-center justify-between py-3 px-3'>
+                        <h3 className='text-[14px] text-black font-semibold'>Flip</h3>
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={() => handleFlip('horizontal')}
+                                className={`p-1 rounded ${flipStates.flipX ? 'bg-blue-100' : 'hover:bg-gray-100'}`}
+                            >
+                                <img
+                                    className="w-[20px] h-[20px]"
+                                    src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507255/tune-vertical_ezas8p.png"
+                                    alt="Flip Horizontal"
+                                />
+                            </button>
+                            <button
+                                onClick={() => handleFlip('vertical')}
+                                className={`p-1 rounded ${flipStates.flipY ? 'bg-blue-100' : 'hover:bg-gray-100'}`}
+                            >
+                                <img
+                                    className="w-[20px] h-[20px]"
+                                    src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507254/flip-vertical_ajs5ur.png"
+                                    alt="Flip Vertical"
+                                />
+                            </button>
+                        </div>
+                    </div>
+                    <hr className="border-t border-[#D3DBDF] h-px" />
+
+                    {/* Alignment Section */}
+                    <div className='py-3 px-3'>
+                        <h3 className='text-[14px] text-black font-semibold mb-3'>Alignment</h3>
+                        <div className="grid grid-cols-6 gap-2">
+                            <button onClick={() => handleAlign("left")} className='p-2 hover:bg-gray-100 rounded'>
+                                <img className='w-[18px] h-[18px] mx-auto' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507255/align-horizontal-left_fbsuoo.png" alt="Left" />
+                            </button>
+                            <button onClick={() => handleAlign("center")} className='p-2 hover:bg-gray-100 rounded'>
+                                <img className='w-[18px] h-[18px] mx-auto' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507255/Frame_46_rrtm82.png" alt="Center" />
+                            </button>
+                            <button onClick={() => handleAlign("right")} className='p-2 hover:bg-gray-100 rounded'>
+                                <img className='w-[18px] h-[18px] mx-auto' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507254/align-horizontal-right_adq5ap.png" alt="Right" />
+                            </button>
+                            <button onClick={() => handleAlign("top")} className='p-2 hover:bg-gray-100 rounded'>
+                                <img className='w-[18px] h-[18px] mx-auto' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507254/align-vertical-top_nmalzx.png" alt="Top" />
+                            </button>
+                            <button onClick={() => handleAlign("middle")} className='p-2 hover:bg-gray-100 rounded'>
+                                <img className='w-[18px] h-[18px] mx-auto' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507254/align-vertical-center_wguxnj.png" alt="Middle" />
+                            </button>
+                            <button onClick={() => handleAlign("bottom")} className='p-2 hover:bg-gray-100 rounded'>
+                                <img className='w-[18px] h-[18px] mx-auto' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507254/align-vertical-bottom_damnnr.png" alt="Bottom" />
+                            </button>
+                        </div>
+                    </div>
+                    <hr className="border-t border-[#D3DBDF] h-px" />
+
+                    {/* Opacity Section */}
+                    <div className='py-3 px-3'>
+                        <label className="text-[14px] text-black font-semibold block mb-2">Opacity</label>
+                        <div className='flex items-center gap-2'>
+                            <input
+                                type="range"
+                                min="0"
+                                max="100"
+                                value={designProps?.opacity || 100}
+                                onChange={(e) => handleOpacityChange(parseInt(e.target.value))}
+                                className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                                style={{
+                                    background: `linear-gradient(to right, #3559C7 0%, #3559C7 ${designProps?.opacity || 100}%, #e5e7eb ${designProps?.opacity || 100}%, #e5e7eb 100%)`
+                                }}
+                            />
+                            <span className='border border-[#D3DBDF] min-w-12 text-center rounded-md text-[12px] py-1 px-2'>
+                                {designProps?.opacity || 100}%
                             </span>
                         </div>
                     </div>
-                </div>
-                <hr className="border-t border-[#D3DBDF] h-px" />
+                    <hr className="border-t border-[#D3DBDF] h-px" />
 
-                <div className='flex items-center justify-between py-3 px-3'>
-                    <div className='flex items-center gap-2'>
-                        <h3 className='text-[14px] text-black font-semibold'>Flip Product</h3>
+                    {/* Rotate Section */}
+                    <div className='py-3 px-3'>
+                        <label className="text-[14px] text-black font-semibold block mb-2">Rotate</label>
+                        <div className='flex items-center gap-2'>
+                            <input
+                                type="range"
+                                min="0"
+                                max="360"
+                                value={designProps?.rotation || 0}
+                                onChange={(e) => handleRotateChange(parseInt(e.target.value))}
+                                className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                                style={{
+                                    background: `linear-gradient(to right, #3559C7 0%, #3559C7 ${((designProps?.rotation || 0) / 360) * 100}%, #e5e7eb ${((designProps?.rotation || 0) / 360) * 100}%, #e5e7eb 100%)`
+                                }}
+                            />
+                            <span className='border border-[#D3DBDF] min-w-12 text-center rounded-md text-[12px] py-1 px-2'>
+                                {designProps?.rotation || 0}°
+                            </span>
+                        </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                        <img
-                            className={`w-[22px] cursor-pointer hover:opacity-70 transition-opacity ${flipStates.flipX ? 'ring-2 ring-blue-500 rounded' : ''}`}
-                            src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507255/tune-vertical_ezas8p.png"
-                            alt="Flip Product Horizontal"
-                            onClick={() => handleFlip('horizontal')}
-                        />
-                        <img
-                            className={`w-[22px] cursor-pointer hover:opacity-70 transition-opacity ${flipStates.flipY ? 'ring-2 ring-blue-500 rounded' : ''}`}
-                            src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507254/flip-vertical_ajs5ur.png"
-                            alt="Flip Product Vertical"
-                            onClick={() => handleFlip('vertical')}
-                        />
+                    <hr className="border-t border-[#D3DBDF] h-px" />
+
+                    {/* Arrange Section */}
+                    <div className='py-3 px-3'>
+                        <h3 className='text-[14px] text-black font-semibold mb-3'>Arrange</h3>
+                        <div className="flex items-center gap-4">
+                            <button onClick={() => handleArrange("bringForward")} className='p-2 hover:bg-gray-100 rounded'>
+                                <img className='w-[18px] h-[18px]' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508122/arrange-bring-forward_vigco4.png" alt="Forward" />
+                            </button>
+                            <button onClick={() => handleArrange("bringToFront")} className='p-2 hover:bg-gray-100 rounded'>
+                                <img className='w-[18px] h-[18px]' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508122/arrange-bring-to-front_povosv.png" alt="Front" />
+                            </button>
+                            <button onClick={() => handleArrange("sendBackward")} className='p-2 hover:bg-gray-100 rounded'>
+                                <img className='w-[18px] h-[18px]' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508122/arrange-send-backward_buzw6f.png" alt="Backward" />
+                            </button>
+                            <button onClick={() => handleArrange("sendToBack")} className='p-2 hover:bg-gray-100 rounded'>
+                                <img className='w-[18px] h-[18px]' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508121/arrange-send-to-back_bcyzlu.png" alt="Back" />
+                            </button>
+                        </div>
                     </div>
-                </div>
+                    <hr className="border-t border-[#D3DBDF] h-px" />
 
-                <hr className="border-t border-[#D3DBDF] h-px" />
+                    {/* Tools Section */}
+                    <div className='py-3 px-3'>
+                        <h3 className='text-[14px] text-black font-semibold mb-3'>Tools</h3>
 
-                <div className='flex flex-col gap-3 justify-between py-3 px-3'>
-                    <h3 className='text-[14px] text-black font-semibold'>Product Alignment</h3>
-                    <div className="grid grid-cols-7 gap-5">
-                        <img onClick={() => handleAlign("left")} className='w-[20px] cursor-pointer hover:opacity-70 transition-opacity' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507255/align-horizontal-left_fbsuoo.png" alt="Align Left" />
-                        <img onClick={() => handleAlign("center")} className='w-[20px] cursor-pointer hover:opacity-70 transition-opacity' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507255/Frame_46_rrtm82.png" alt="Align Center" />
-                        <img onClick={() => handleAlign("right")} className='w-[20px] cursor-pointer hover:opacity-70 transition-opacity' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507254/align-horizontal-right_adq5ap.png" alt="Align Right" />
-                        <img onClick={() => handleAlign("top")} className='w-[20px] cursor-pointer hover:opacity-70 transition-opacity' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507254/align-vertical-top_nmalzx.png" alt="Align Top" />
-                        <img onClick={() => handleAlign("middle")} className='w-[20px] cursor-pointer hover:opacity-70 transition-opacity' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507254/align-vertical-center_wguxnj.png" alt="Align Middle" />
-                        <img onClick={() => handleAlign("bottom")} className='w-[20px] cursor-pointer hover:opacity-70 transition-opacity' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507254/align-vertical-bottom_damnnr.png" alt="Align Bottom" />
-                        <img onClick={() => updateLastProduct && updateLastProduct("textAlign", "justify")} className='w-[20px] cursor-pointer hover:opacity-70 transition-opacity' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507254/format-align-justify_qzuiww.png" alt="Justify" />
+                        <button 
+                            className={`w-full border border-gray-300 rounded-md py-3 text-[14px] flex items-center justify-start gap-3 mb-3 hover:bg-gray-50 transition-colors ${isRemovingBg ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            onClick={handleRemoveBackground}
+                            disabled={isRemovingBg}
+                        >
+                            <img className="w-4 h-4 ml-3" src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508617/circle-opacity_zvwbfk.png" alt="" />
+                            <span className='text-black'>
+                                {isRemovingBg ? 'Removing...' : 'Remove Background'}
+                            </span>
+                        </button>
+                        
+                        <button 
+                            className='w-full border border-gray-300 rounded-md py-3 text-[14px] flex items-center justify-start gap-3 hover:bg-gray-50 transition-colors'
+                            onClick={handleUpscale}
+                        >
+                            <img className="w-4 h-4 ml-3" src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508617/move-resize-variant_karpuj.png" alt="" />
+                            <span className='text-black'>Upscale</span>
+                        </button>
                     </div>
+                </>
+            ) : (
+                <div className="p-6 text-center text-gray-500">
+                    <p className="text-[14px]">No design selected</p>
+                    <p className="text-[12px] mt-1">Upload a design to start editing</p>
                 </div>
-
-                <hr className="border-t border-[#D3DBDF] h-px" />
-
-                <div className='flex flex-col gap-3 justify-between py-3 px-3'>
-                    <label className="text-[14px] text-black font-medium">Product Opacity</label>
-                    <div className='flex items-center gap-2'>
-                        <input
-                            type="range"
-                            min="0"
-                            max="100"
-                            value={lastProduct?.opacity || 100}
-                            onChange={(e) => handleOpacityChange(parseInt(e.target.value))}
-                            className="w-full flex-1"
-                        />
-                        <span className='border border-[#D3DBDF] min-w-10 text-center rounded-md text-[14px] p-1'>
-                            {lastProduct?.opacity || 100}%
-                        </span>
-                    </div>
-
-                    <label className="text-[14px] text-black font-medium">Product Rotation</label>
-                    <div className='flex items-center gap-2'>
-                        <input
-                            type="range"
-                            min="0"
-                            max="360"
-                            value={lastProduct?.rotate || 0}
-                            onChange={(e) => handleRotateChange(parseInt(e.target.value))}
-                            className="w-full flex-1"
-                        />
-                        <span className='border border-[#D3DBDF] min-w-10 text-center rounded-md text-[14px] p-1'>
-                            {lastProduct?.rotate || 0}°
-                        </span>
-                    </div>
-                </div>
-                <hr className="border-t border-[#D3DBDF] h-px" />
-
-                <div className='flex flex-col gap-3 justify-between py-3 px-3'>
-                    <h3 className='text-[14px] text-black font-semibold'>Product Layer</h3>
-                    <div className="flex items-center gap-7">
-                        <img 
-                            onClick={() => handleArrange("bringForward")} 
-                            className='w-[20px] cursor-pointer hover:opacity-70 transition-opacity' 
-                            src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508122/arrange-bring-forward_vigco4.png" 
-                            alt="Bring Forward" 
-                        />
-                        <img 
-                            onClick={() => handleArrange("bringToFront")} 
-                            className='w-[20px] cursor-pointer hover:opacity-70 transition-opacity' 
-                            src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508122/arrange-bring-to-front_povosv.png" 
-                            alt="Bring To Front" 
-                        />
-                        <img 
-                            onClick={() => handleArrange("sendBackward")} 
-                            className='w-[20px] cursor-pointer hover:opacity-70 transition-opacity' 
-                            src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508122/arrange-send-backward_buzw6f.png" 
-                            alt="Send Backward" 
-                        />
-                        <img 
-                            onClick={() => handleArrange("sendToBack")} 
-                            className='w-[20px] cursor-pointer hover:opacity-70 transition-opacity' 
-                            src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508121/arrange-send-to-back_bcyzlu.png" 
-                            alt="Send To Back" 
-                        />
-                    </div>
-                </div>
-
-                <hr className="border-t border-[#D3DBDF] h-px" />
-
-                <div className='flex flex-col gap-3 py-3 px-3'>
-                    <h3 className='text-[14px] text-black font-semibold'>Product Tools</h3>
-
-                    <button 
-                        className={`border-[#D3DBDF] border rounded-md py-3 px-8 text-[14px] flex items-center justify-start gap-2 hover:bg-gray-50 transition-colors ${isRemovingBg ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        onClick={handleRemoveBackground}
-                        disabled={isRemovingBg}
-                    >
-                        <span className='flex text-black items-center gap-2'>
-                            {isRemovingBg ? (
-                                <>
-                                    <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
-                                    Removing...
-                                </>
-                            ) : (
-                                <>
-                                    <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508617/circle-opacity_zvwbfk.png" alt="" /> 
-                                    Remove Background
-                                </>
-                            )}
-                        </span>
-                    </button>
-                    
-                    <button 
-                        className='border-[#D3DBDF] border rounded-md py-3 px-8 text-[14px] flex items-center justify-start gap-2 hover:bg-gray-50 transition-colors'
-                        onClick={handleUpscale}
-                    >
-                        <span className='flex text-black items-center gap-2'>
-                            <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508617/move-resize-variant_karpuj.png" alt="" /> 
-                            Upscale
-                        </span>
-                    </button>
-                </div>
-            </div>
-        </>
+            )}
+        </div>
     )
 }
 

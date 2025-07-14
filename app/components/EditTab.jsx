@@ -1,40 +1,64 @@
 import React, { useState } from 'react'
 
-const EditTab = ({ handleImageUpload }) => {
+const EditTab = ({ handleAddDesignToCanvas, editor, setShowImageEditModal, setHasUploadedImage }) => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
 
     const handleFileSelect = (e) => {
         const file = e.target.files[0];
-        if (file) {
+        if (file && file.type.startsWith('image/')) {
+            // Check file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File size must be less than 5MB');
+                return;
+            }
             setSelectedFile(file);
+        } else {
+            alert('Please select a valid image file (JPG, PNG, SVG)');
         }
     };
 
-    const handleUploadClick = async () => {
-        if (!selectedFile) return;
+    const handleUploadDesign = async () => {
+        if (!selectedFile || !editor?.canvas) return;
         
         setIsUploading(true);
         
-        // Create a fake event object to pass to handleImageUpload
-        const fakeEvent = {
-            target: {
-                files: [selectedFile]
-            }
-        };
-        
         try {
-            await handleImageUpload(fakeEvent);
-            setSelectedFile(null); // Clear selection after successful upload
+            // Create a URL from the selected file
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const imageUrl = e.target.result;
+                
+                // Add the design to canvas using the existing function
+                if (handleAddDesignToCanvas) {
+                    handleAddDesignToCanvas(imageUrl, "center", 0, 0);
+                    
+                    // After successful upload, switch to preview mode
+                    setTimeout(() => {
+                        if (setHasUploadedImage) {
+                            setHasUploadedImage(true);
+                        }
+                        if (setShowImageEditModal) {
+                            setShowImageEditModal(true);
+                        }
+                    }, 500);
+                }
+                
+                // Clear selection after successful upload
+                setSelectedFile(null);
+            };
+            
+            reader.readAsDataURL(selectedFile);
         } catch (error) {
-            console.error("Upload failed:", error);
+            console.error("Design upload failed:", error);
+            alert("Failed to upload design. Please try again.");
         } finally {
             setIsUploading(false);
         }
     };
 
     return (
-        <div className="bg-white rounded-lg border border-[#D3DBDF] w-80 h-fit max-h-[530px] overflow-y-scroll">
+        <div className="bg-white rounded-lg border border-[#D3DBDF] w-80 h-fit">
             <div className='flex items-center justify-between py-2 px-3'>
                 <div className='flex items-center gap-2'>
                     <h3 className='text-[16px] font-semibold'>Edit</h3>
@@ -45,41 +69,39 @@ const EditTab = ({ handleImageUpload }) => {
             </div>
             <hr className="border-t border-[#D3DBDF] h-px" />
 
-            <div className='py-3 px-4'>
-                <div className='flex flex-col gap-2'>
-                    <h3 className='text-[14px]'>Upload your design</h3>
-                    <label className="block bg-[#E4E9EC] py-8 px-4 rounded-lg cursor-pointer">
+            <div className='py-6 px-6'>
+                <div className='flex flex-col gap-4'>
+                    <h3 className='text-[14px] font-medium'>Original vector artwork best, if you have?</h3>
+                    
+                    <label className="block bg-[#E4E9EC] py-12 px-4 rounded-lg cursor-pointer hover:bg-[#d9e2e6] transition-colors">
                         <input 
                             type="file" 
                             accept="image/*" 
                             className="hidden" 
                             onChange={handleFileSelect} 
                         />
-                        <p className="text-[#3559C7] font-semibold text-center text-[14px]">
-                            {selectedFile ? selectedFile.name : "Choose a file"}
-                        </p>
-                        <p className='text-gray-500 mt-1 text-center text-[14px]'>
-                            We support JPG, PNG, SVG<br />Max 5MB
-                        </p>
+                        <div className="text-center">
+                            <div className="bg-[#3559C7] text-white px-6 py-2 rounded-md inline-block mb-3">
+                                {selectedFile ? selectedFile.name : "Choose a file"}
+                            </div>
+                            <p className='text-gray-500 text-[12px]'>
+                                We support JPG, PNG, EAPS<br />
+                                An max 5 MB
+                            </p>
+                        </div>
                     </label>
 
                     <button 
-                        onClick={handleUploadClick}
-                        disabled={!selectedFile || isUploading}
-                        className={`rounded-md py-2 text-[14px] font-semibold ${
-                            selectedFile && !isUploading 
-                                ? 'text-white bg-blue-600 hover:bg-blue-700' 
-                                : 'bg-[#D7DEF4] text-[#AEBDEA] cursor-not-allowed'
+                        onClick={handleUploadDesign}
+                        disabled={!selectedFile || isUploading || !editor?.canvas}
+                        className={`w-full rounded-md py-3 text-[14px] font-medium cursor-pointer transition-colors ${
+                            selectedFile && !isUploading && editor?.canvas
+                                ? 'text-white bg-[#3559C7] hover:bg-[#2a47a3]' 
+                                : 'bg-[#E6E9F3] text-[#B8C5E8] cursor-not-allowed'
                         }`}
                     >
-                        {isUploading ? 'Uploading...' : 'Upload Design'}
+                        {isUploading ? 'Uploading...' : 'Upload'}
                     </button>
-                    
-                    {selectedFile && (
-                        <p className="text-xs text-gray-600 mt-1">
-                            Selected: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
-                        </p>
-                    )}
                 </div>
             </div>
         </div>

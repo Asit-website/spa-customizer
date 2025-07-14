@@ -44,7 +44,6 @@ const Sidebar = ({
   handleImageUpload,
   bringForward,
   handleAddDesignToCanvas,
-
   setProducts,
   selectedProduct,
   setSelectedProduct,
@@ -62,12 +61,6 @@ const Sidebar = ({
 
   const [hasUploadedImage, setHasUploadedImage] = useState(false);
   const [hasAddedText, setHasAddedText] = useState(false);
-
-  const handleImageUploadWithTracking = (event) => {
-    handleImageUpload(event);
-    setHasUploadedImage(true);
-    setShowImageEditModal(true);
-  };
 
   const handleAddCustomTextWithTracking = () => {
     if (customText.trim() !== "") {
@@ -95,15 +88,14 @@ const Sidebar = ({
       if (hasUploadedImage) {
         setShowImageEditModal(true); 
       } else {
-        // Show edit tab first (for upload)
-        // We'll handle this in the render logic
+        // Show edit tab for upload
       }
     }
     if (key === "text") {
       if (hasAddedText) {
-        setShowEditModal(true); // Show edit text if text already added
+        setShowEditModal(true);
       } else {
-        setShowAddModal(true); // Show add text first
+        setShowAddModal(true);
       }
     }
     if (key === "colors") {
@@ -115,8 +107,8 @@ const Sidebar = ({
   };
 
   return (
-    <div className="absolute top-24 sm:top-28 left-7 w-[35%]  flex gap-5 z-50 flex-col sm:flex-row">
-      <div className="bg-white p-5 rounded-lg border border-[#D3DBDF] flex flex-row sm:flex-col h-fit items-center justify-between sm:justify-normal gap-6 ">
+    <div className="absolute top-24 sm:top-28 left-7 w-[35%] flex gap-5 z-50 flex-col sm:flex-row">
+      <div className="bg-white p-5 rounded-lg border border-[#D3DBDF] flex flex-row sm:flex-col h-fit items-center justify-between sm:justify-normal gap-6">
         {[
           { key: "editor", label: "Editor", icon: "Frame_4_vzkhrn" },
           { key: "edit", label: "Edit", icon: "pencil-outline_c6lwsj" },
@@ -150,19 +142,18 @@ const Sidebar = ({
       {activeTab === "edit" && (
         <>
           {!hasUploadedImage && (
-            <EditTab handleImageUpload={handleImageUploadWithTracking} />
+            <EditTab 
+              handleAddDesignToCanvas={handleAddDesignToCanvas} 
+              editor={editor}
+              setShowImageEditModal={setShowImageEditModal}
+              setHasUploadedImage={setHasUploadedImage}
+            />
           )}
-          {hasUploadedImage && lastProduct && showImageEditModal && (
+          {hasUploadedImage && showImageEditModal && (
             <PreviewTab
               editor={editor}
-              alignFabricObject={alignFabricObject}
-              setChangeFlipX={setChangeFlipX}
-              setChangeFlipy={setChangeFlipy}
               setShowImageEditModal={setShowImageEditModal}
               updateArrange={updateArrange}
-              products={products}
-              lastProduct={lastProduct}
-              updateLastProduct={updateLastProduct}
             />
           )}
         </>
