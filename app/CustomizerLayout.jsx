@@ -6,6 +6,8 @@ import Sidebar from "./components/Sidebar";
 import RightSmallPreview from "./components/RightSmallPreview";
 import { FaMinus, FaPlus } from "react-icons/fa6";
 import { FabricJSCanvas, useFabricJSEditor } from "fabricjs-react";
+import LayerContextMenu from "./components/LayerContextMenu";
+import useCanvasContextMenu from "./hooks/useCanvasContextMenu";
 
 const CustomizerLayout = () => {
 
@@ -19,6 +21,7 @@ const CustomizerLayout = () => {
       };
     }
   });
+
 
   const textColor = "#000";
   const fontFamily = "Ubuntu";
@@ -50,6 +53,19 @@ const CustomizerLayout = () => {
   const [setFlipY, setChangeFlipy] = useState(false);
   const [setTextFlipX, setChangeTextFlipX] = useState(false);
   const [setTextFlipY, setChangeTextFlipY] = useState(false);
+
+  const {
+    contextMenu,
+    closeContextMenu,
+    handleDelete,
+    handleLock,
+    handleFlipHorizontal,
+    handleFlipVertical,
+    handleBringToFront,
+    handleBringForward,
+    handleSendBackward,
+    handleSendToBack
+  } = useCanvasContextMenu(editor);
 
   const createClippingPath = (imageObj) => {
     if (!imageObj || !editor?.canvas) return null;
@@ -614,59 +630,59 @@ const CustomizerLayout = () => {
 
 
   const updateArrange = (action) => {
-  if (!editor || !editor.canvas) return;
+    if (!editor || !editor.canvas) return;
 
-  const canvas = editor.canvas;
-  const obj = canvas.getActiveObject();
-  if (!obj) return;
+    const canvas = editor.canvas;
+    const obj = canvas.getActiveObject();
+    if (!obj) return;
 
-  const objects = canvas.getObjects();
-  const currentIndex = objects.indexOf(obj);
-  
-  if (currentIndex === -1) return;
+    const objects = canvas.getObjects();
+    const currentIndex = objects.indexOf(obj);
 
-  switch (action) {
-    case "bringToFront":
-      // Move to end of array (top layer)
-      if (currentIndex < objects.length - 1) {
-        canvas.remove(obj);
-        canvas.add(obj);
-      }
-      break;
-      
-    case "sendToBack":
-      // Move to beginning of array (bottom layer)
-      if (currentIndex > 0) {
-        canvas.remove(obj);
-        const newObjects = [obj, ...objects.filter(o => o !== obj)];
-        canvas._objects = newObjects;
-        canvas.renderAll();
-      }
-      break;
-      
-    case "bringForward":
-      // Move one step forward
-      if (currentIndex < objects.length - 1) {
-        const nextIndex = currentIndex + 1;
-        [objects[currentIndex], objects[nextIndex]] = [objects[nextIndex], objects[currentIndex]];
-        canvas.renderAll();
-      }
-      break;
-      
-    case "sendBackward":
-      // Move one step backward
-      if (currentIndex > 0) {
-        const prevIndex = currentIndex - 1;
-        [objects[currentIndex], objects[prevIndex]] = [objects[prevIndex], objects[currentIndex]];
-        canvas.renderAll();
-      }
-      break;
-  }
+    if (currentIndex === -1) return;
 
-  // Ensure object coordinates are updated
-  obj.setCoords();
-  canvas.renderAll();
-};
+    switch (action) {
+      case "bringToFront":
+        // Move to end of array (top layer)
+        if (currentIndex < objects.length - 1) {
+          canvas.remove(obj);
+          canvas.add(obj);
+        }
+        break;
+
+      case "sendToBack":
+        // Move to beginning of array (bottom layer)
+        if (currentIndex > 0) {
+          canvas.remove(obj);
+          const newObjects = [obj, ...objects.filter(o => o !== obj)];
+          canvas._objects = newObjects;
+          canvas.renderAll();
+        }
+        break;
+
+      case "bringForward":
+        // Move one step forward
+        if (currentIndex < objects.length - 1) {
+          const nextIndex = currentIndex + 1;
+          [objects[currentIndex], objects[nextIndex]] = [objects[nextIndex], objects[currentIndex]];
+          canvas.renderAll();
+        }
+        break;
+
+      case "sendBackward":
+        // Move one step backward
+        if (currentIndex > 0) {
+          const prevIndex = currentIndex - 1;
+          [objects[currentIndex], objects[prevIndex]] = [objects[prevIndex], objects[currentIndex]];
+          canvas.renderAll();
+        }
+        break;
+    }
+
+    // Ensure object coordinates are updated
+    obj.setCoords();
+    canvas.renderAll();
+  };
 
   const addAndBringToFront = (obj) => {
     const imageObj = editor.canvas.getObjects().find((o) => o.type === "image" && o.isTshirtBase);
@@ -813,6 +829,98 @@ const CustomizerLayout = () => {
       };
     });
   };
+
+  // Improved addIconToCanvas function
+const addIconToCanvas = async (iconData) => {
+  if (!editor || !editor.canvas) return;
+
+  try {
+    // Get SVG from Iconify API
+    const response = await fetch(`https://api.iconify.design/${iconData.name}.svg?color=%23000000&width=64&height=64`);
+    const svgText = await response.text();
+
+    // Convert SVG to data URL
+    const svgBlob = new Blob([svgText], { type: 'image/svg+xml' });
+    const svgUrl = URL.createObjectURL(svgBlob);
+
+    import("fabric").then(({ Image }) => {
+      const canvas = editor.canvas;
+
+      // Create image from SVG
+      Image.fromURL(svgUrl, (img) => {
+        img.set({
+          left: canvas.getWidth() / 2,
+          top: canvas.getHeight() / 2,
+          originX: "center",
+          originY: "center",
+          scaleX: 0.8,
+          scaleY: 0.8,
+          selectable: true,
+          evented: true,
+          hasControls: true,
+          hasBorders: true,
+          moveCursor: "move",
+          lockMovementX: false,
+          lockMovementY: false,
+          lockScalingX: false,
+          lockScalingY: false,
+          lockRotation: false
+        });
+
+        img.isIcon = true;
+        img.iconData = iconData;
+        img.name = "icon-image";
+
+        // Add to canvas
+        const imageObj = canvas.getObjects().find((o) => o.type === "image" && o.isTshirtBase);
+        
+        canvas.add(img);
+        canvas.bringToFront(img);
+        canvas.setActiveObject(img);
+
+        if (imageObj) {
+          applyClippingToObject(img, imageObj);
+        }
+
+        canvas.requestRenderAll();
+
+        // Clean up the blob URL
+        URL.revokeObjectURL(svgUrl);
+      });
+    });
+
+  } catch (error) {
+    console.error('Failed to load icon:', error);
+    
+    // Fallback to symbol
+    import("fabric").then(({ IText }) => {
+      const canvas = editor.canvas;
+      const iconText = new IText('🔸', {
+        left: canvas.getWidth() / 2,
+        top: canvas.getHeight() / 2,
+        originX: "center",
+        originY: "center",
+        fontSize: 48,
+        fill: "#000",
+        selectable: true,
+        evented: true,
+        hasControls: true,
+        hasBorders: true
+      });
+
+      iconText.isIcon = true;
+      canvas.add(iconText);
+      canvas.setActiveObject(iconText);
+
+      const imageObj = canvas.getObjects().find((o) => o.type === "image" && o.isTshirtBase);
+      if (imageObj) {
+        applyClippingToObject(iconText, imageObj);
+      }
+
+      canvas.requestRenderAll();
+    });
+  }
+};
 
   useEffect(() => {
     if (!editor || products.length === 0) return;
@@ -996,74 +1104,74 @@ const CustomizerLayout = () => {
   }, [setTextColor, setTextFontFamily, setFontStyle, setTextFlipX, setTextFlipY]);
 
   useEffect(() => {
-  if (!editor || !editor.canvas) return;
+    if (!editor || !editor.canvas) return;
 
-  import("fabric").then(({ Canvas }) => {
-    // Fix bringToFront method
-    if (!Canvas.prototype.bringToFront) {
-      Canvas.prototype.bringToFront = function (object) {
-        const objects = this.getObjects();
-        const currentIndex = objects.indexOf(object);
-        if (currentIndex !== -1 && currentIndex < objects.length - 1) {
-          this.remove(object);
-          this.add(object);
-        }
-        return this;
-      };
-    }
+    import("fabric").then(({ Canvas }) => {
+      // Fix bringToFront method
+      if (!Canvas.prototype.bringToFront) {
+        Canvas.prototype.bringToFront = function (object) {
+          const objects = this.getObjects();
+          const currentIndex = objects.indexOf(object);
+          if (currentIndex !== -1 && currentIndex < objects.length - 1) {
+            this.remove(object);
+            this.add(object);
+          }
+          return this;
+        };
+      }
 
-    // Fix sendToBack method - use proper insertAt method
-    if (!Canvas.prototype.sendToBack) {
-      Canvas.prototype.sendToBack = function (object) {
-        const objects = this.getObjects();
-        const currentIndex = objects.indexOf(object);
-        if (currentIndex !== -1 && currentIndex > 0) {
-          this.remove(object);
-          // Use the correct method based on Fabric.js version
-          if (typeof this.insertAt === 'function') {
-            this.insertAt(object, 0);
-          } else {
-            // Alternative method for newer versions
-            objects.splice(0, 0, object);
-            this._objects = objects;
+      // Fix sendToBack method - use proper insertAt method
+      if (!Canvas.prototype.sendToBack) {
+        Canvas.prototype.sendToBack = function (object) {
+          const objects = this.getObjects();
+          const currentIndex = objects.indexOf(object);
+          if (currentIndex !== -1 && currentIndex > 0) {
+            this.remove(object);
+            // Use the correct method based on Fabric.js version
+            if (typeof this.insertAt === 'function') {
+              this.insertAt(object, 0);
+            } else {
+              // Alternative method for newer versions
+              objects.splice(0, 0, object);
+              this._objects = objects;
+              this.renderAll();
+            }
+          }
+          return this;
+        };
+      }
+
+      // Fix bringForward method
+      if (!Canvas.prototype.bringForward) {
+        Canvas.prototype.bringForward = function (object) {
+          const objects = this.getObjects();
+          const currentIndex = objects.indexOf(object);
+          if (currentIndex !== -1 && currentIndex < objects.length - 1) {
+            // Swap with next object
+            const nextIndex = currentIndex + 1;
+            [objects[currentIndex], objects[nextIndex]] = [objects[nextIndex], objects[currentIndex]];
             this.renderAll();
           }
-        }
-        return this;
-      };
-    }
+          return this;
+        };
+      }
 
-    // Fix bringForward method
-    if (!Canvas.prototype.bringForward) {
-      Canvas.prototype.bringForward = function (object) {
-        const objects = this.getObjects();
-        const currentIndex = objects.indexOf(object);
-        if (currentIndex !== -1 && currentIndex < objects.length - 1) {
-          // Swap with next object
-          const nextIndex = currentIndex + 1;
-          [objects[currentIndex], objects[nextIndex]] = [objects[nextIndex], objects[currentIndex]];
-          this.renderAll();
-        }
-        return this;
-      };
-    }
-
-    // Fix sendBackwards method
-    if (!Canvas.prototype.sendBackwards) {
-      Canvas.prototype.sendBackwards = function (object) {
-        const objects = this.getObjects();
-        const currentIndex = objects.indexOf(object);
-        if (currentIndex !== -1 && currentIndex > 0) {
-          // Swap with previous object
-          const prevIndex = currentIndex - 1;
-          [objects[currentIndex], objects[prevIndex]] = [objects[prevIndex], objects[currentIndex]];
-          this.renderAll();
-        }
-        return this;
-      };
-    }
-  });
-}, [editor]);
+      // Fix sendBackwards method
+      if (!Canvas.prototype.sendBackwards) {
+        Canvas.prototype.sendBackwards = function (object) {
+          const objects = this.getObjects();
+          const currentIndex = objects.indexOf(object);
+          if (currentIndex !== -1 && currentIndex > 0) {
+            // Swap with previous object
+            const prevIndex = currentIndex - 1;
+            [objects[currentIndex], objects[prevIndex]] = [objects[prevIndex], objects[currentIndex]];
+            this.renderAll();
+          }
+          return this;
+        };
+      }
+    });
+  }, [editor]);
 
   useEffect(() => {
     if (!editor || !editor.canvas) return;
@@ -1109,34 +1217,34 @@ const CustomizerLayout = () => {
   }, [editor]);
 
   const bringForward = () => {
-  const canvas = editor?.canvas;
-  const activeObj = canvas?.getActiveObject();
-  
-  if (!activeObj || !canvas) return;
+    const canvas = editor?.canvas;
+    const activeObj = canvas?.getActiveObject();
 
-  const objects = canvas.getObjects();
-  const currentIndex = objects.indexOf(activeObj);
-  
-  // Check if object can be moved forward
-  if (currentIndex !== -1 && currentIndex < objects.length - 1) {
-    // Swap with next object
-    const nextIndex = currentIndex + 1;
-    [objects[currentIndex], objects[nextIndex]] = [objects[nextIndex], objects[currentIndex]];
-    
-    // Update canvas objects array
-    canvas._objects = objects;
-    activeObj.setCoords();
-    canvas.renderAll();
-  }
-};
+    if (!activeObj || !canvas) return;
+
+    const objects = canvas.getObjects();
+    const currentIndex = objects.indexOf(activeObj);
+
+    // Check if object can be moved forward
+    if (currentIndex !== -1 && currentIndex < objects.length - 1) {
+      // Swap with next object
+      const nextIndex = currentIndex + 1;
+      [objects[currentIndex], objects[nextIndex]] = [objects[nextIndex], objects[currentIndex]];
+
+      // Update canvas objects array
+      canvas._objects = objects;
+      activeObj.setCoords();
+      canvas.renderAll();
+    }
+  };
 
 
-useEffect(() => {
-  if (editor?.canvas) {
-    console.log("Canvas initialized with", editor.canvas.getObjects().length, "objects");
-    console.log("Canvas objects:", editor.canvas.getObjects());
-  }
-}, [editor?.canvas]);
+  useEffect(() => {
+    if (editor?.canvas) {
+      console.log("Canvas initialized with", editor.canvas.getObjects().length, "objects");
+      console.log("Canvas objects:", editor.canvas.getObjects());
+    }
+  }, [editor?.canvas]);
 
   return (
     <div className="w-full h-screen flex justify-center items-center bg-gray-100 relative max-w-[1720px] mx-auto">
@@ -1186,12 +1294,13 @@ useEffect(() => {
             setChangeTextFlipY={setChangeTextFlipY}
             handleImageUpload={handleImageUpload}
             handleAddDesignToCanvas={handleAddDesignToCanvas}
+            addIconToCanvas={addIconToCanvas}
           />
         )
       }
 
       {
-        selectedProduct && <RightSmallPreview products={products}/>
+        selectedProduct && <RightSmallPreview products={products} />
       }
 
       {
@@ -1256,6 +1365,22 @@ useEffect(() => {
           </div>
         )
       }
+
+      <LayerContextMenu
+      x={contextMenu.x}
+      y={contextMenu.y}
+      isVisible={contextMenu.isVisible}
+      selectedObject={contextMenu.selectedObject}
+      onClose={closeContextMenu}
+      onDelete={handleDelete}
+      onLock={handleLock}
+      onFlipHorizontal={handleFlipHorizontal}
+      onFlipVertical={handleFlipVertical}
+      onBringToFront={handleBringToFront}
+      onBringForward={handleBringForward}
+      onSendBackward={handleSendBackward}
+      onSendToBack={handleSendToBack}
+    />
 
       {showChatBox && (
         <div className="w-[350px] h-[430px] absolute right-7 bottom-28 rounded-xl shadow-lg bg-white border border-gray-200 overflow-hidden z-70">

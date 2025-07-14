@@ -1,22 +1,114 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import FontSelector from './FontSelector';
 import CustomColorSwatch from './CustomColorSwatch';
 
-const EditTextTab = ({ setChangeTextFlipX, setChangeTextFlipY, setTextColor, setChangeTextColor, editor, setShowEditModal, customText, setCustomText, textSize, setTextSize, setTextSpacing, textSpacing, setTextFontFamily, setChangeFontFamily, setFontStyle, setChangeFontStyle, bringForward }) => {
+const EditTextTab = ({ 
+    setChangeTextFlipX, 
+    setChangeTextFlipY, 
+    setTextColor, 
+    setChangeTextColor, 
+    editor, 
+    setShowEditModal, 
+    customText, 
+    setCustomText, 
+    textSize, 
+    setTextSize, 
+    setTextSpacing, 
+    textSpacing, 
+    setTextFontFamily, 
+    setChangeFontFamily, 
+    setFontStyle, 
+    setChangeFontStyle, 
+    bringForward 
+}) => {
 
     const [showColorTab, setShowColorTab] = useState(false);
     const [showTextSelectTab, setShowTextSelectTab] = useState(false);
+    const [currentFont, setCurrentFont] = useState('Arial'); // Local state for current font
+    const [currentColor, setCurrentColor] = useState('#000000'); // Local state for current color
+
+    // Get the active text object from canvas
+    const getActiveTextObject = () => {
+        if (!editor?.canvas) return null;
+        const activeObj = editor.canvas.getActiveObject();
+        return activeObj && activeObj.type === "i-text" ? activeObj : null;
+    };
+
+    // Update local states when component mounts or active object changes
+    useEffect(() => {
+        const activeTextObj = getActiveTextObject();
+        if (activeTextObj) {
+            // Update local text content
+            if (activeTextObj.text !== customText) {
+                setCustomText(activeTextObj.text);
+            }
+            // Update font family
+            setCurrentFont(activeTextObj.fontFamily || 'Arial');
+            // Update color
+            setCurrentColor(activeTextObj.fill || '#000000');
+        }
+    }, [editor?.canvas?.getActiveObject()]);
+
+    // Handle text input change - update both state and canvas
+    const handleTextChange = (e) => {
+        const newText = e.target.value;
+        setCustomText(newText);
+        
+        const activeTextObj = getActiveTextObject();
+        if (activeTextObj) {
+            activeTextObj.set('text', newText);
+            editor.canvas.renderAll();
+        }
+    };
 
     // Handle font selection - close font selector and return to edit text
     const handleFontSelection = (font) => {
         setChangeFontFamily(font);
+        setCurrentFont(font);
+        
+        // Apply to active text object immediately
+        const activeTextObj = getActiveTextObject();
+        if (activeTextObj) {
+            activeTextObj.set('fontFamily', font);
+            editor.canvas.renderAll();
+        }
+        
         setShowTextSelectTab(false); // Close font selector, stay in edit text
     };
 
     // Handle color selection - close color selector and return to edit text
     const handleColorSelection = (color) => {
         setChangeTextColor(color);
+        setCurrentColor(color);
+        
+        // Apply to active text object immediately
+        const activeTextObj = getActiveTextObject();
+        if (activeTextObj) {
+            activeTextObj.set('fill', color);
+            editor.canvas.renderAll();
+        }
+        
         setShowColorTab(false); // Close color selector, stay in edit text
+    };
+
+    // Handle font style changes
+    const handleFontStyleChange = (styleType) => {
+        const activeTextObj = getActiveTextObject();
+        if (!activeTextObj) return;
+
+        if (styleType === 'bold') {
+            const currentWeight = activeTextObj.fontWeight;
+            const newWeight = currentWeight === 'bold' ? 'normal' : 'bold';
+            activeTextObj.set('fontWeight', newWeight);
+            setChangeFontStyle(newWeight);
+        } else if (styleType === 'italic') {
+            const currentStyle = activeTextObj.fontStyle;
+            const newStyle = currentStyle === 'italic' ? 'normal' : 'italic';
+            activeTextObj.set('fontStyle', newStyle);
+            setChangeFontStyle(newStyle);
+        }
+        
+        editor.canvas.renderAll();
     };
 
     // Show only one tab at a time
@@ -36,9 +128,15 @@ const EditTextTab = ({ setChangeTextFlipX, setChangeTextFlipY, setTextColor, set
                         </div>
                     </div>
                     <hr className="border-t border-[#D3DBDF] h-px" />
+                    
                     <div className='py-3 px-4'>
-                        <input type="text" value={customText}
-                            onChange={(e) => setCustomText(e.target.value)} name="" id="" placeholder="Add Headline" className="border border-[#D3DBDF] text-black rounded-lg p-3 min-h-20  w-full placeholder:font-semibold" />
+                        <input 
+                            type="text" 
+                            value={customText}
+                            onChange={handleTextChange} 
+                            placeholder="Add Headline" 
+                            className="border border-[#D3DBDF] text-black rounded-lg p-3 min-h-20 w-full placeholder:font-semibold" 
+                        />
                     </div>
 
                     <hr className="border-t border-[#D3DBDF] h-px" />
@@ -48,8 +146,18 @@ const EditTextTab = ({ setChangeTextFlipX, setChangeTextFlipY, setTextColor, set
                             <h3 className='text-[14px] text-black font-semibold'>Flip</h3>
                         </div>
                         <div className="flex items-center gap-3">
-                            <img onClick={() => setChangeTextFlipX(prev => !prev)} className='w-[22px] cursor-pointer' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507255/tune-vertical_ezas8p.png" alt="flip" />
-                            <img onClick={() => setChangeTextFlipY(prev => !prev)} className='w-[22px] cursor-pointer' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507254/flip-vertical_ajs5ur.png" alt="flip" />
+                            <img 
+                                onClick={() => setChangeTextFlipX(prev => !prev)} 
+                                className='w-[22px] cursor-pointer' 
+                                src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507255/tune-vertical_ezas8p.png" 
+                                alt="flip" 
+                            />
+                            <img 
+                                onClick={() => setChangeTextFlipY(prev => !prev)} 
+                                className='w-[22px] cursor-pointer' 
+                                src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507254/flip-vertical_ajs5ur.png" 
+                                alt="flip" 
+                            />
                         </div>
                     </div>
 
@@ -60,17 +168,32 @@ const EditTextTab = ({ setChangeTextFlipX, setChangeTextFlipY, setTextColor, set
                             <h3 className='text-[14px] text-black font-semibold'>Font</h3>
                         </div>
                         <div className="flex items-center gap-3 mt-2">
-                            <div onClick={() => setShowTextSelectTab(true)} className='border border-[#D3DBDF] min-w-[165px] cursor-pointer flex items-center justify-between rounded-md p-2'>
-                                <span className='text-[14px] text-gray-500 font-medium'>{setTextFontFamily}</span>
+                            <div 
+                                onClick={() => setShowTextSelectTab(true)} 
+                                className='border border-[#D3DBDF] min-w-[165px] cursor-pointer flex items-center justify-between rounded-md p-2'
+                            >
+                                <span className='text-[14px] text-gray-500 font-medium'>
+                                    {currentFont}
+                                </span>
                                 <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1750138078/chevron-right_p6kmcp.svg" alt="arrow" />
                             </div>
 
-                            <img className='cursor-pointer' onClick={() => setChangeFontStyle(setFontStyle === "bold" ? "normal" : "bold")} src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1750137959/alpha-b_aygypw.svg" alt="bold" />
-                            <img className='cursor-pointer' onClick={() => setChangeFontStyle(setFontStyle === 'italic' ? "normal" : 'italic')} src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1750137959/format-italic_d9ndma.svg" alt="italic" />
+                            <img 
+                                className='cursor-pointer' 
+                                onClick={() => handleFontStyleChange('bold')} 
+                                src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1750137959/alpha-b_aygypw.svg" 
+                                alt="bold" 
+                            />
+                            <img 
+                                className='cursor-pointer' 
+                                onClick={() => handleFontStyleChange('italic')} 
+                                src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1750137959/format-italic_d9ndma.svg" 
+                                alt="italic" 
+                            />
 
                             <div
-                                className={`w-6 h-6 rounded-full cursor-pointer border-2 transition-all duration-150 `}
-                                style={{ backgroundColor: setTextColor }}
+                                className={`w-6 h-6 rounded-full cursor-pointer border-2 transition-all duration-150`}
+                                style={{ backgroundColor: currentColor }}
                                 onClick={() => setShowColorTab(true)}
                             />
                         </div>
@@ -88,13 +211,13 @@ const EditTextTab = ({ setChangeTextFlipX, setChangeTextFlipY, setTextColor, set
                             onChange={(e) => {
                                 const newSize = parseInt(e.target.value);
                                 setTextSize(newSize);
-                                const activeObj = editor.canvas.getActiveObject();
-                                if (activeObj && activeObj.type === "i-text") {
+                                const activeObj = getActiveTextObject();
+                                if (activeObj) {
                                     activeObj.set("fontSize", newSize);
                                     editor.canvas.renderAll();
                                 }
                             }}
-                            className="w-full "
+                            className="w-full"
                         />
 
                         <label className="text-[14px] text-black font-medium">Arc</label>
@@ -112,25 +235,42 @@ const EditTextTab = ({ setChangeTextFlipX, setChangeTextFlipY, setTextColor, set
                             onChange={(e) => {
                                 const newSpacing = parseInt(e.target.value);
                                 setTextSpacing(newSpacing);
-                                const activeObj = editor.canvas.getActiveObject();
-                                if (activeObj && activeObj.type === "i-text") {
+                                const activeObj = getActiveTextObject();
+                                if (activeObj) {
                                     activeObj.set("charSpacing", newSpacing * 10);
                                     editor.canvas.renderAll();
                                 }
                             }}
                             className="w-full"
                         />
-
                     </div>
+                    
                     <hr className="border-t border-[#D3DBDF] h-px" />
 
                     <div className='flex flex-col gap-3 justify-between py-3 px-3'>
                         <h3 className='text-[14px] font-semibold text-black'>Arrange</h3>
                         <div className="flex items-center gap-7">
-                            <img onClick={bringForward} className='w-[20px] cursor-pointer' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508122/arrange-bring-forward_vigco4.png" alt="" />
-                            <img className='w-[20px] cursor-pointer' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508122/arrange-bring-to-front_povosv.png" alt="" />
-                            <img className='w-[20px] cursor-pointer' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508122/arrange-send-backward_buzw6f.png" alt="" />
-                            <img className='w-[20px] cursor-pointer' src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508121/arrange-send-to-back_bcyzlu.png" alt="" />
+                            <img 
+                                onClick={bringForward} 
+                                className='w-[20px] cursor-pointer' 
+                                src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508122/arrange-bring-forward_vigco4.png" 
+                                alt="" 
+                            />
+                            <img 
+                                className='w-[20px] cursor-pointer' 
+                                src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508122/arrange-bring-to-front_povosv.png" 
+                                alt="" 
+                            />
+                            <img 
+                                className='w-[20px] cursor-pointer' 
+                                src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508122/arrange-send-backward_buzw6f.png" 
+                                alt="" 
+                            />
+                            <img 
+                                className='w-[20px] cursor-pointer' 
+                                src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508121/arrange-send-to-back_bcyzlu.png" 
+                                alt="" 
+                            />
                         </div>
                     </div>
 
@@ -139,7 +279,7 @@ const EditTextTab = ({ setChangeTextFlipX, setChangeTextFlipY, setTextColor, set
 
             {showTextSelectTab && (
                 <FontSelector 
-                    selectedFont={setTextFontFamily} 
+                    selectedFont={currentFont} 
                     setShowTextSelectTab={setShowTextSelectTab} 
                     setSelectedFont={handleFontSelection} 
                 />

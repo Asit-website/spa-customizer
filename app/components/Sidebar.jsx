@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import EditorTab from "./EditorTab";
 import PreviewTab from "./PreviewTab";
 import EditTab from "./EditTab";
@@ -44,6 +44,7 @@ const Sidebar = ({
   handleImageUpload,
   bringForward,
   handleAddDesignToCanvas,
+  addIconToCanvas,
   setProducts,
   selectedProduct,
   setSelectedProduct,
@@ -61,6 +62,86 @@ const Sidebar = ({
 
   const [hasUploadedImage, setHasUploadedImage] = useState(false);
   const [hasAddedText, setHasAddedText] = useState(false);
+
+  // Function to check if design exists on canvas
+  const checkForDesignOnCanvas = () => {
+    if (!editor?.canvas) return false;
+    
+    const objects = editor.canvas.getObjects();
+    const designObjects = objects.filter(obj => 
+      obj.type === "image" && 
+      !obj.isTshirtBase && 
+      obj.name === "design-image"
+    );
+    
+    return designObjects.length > 0;
+  };
+
+  // Function to check if text exists on canvas
+  const checkForTextOnCanvas = () => {
+    if (!editor?.canvas) return false;
+    
+    const objects = editor.canvas.getObjects();
+    const textObjects = objects.filter(obj => obj.type === "i-text");
+    
+    return textObjects.length > 0;
+  };
+
+  // Monitor canvas changes to update states
+  useEffect(() => {
+    if (!editor?.canvas) return;
+
+    const checkCanvasContent = () => {
+      const designExists = checkForDesignOnCanvas();
+      const textExists = checkForTextOnCanvas();
+      
+      // Update states based on canvas content
+      if (!designExists && hasUploadedImage) {
+        setHasUploadedImage(false);
+        // If currently showing image edit modal and no design exists, close it
+        if (showImageEditModal) {
+          setShowImageEditModal(false);
+        }
+      }
+      
+      if (!textExists && hasAddedText) {
+        setHasAddedText(false);
+        // If currently showing text edit modal and no text exists, close it
+        if (showEditModal) {
+          setShowEditModal(false);
+        }
+      }
+
+      // If text was just added and we're on text tab, show edit modal
+      if (textExists && !hasAddedText && activeTab === "text") {
+        setHasAddedText(true);
+        setShowAddModal(false);
+        setShowEditModal(true);
+      }
+
+      // If design was just added and we're on edit tab, show preview modal
+      if (designExists && !hasUploadedImage && activeTab === "edit") {
+        setHasUploadedImage(true);
+        setShowImageEditModal(true);
+      }
+    };
+
+    // Listen to canvas events
+    const canvas = editor.canvas;
+    canvas.on('object:removed', checkCanvasContent);
+    canvas.on('object:added', () => {
+      // Small delay to ensure object is fully added
+      setTimeout(checkCanvasContent, 100);
+    });
+
+    // Initial check
+    checkCanvasContent();
+
+    return () => {
+      canvas.off('object:removed', checkCanvasContent);
+      canvas.off('object:added', checkCanvasContent);
+    };
+  }, [editor, hasUploadedImage, hasAddedText, showImageEditModal, showEditModal, activeTab]);
 
   const handleAddCustomTextWithTracking = () => {
     if (customText.trim() !== "") {
@@ -85,16 +166,24 @@ const Sidebar = ({
       setShowEditorModal(true);
     }
     if (key === "edit") {
-      if (hasUploadedImage) {
+      // Check if design actually exists on canvas
+      const designExists = checkForDesignOnCanvas();
+      if (designExists) {
+        setHasUploadedImage(true);
         setShowImageEditModal(true); 
       } else {
-        // Show edit tab for upload
+        setHasUploadedImage(false);
+        // Show upload tab since no design exists
       }
     }
     if (key === "text") {
-      if (hasAddedText) {
+      // Check if text actually exists on canvas
+      const textExists = checkForTextOnCanvas();
+      if (textExists) {
+        setHasAddedText(true);
         setShowEditModal(true);
       } else {
+        setHasAddedText(false);
         setShowAddModal(true);
       }
     }
@@ -211,6 +300,7 @@ const Sidebar = ({
           setShowClipartTab={setShowClipartTab}
           lastProduct={lastProduct}
           handleAddDesignToCanvas={handleAddDesignToCanvas}
+          addIconToCanvas={addIconToCanvas}
         />
       )}
     </div>

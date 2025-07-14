@@ -9,10 +9,12 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@iconify/react": "^6.0.0",
     "@react-icons/all-files": "^4.1.0",
     "@react-three/drei": "^10.1.2",
     "@react-three/fiber": "^9.1.2",
     "@svgr/webpack": "^8.1.0",
+    "emoji-picker-react": "^4.13.1",
     "fabric": "^6.7.0",
     "fabricjs-react": "^2.1.0",
     "lucide-react": "^0.513.0",
