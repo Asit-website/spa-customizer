@@ -54,6 +54,9 @@ const CustomizerLayout = () => {
   const [setTextFlipX, setChangeTextFlipX] = useState(false);
   const [setTextFlipY, setChangeTextFlipY] = useState(false);
 
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
   const {
     contextMenu,
     closeContextMenu,
@@ -831,96 +834,96 @@ const CustomizerLayout = () => {
   };
 
   // Improved addIconToCanvas function
-const addIconToCanvas = async (iconData) => {
-  if (!editor || !editor.canvas) return;
+  const addIconToCanvas = async (iconData) => {
+    if (!editor || !editor.canvas) return;
 
-  try {
-    // Get SVG from Iconify API
-    const response = await fetch(`https://api.iconify.design/${iconData.name}.svg?color=%23000000&width=64&height=64`);
-    const svgText = await response.text();
+    try {
+      // Get SVG from Iconify API
+      const response = await fetch(`https://api.iconify.design/${iconData.name}.svg?color=%23000000&width=64&height=64`);
+      const svgText = await response.text();
 
-    // Convert SVG to data URL
-    const svgBlob = new Blob([svgText], { type: 'image/svg+xml' });
-    const svgUrl = URL.createObjectURL(svgBlob);
+      // Convert SVG to data URL
+      const svgBlob = new Blob([svgText], { type: 'image/svg+xml' });
+      const svgUrl = URL.createObjectURL(svgBlob);
 
-    import("fabric").then(({ Image }) => {
-      const canvas = editor.canvas;
+      import("fabric").then(({ Image }) => {
+        const canvas = editor.canvas;
 
-      // Create image from SVG
-      Image.fromURL(svgUrl, (img) => {
-        img.set({
+        // Create image from SVG
+        Image.fromURL(svgUrl, (img) => {
+          img.set({
+            left: canvas.getWidth() / 2,
+            top: canvas.getHeight() / 2,
+            originX: "center",
+            originY: "center",
+            scaleX: 0.8,
+            scaleY: 0.8,
+            selectable: true,
+            evented: true,
+            hasControls: true,
+            hasBorders: true,
+            moveCursor: "move",
+            lockMovementX: false,
+            lockMovementY: false,
+            lockScalingX: false,
+            lockScalingY: false,
+            lockRotation: false
+          });
+
+          img.isIcon = true;
+          img.iconData = iconData;
+          img.name = "icon-image";
+
+          // Add to canvas
+          const imageObj = canvas.getObjects().find((o) => o.type === "image" && o.isTshirtBase);
+
+          canvas.add(img);
+          canvas.bringToFront(img);
+          canvas.setActiveObject(img);
+
+          if (imageObj) {
+            applyClippingToObject(img, imageObj);
+          }
+
+          canvas.requestRenderAll();
+
+          // Clean up the blob URL
+          URL.revokeObjectURL(svgUrl);
+        });
+      });
+
+    } catch (error) {
+      console.error('Failed to load icon:', error);
+
+      // Fallback to symbol
+      import("fabric").then(({ IText }) => {
+        const canvas = editor.canvas;
+        const iconText = new IText('🔸', {
           left: canvas.getWidth() / 2,
           top: canvas.getHeight() / 2,
           originX: "center",
           originY: "center",
-          scaleX: 0.8,
-          scaleY: 0.8,
+          fontSize: 48,
+          fill: "#000",
           selectable: true,
           evented: true,
           hasControls: true,
-          hasBorders: true,
-          moveCursor: "move",
-          lockMovementX: false,
-          lockMovementY: false,
-          lockScalingX: false,
-          lockScalingY: false,
-          lockRotation: false
+          hasBorders: true
         });
 
-        img.isIcon = true;
-        img.iconData = iconData;
-        img.name = "icon-image";
+        iconText.isIcon = true;
+        canvas.add(iconText);
+        canvas.setActiveObject(iconText);
 
-        // Add to canvas
         const imageObj = canvas.getObjects().find((o) => o.type === "image" && o.isTshirtBase);
-        
-        canvas.add(img);
-        canvas.bringToFront(img);
-        canvas.setActiveObject(img);
-
         if (imageObj) {
-          applyClippingToObject(img, imageObj);
+          applyClippingToObject(iconText, imageObj);
         }
 
         canvas.requestRenderAll();
-
-        // Clean up the blob URL
-        URL.revokeObjectURL(svgUrl);
       });
-    });
-
-  } catch (error) {
-    console.error('Failed to load icon:', error);
-    
-    // Fallback to symbol
-    import("fabric").then(({ IText }) => {
-      const canvas = editor.canvas;
-      const iconText = new IText('🔸', {
-        left: canvas.getWidth() / 2,
-        top: canvas.getHeight() / 2,
-        originX: "center",
-        originY: "center",
-        fontSize: 48,
-        fill: "#000",
-        selectable: true,
-        evented: true,
-        hasControls: true,
-        hasBorders: true
-      });
-
-      iconText.isIcon = true;
-      canvas.add(iconText);
-      canvas.setActiveObject(iconText);
-
-      const imageObj = canvas.getObjects().find((o) => o.type === "image" && o.isTshirtBase);
-      if (imageObj) {
-        applyClippingToObject(iconText, imageObj);
-      }
-
-      canvas.requestRenderAll();
-    });
-  }
-};
+    }
+  };
 
   useEffect(() => {
     if (!editor || products.length === 0) return;
@@ -1045,6 +1048,227 @@ const addIconToCanvas = async (iconData) => {
       return updated;
     });
   };
+
+  const handleSave = () => {
+  console.log("handleSave called!");
+  
+  if (!editor?.canvas) {
+    alert('Canvas not ready!');
+    return;
+  }
+  
+  if (!selectedProduct) {
+    alert('No product selected!');
+    return;
+  }
+
+  setIsSaving(true);
+  
+  try {
+    // Get screenshot as data URL
+    const screenshotDataURL = editor.canvas.toDataURL('image/png', 0.8);
+    console.log("Screenshot created, length:", screenshotDataURL.length);
+    
+    // Collect all canvas objects with their properties
+    const canvasObjects = editor.canvas.getObjects().map(obj => {
+      const baseData = {
+        type: obj.type,
+        left: obj.left,
+        top: obj.top,
+        scaleX: obj.scaleX,
+        scaleY: obj.scaleY,
+        angle: obj.angle,
+        opacity: obj.opacity,
+        flipX: obj.flipX,
+        flipY: obj.flipY,
+        originX: obj.originX,
+        originY: obj.originY,
+        selectable: obj.selectable,
+        evented: obj.evented,
+        visible: obj.visible
+      };
+
+      // Add type-specific properties
+      if (obj.type === 'i-text') {
+        return {
+          ...baseData,
+          text: obj.text,
+          fontSize: obj.fontSize,
+          fontFamily: obj.fontFamily,
+          fontStyle: obj.fontStyle,
+          fontWeight: obj.fontWeight,
+          fill: obj.fill,
+          textAlign: obj.textAlign,
+          charSpacing: obj.charSpacing,
+          lineHeight: obj.lineHeight,
+          isEmoji: obj.isEmoji || false,
+          editable: obj.editable
+        };
+      } else if (obj.type === 'image') {
+        return {
+          ...baseData,
+          src: obj.getSrc ? obj.getSrc() : obj._originalElement?.src,
+          isTshirtBase: obj.isTshirtBase || false,
+          name: obj.name,
+          isIcon: obj.isIcon || false,
+          hasControls: obj.hasControls,
+          hasBorders: obj.hasBorders,
+          lockMovementX: obj.lockMovementX,
+          lockMovementY: obj.lockMovementY,
+          lockScalingX: obj.lockScalingX,
+          lockScalingY: obj.lockScalingY,
+          lockRotation: obj.lockRotation
+        };
+      }
+
+      return baseData;
+    });
+
+    // Create simplified save data structure (only essential data)
+    const saveData = {
+      id: Date.now(),
+      timestamp: new Date().toISOString(),
+      
+      // Product Information (simplified)
+      product: {
+        id: selectedProduct.id,
+        image: selectedProduct.image,
+        description: selectedProduct.description,
+        size: selectedProduct.size,
+        color: selectedProduct.color,
+        width: selectedProduct.width,
+        textTopRatio: selectedProduct.textTopRatio
+      },
+      
+      // Canvas State (essential only)
+      canvas: {
+        width: editor.canvas.getWidth(),
+        height: editor.canvas.getHeight(),
+        objects: canvasObjects,
+        backgroundColor: editor.canvas.backgroundColor || ""
+      },
+      
+      // Design Elements (applied designs only)
+      design: {
+        appliedDesigns: canvasObjects.filter(obj => 
+          obj.type === 'image' && 
+          !obj.isTshirtBase && 
+          obj.name === 'design-image'
+        ),
+        appliedPatterns: canvasObjects.filter(obj => 
+          obj.type === 'image' && 
+          obj.name === 'pattern-image'
+        ),
+        customUploads: canvasObjects.filter(obj => 
+          obj.type === 'image' && 
+          !obj.isTshirtBase && 
+          !obj.name
+        )
+      },
+      
+      // Text Settings (current state)
+      text: {
+        textObjects: canvasObjects.filter(obj => obj.type === 'i-text'),
+        currentTextColor: setTextColor,
+        currentFontFamily: setTextFontFamily,
+        currentFontStyle: setFontStyle,
+        currentTextSize: textSize,
+        currentTextSpacing: textSpacing,
+        currentTextArc: textArc,
+        textFlipX: setTextFlipX,
+        textFlipY: setTextFlipY
+      },
+      
+      // Clipart (simple tracking)
+      clipart: {
+        emojis: canvasObjects.filter(obj => obj.isEmoji),
+        icons: canvasObjects.filter(obj => obj.isIcon),
+        customIcons: canvasObjects.filter(obj => 
+          obj.type === 'image' && 
+          obj.name === 'icon-image'
+        )
+      },
+      
+      // Pattern (basic info)
+      pattern: {
+        appliedPattern: null // Track which pattern is applied if needed
+      },
+      
+      // Image Settings (essential only)
+      imageSettings: {
+        flipX: setFlipX,
+        flipY: setFlipY,
+        selectedColor: selectedColor,
+        opacity: selectedProduct.opacity || 100,
+        rotation: selectedProduct.rotate || 0
+      },
+      
+      // UI State (minimal)
+      uiState: {
+        showSidebar: showSidebar,
+        clippingPath: clippingPath,
+        customTextState: {
+          text: customText,
+          showEditModal: showEditModal,
+          showAddModal: showAddModal
+        }
+      },
+      
+      // Metadata (quick stats)
+      metadata: {
+        canvasObjectCount: canvasObjects.length,
+        hasText: canvasObjects.some(obj => obj.type === 'i-text'),
+        hasDesign: canvasObjects.some(obj => 
+          obj.type === 'image' && 
+          !obj.isTshirtBase
+        ),
+        hasCustomUpload: canvasObjects.some(obj => 
+          obj.type === 'image' && 
+          !obj.isTshirtBase && 
+          !obj.name
+        )
+      },
+      
+      // Screenshot
+      screenshot: screenshotDataURL
+    };
+    
+    // Save to localStorage
+    const existingSaves = JSON.parse(localStorage.getItem('customizations') || '[]');
+    existingSaves.push(saveData);
+    localStorage.setItem('customizations', JSON.stringify(existingSaves));
+    
+    console.log("✅ Saved to localStorage!");
+    console.log("Save data structure:", saveData);
+    console.log("Total saves:", existingSaves.length);
+    
+    // Create blob URL for viewing
+    fetch(screenshotDataURL)
+      .then(res => res.blob())
+      .then(blob => {
+        const viewableURL = URL.createObjectURL(blob);
+        console.log("🖼️ CLICK THIS URL TO VIEW SCREENSHOT:");
+        console.log(viewableURL);
+        
+        // Auto-open in new tab
+        window.open(viewableURL, '_blank');
+      })
+      .catch(err => console.log("Blob creation failed:", err));
+    
+    // Show success message
+    setSaveSuccess(true);
+    setTimeout(() => setSaveSuccess(false), 3000);
+    
+    alert('Saved successfully! Screenshot opened in new tab.');
+    
+  } catch (error) {
+    console.error('Save error:', error);
+    alert('Save failed: ' + error.message);
+  } finally {
+    setIsSaving(false);
+  }
+};
+
 
   useEffect(() => {
     if (!editor || !editor.canvas || products.length === 0) return;
@@ -1248,7 +1472,12 @@ const addIconToCanvas = async (iconData) => {
 
   return (
     <div className="w-full h-screen flex justify-center items-center bg-gray-100 relative max-w-[1720px] mx-auto">
-      <Topbar setShowSidebar={setShowSidebar} />
+
+      <Topbar
+        setShowSidebar={setShowSidebar}
+        onSave={handleSave}
+        isSaving={isSaving}
+      />
       {
         (showSidebar && selectedProduct) && (
           <Sidebar
@@ -1367,20 +1596,31 @@ const addIconToCanvas = async (iconData) => {
       }
 
       <LayerContextMenu
-      x={contextMenu.x}
-      y={contextMenu.y}
-      isVisible={contextMenu.isVisible}
-      selectedObject={contextMenu.selectedObject}
-      onClose={closeContextMenu}
-      onDelete={handleDelete}
-      onLock={handleLock}
-      onFlipHorizontal={handleFlipHorizontal}
-      onFlipVertical={handleFlipVertical}
-      onBringToFront={handleBringToFront}
-      onBringForward={handleBringForward}
-      onSendBackward={handleSendBackward}
-      onSendToBack={handleSendToBack}
-    />
+        x={contextMenu.x}
+        y={contextMenu.y}
+        isVisible={contextMenu.isVisible}
+        selectedObject={contextMenu.selectedObject}
+        onClose={closeContextMenu}
+        onDelete={handleDelete}
+        onLock={handleLock}
+        onFlipHorizontal={handleFlipHorizontal}
+        onFlipVertical={handleFlipVertical}
+        onBringToFront={handleBringToFront}
+        onBringForward={handleBringForward}
+        onSendBackward={handleSendBackward}
+        onSendToBack={handleSendToBack}
+      />
+
+      {saveSuccess && (
+        <div className="fixed top-20 right-7 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-all duration-300">
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            <span>Customization saved successfully!</span>
+          </div>
+        </div>
+      )}
 
       {showChatBox && (
         <div className="w-[350px] h-[430px] absolute right-7 bottom-28 rounded-xl shadow-lg bg-white border border-gray-200 overflow-hidden z-70">
