@@ -509,92 +509,83 @@ const CustomizerLayout = () => {
     });
   };
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file || !editor || !editor.canvas) return;
+  // const handleImageUpload = (e) => {
+  //   const file = e.target.files[0];
+  //   if (!file || !editor || !editor.canvas) return;
 
-    const reader = new FileReader();
-    reader.onload = (f) => {
-      const dataUrl = f.target.result;
-      const img = new window.Image();
-      img.crossOrigin = "anonymous";
-      img.src = dataUrl;
+  //   const reader = new FileReader();
+  //   reader.onload = (f) => {
+  //     const dataUrl = f.target.result;
+  //     const img = new window.Image();
+  //     img.crossOrigin = "anonymous";
+  //     img.src = dataUrl;
 
-      img.onload = () => {
-        import("fabric").then(({ Image }) => {
-          const canvas = editor.canvas;
+  //     img.onload = () => {
+  //       import("fabric").then(({ Image }) => {
+  //         const canvas = editor.canvas;
+  //         canvas.clear();
 
-          // Remove ALL existing objects (clear canvas completely)
-          canvas.clear();
+  //         const desiredWidth = 300;
+  //         const scale = desiredWidth / img.width;
 
-          // Calculate scale to fit the uploaded image properly
-          const desiredWidth = 300;
-          const scale = desiredWidth / img.width;
+  //         const fabricImg = new Image(img, {
+  //           originX: "center",
+  //           originY: "center",
+  //           selectable: false,
+  //           evented: false,
+  //           isTshirtBase: true, 
+  //           scaleX: scale,
+  //           scaleY: scale,
+  //           left: canvas.getWidth() / 2,
+  //           top: canvas.getHeight() / 2,
+  //           hasControls: false,
+  //           hasBorders: false,
+  //           lockMovementX: true,
+  //           lockMovementY: true,
+  //           lockScalingX: true,
+  //           lockScalingY: true,
+  //           lockRotation: true
+  //         });
 
-          // Create new t-shirt base from uploaded image
-          const fabricImg = new Image(img, {
-            originX: "center",
-            originY: "center",
-            selectable: false,
-            evented: false,
-            isTshirtBase: true, // Mark as t-shirt base
-            scaleX: scale,
-            scaleY: scale,
-            left: canvas.getWidth() / 2,
-            top: canvas.getHeight() / 2,
-            hasControls: false,
-            hasBorders: false,
-            lockMovementX: true,
-            lockMovementY: true,
-            lockScalingX: true,
-            lockScalingY: true,
-            lockRotation: true
-          });
+  //         canvas.add(fabricImg);
+  //         canvas.sendToBack(fabricImg);
+  //         canvas.renderAll();
 
-          // Add the new t-shirt base to canvas
-          canvas.add(fabricImg);
-          canvas.sendToBack(fabricImg);
-          canvas.renderAll();
+  //         const newProduct = {
+  //           id: Date.now(), 
+  //           image: dataUrl,
+  //           size: "Custom",
+  //           color: "Custom",
+  //           width: desiredWidth,
+  //           description: "Custom Upload",
+  //           textTopRatio: 3.5, 
+  //           opacity: 100,
+  //           rotate: 0,
+  //           alignment: "center",
+  //           text: customText,
+  //           textSize,
+  //           textSpacing,
+  //           textArc,
+  //           fontFamily: setTextFontFamily,
+  //           fontStyle: setFontStyle,
+  //           fill: setTextColor,
+  //           imgflipX: setFlipX,
+  //           imgflipY: setFlipY,
+  //           flipX: setTextFlipX,
+  //           flipY: setTextFlipY,
+  //         };
 
-          // Create a completely new product
-          const newProduct = {
-            id: Date.now(), // Unique ID
-            image: dataUrl,
-            size: "Custom",
-            color: "Custom",
-            width: desiredWidth,
-            description: "Custom Upload",
-            textTopRatio: 3.5, // Default text positioning
-            opacity: 100,
-            rotate: 0,
-            alignment: "center",
-            // Copy current text settings if any
-            text: customText,
-            textSize,
-            textSpacing,
-            textArc,
-            fontFamily: setTextFontFamily,
-            fontStyle: setFontStyle,
-            fill: setTextColor,
-            imgflipX: setFlipX,
-            imgflipY: setFlipY,
-            flipX: setTextFlipX,
-            flipY: setTextFlipY,
-          };
+  //         setProducts([newProduct]);
 
-          // Replace current products with the new uploaded product
-          setProducts([newProduct]);
+  //         setSelectedProduct(newProduct);
 
-          // Update selected product to the new one
-          setSelectedProduct(newProduct);
+  //         console.log("New product created from upload:", newProduct);
+  //       });
+  //     };
+  //   };
 
-          console.log("New product created from upload:", newProduct);
-        });
-      };
-    };
-
-    reader.readAsDataURL(file);
-  };
+  //   reader.readAsDataURL(file);
+  // };
 
   const alignFabricObject = (_, canvas, alignment) => {
     const obj = canvas.getActiveObject();
@@ -739,7 +730,101 @@ const CustomizerLayout = () => {
     });
   };
 
-  const handleAddDesignToCanvas = (url, position = "center", offsetX = 0, offsetY = 0) => {
+  // const handleAddDesignToCanvas = (url, position = "center", offsetX = 0, offsetY = 0) => {
+  //   if (!editor || !url) return;
+
+  //   import("fabric").then((fabric) => {
+  //     const canvas = editor.canvas;
+  //     const productImage = canvas.getObjects().find((obj) => obj.isTshirtBase);
+  //     if (!productImage) return;
+
+  //     const imageBounds = productImage.getBoundingRect();
+  //     const imgElement = new Image();
+  //     imgElement.crossOrigin = "anonymous";
+  //     imgElement.src = url;
+
+  //     imgElement.onload = () => {
+  //       const maxWidth = imageBounds.width * 0.4;
+  //       const maxHeight = imageBounds.height * 0.4;
+  //       const scale = Math.min(maxWidth / imgElement.width, maxHeight / imgElement.height);
+
+  //       const imgInstance = new fabric.Image(imgElement, {
+  //         originX: "center",
+  //         originY: "center",
+  //         scaleX: scale,
+  //         scaleY: scale,
+  //         name: "design-image",
+  //         selectable: true,
+  //         evented: true,
+  //         hasControls: true,
+  //         hasBorders: true,
+  //         moveCursor: "move",
+  //         lockMovementX: false,
+  //         lockMovementY: false,
+  //         lockScalingX: false,
+  //         lockScalingY: false,
+  //         lockRotation: false
+  //       });
+
+  //       const existing = canvas.getObjects().find(obj => obj.name === "design-image");
+  //       if (existing) canvas.remove(existing);
+
+  //       let left = imageBounds.left + imageBounds.width / 2;
+  //       let top = imageBounds.top + imageBounds.height / 2;
+
+  //       switch (position) {
+  //         case "top-left":
+  //           left = imageBounds.left + maxWidth / 2;
+  //           top = imageBounds.top + maxHeight / 2;
+  //           break;
+  //         case "top-right":
+  //           left = imageBounds.left + imageBounds.width - maxWidth / 2;
+  //           top = imageBounds.top + maxHeight / 2;
+  //           break;
+  //         case "bottom-left":
+  //           left = imageBounds.left + maxWidth / 2;
+  //           top = imageBounds.top + imageBounds.height - maxHeight / 2;
+  //           break;
+  //         case "bottom-right":
+  //           left = imageBounds.left + imageBounds.width - maxWidth / 2;
+  //           top = imageBounds.top + imageBounds.height - maxHeight / 2;
+  //           break;
+  //         case "top-center":
+  //           top = imageBounds.top + maxHeight / 2;
+  //           break;
+  //         case "bottom-center":
+  //           top = imageBounds.top + imageBounds.height - maxHeight / 2;
+  //           break;
+  //         case "center-top":
+  //           top = imageBounds.top + imageBounds.height * 0.3;
+  //           break;
+  //         case "center-left":
+  //           left = imageBounds.left + maxWidth / 2;
+  //           break;
+  //         case "center-right":
+  //           left = imageBounds.left + imageBounds.width - maxWidth / 2;
+  //           break;
+  //         case "center":
+  //         default:
+  //           break;
+  //       }
+
+  //       imgInstance.set({
+  //         left: left + offsetX,
+  //         top: top + offsetY
+  //       });
+
+  //       canvas.add(imgInstance);
+  //       canvas.bringToFront(imgInstance);
+  //       canvas.setActiveObject(imgInstance);
+
+  //       applyClippingToObject(imgInstance, productImage);
+  //       canvas.requestRenderAll();
+  //     };
+  //   });
+  // };
+
+  const handleAddDesignToCanvas = (url, position = "center", offsetX = 0, offsetY = 0, targetWidth = 80, targetHeight = 80, quality = 0.8) => {
     if (!editor || !url) return;
 
     import("fabric").then((fabric) => {
@@ -753,82 +838,120 @@ const CustomizerLayout = () => {
       imgElement.src = url;
 
       imgElement.onload = () => {
-        const maxWidth = imageBounds.width * 0.4;
-        const maxHeight = imageBounds.height * 0.4;
-        const scale = Math.min(maxWidth / imgElement.width, maxHeight / imgElement.height);
-
-        const imgInstance = new fabric.Image(imgElement, {
-          originX: "center",
-          originY: "center",
-          scaleX: scale,
-          scaleY: scale,
-          name: "design-image",
-          selectable: true,
-          evented: true,
-          hasControls: true,
-          hasBorders: true,
-          moveCursor: "move",
-          lockMovementX: false,
-          lockMovementY: false,
-          lockScalingX: false,
-          lockScalingY: false,
-          lockRotation: false
-        });
-
-        const existing = canvas.getObjects().find(obj => obj.name === "design-image");
-        if (existing) canvas.remove(existing);
-
-        let left = imageBounds.left + imageBounds.width / 2;
-        let top = imageBounds.top + imageBounds.height / 2;
-
-        switch (position) {
-          case "top-left":
-            left = imageBounds.left + maxWidth / 2;
-            top = imageBounds.top + maxHeight / 2;
-            break;
-          case "top-right":
-            left = imageBounds.left + imageBounds.width - maxWidth / 2;
-            top = imageBounds.top + maxHeight / 2;
-            break;
-          case "bottom-left":
-            left = imageBounds.left + maxWidth / 2;
-            top = imageBounds.top + imageBounds.height - maxHeight / 2;
-            break;
-          case "bottom-right":
-            left = imageBounds.left + imageBounds.width - maxWidth / 2;
-            top = imageBounds.top + imageBounds.height - maxHeight / 2;
-            break;
-          case "top-center":
-            top = imageBounds.top + maxHeight / 2;
-            break;
-          case "bottom-center":
-            top = imageBounds.top + imageBounds.height - maxHeight / 2;
-            break;
-          case "center-top":
-            top = imageBounds.top + imageBounds.height * 0.3;
-            break;
-          case "center-left":
-            left = imageBounds.left + maxWidth / 2;
-            break;
-          case "center-right":
-            left = imageBounds.left + imageBounds.width - maxWidth / 2;
-            break;
-          case "center":
-          default:
-            break;
+        // Create a temporary canvas to resize the image
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+        
+        // Calculate aspect ratio to maintain proportions
+        const aspectRatio = imgElement.width / imgElement.height;
+        let newWidth = targetWidth;
+        let newHeight = targetHeight;
+        
+        if (aspectRatio > 1) {
+          // Landscape
+          newHeight = targetWidth / aspectRatio;
+        } else {
+          // Portrait
+          newWidth = targetHeight * aspectRatio;
         }
+        
+        // Set the temp canvas size
+        tempCanvas.width = newWidth;
+        tempCanvas.height = newHeight;
+        
+        // Optional: Enable image smoothing for better quality
+        tempCtx.imageSmoothingEnabled = true;
+        tempCtx.imageSmoothingQuality = 'high';
+        
+        // Draw the resized image
+        tempCtx.drawImage(imgElement, 0, 0, newWidth, newHeight);
+        
+        // Get the resized image data URL with specified quality
+        const resizedDataUrl = tempCanvas.toDataURL('image/jpeg', quality);
+        
+        // Create fabric image with resized data
+        const resizedImg = new Image();
+        resizedImg.onload = () => {
+          const maxWidth = imageBounds.width * 0.4;
+          const maxHeight = imageBounds.height * 0.4;
+          const scale = Math.min(maxWidth / resizedImg.width, maxHeight / resizedImg.height);
 
-        imgInstance.set({
-          left: left + offsetX,
-          top: top + offsetY
-        });
+          const imgInstance = new fabric.Image(resizedImg, {
+            originX: "center",
+            originY: "center",
+            scaleX: scale,
+            scaleY: scale,
+            name: "design-image",
+            selectable: true,
+            evented: true,
+            hasControls: true,
+            hasBorders: true,
+            moveCursor: "move",
+            lockMovementX: false,
+            lockMovementY: false,
+            lockScalingX: false,
+            lockScalingY: false,
+            lockRotation: false
+          });
 
-        canvas.add(imgInstance);
-        canvas.bringToFront(imgInstance);
-        canvas.setActiveObject(imgInstance);
+          const existing = canvas.getObjects().find(obj => obj.name === "design-image");
+          if (existing) canvas.remove(existing);
 
-        applyClippingToObject(imgInstance, productImage);
-        canvas.requestRenderAll();
+          let left = imageBounds.left + imageBounds.width / 2;
+          let top = imageBounds.top + imageBounds.height / 2;
+
+          // Position logic (same as before)
+          switch (position) {
+            case "top-left":
+              left = imageBounds.left + maxWidth / 2;
+              top = imageBounds.top + maxHeight / 2;
+              break;
+            case "top-right":
+              left = imageBounds.left + imageBounds.width - maxWidth / 2;
+              top = imageBounds.top + maxHeight / 2;
+              break;
+            case "bottom-left":
+              left = imageBounds.left + maxWidth / 2;
+              top = imageBounds.top + imageBounds.height - maxHeight / 2;
+              break;
+            case "bottom-right":
+              left = imageBounds.left + imageBounds.width - maxWidth / 2;
+              top = imageBounds.top + imageBounds.height - maxHeight / 2;
+              break;
+            case "top-center":
+              top = imageBounds.top + maxHeight / 2;
+              break;
+            case "bottom-center":
+              top = imageBounds.top + imageBounds.height - maxHeight / 2;
+              break;
+            case "center-top":
+              top = imageBounds.top + imageBounds.height * 0.3;
+              break;
+            case "center-left":
+              left = imageBounds.left + maxWidth / 2;
+              break;
+            case "center-right":
+              left = imageBounds.left + imageBounds.width - maxWidth / 2;
+              break;
+            case "center":
+            default:
+              break;
+          }
+
+          imgInstance.set({
+            left: left + offsetX,
+            top: top + offsetY
+          });
+
+          canvas.add(imgInstance);
+          canvas.bringToFront(imgInstance);
+          canvas.setActiveObject(imgInstance);
+
+          applyClippingToObject(imgInstance, productImage);
+          canvas.requestRenderAll();
+        };
+        
+        resizedImg.src = resizedDataUrl;
       };
     });
   };
@@ -1521,7 +1644,7 @@ const CustomizerLayout = () => {
             alignFabricObject={alignFabricObject}
             setChangeTextFlipX={setChangeTextFlipX}
             setChangeTextFlipY={setChangeTextFlipY}
-            handleImageUpload={handleImageUpload}
+            // handleImageUpload={handleImageUpload}
             handleAddDesignToCanvas={handleAddDesignToCanvas}
             addIconToCanvas={addIconToCanvas}
           />

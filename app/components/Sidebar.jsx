@@ -41,7 +41,7 @@ const Sidebar = ({
   alignFabricObject,
   setChangeTextFlipX,
   setChangeTextFlipY,
-  handleImageUpload,
+  // handleImageUpload,
   bringForward,
   handleAddDesignToCanvas,
   addIconToCanvas,
