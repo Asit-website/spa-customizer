@@ -24,32 +24,27 @@ const EditTextTab = ({
 
     const [showColorTab, setShowColorTab] = useState(false);
     const [showTextSelectTab, setShowTextSelectTab] = useState(false);
-    const [currentFont, setCurrentFont] = useState('Arial'); // Local state for current font
-    const [currentColor, setCurrentColor] = useState('#000000'); // Local state for current color
+    const [currentFont, setCurrentFont] = useState('Arial'); 
+    const [currentColor, setCurrentColor] = useState('#000000'); 
 
-    // Get the active text object from canvas
     const getActiveTextObject = () => {
         if (!editor?.canvas) return null;
         const activeObj = editor.canvas.getActiveObject();
         return activeObj && activeObj.type === "i-text" ? activeObj : null;
     };
 
-    // Update local states when component mounts or active object changes
+
     useEffect(() => {
         const activeTextObj = getActiveTextObject();
         if (activeTextObj) {
-            // Update local text content
             if (activeTextObj.text !== customText) {
                 setCustomText(activeTextObj.text);
             }
-            // Update font family
             setCurrentFont(activeTextObj.fontFamily || 'Arial');
-            // Update color
             setCurrentColor(activeTextObj.fill || '#000000');
         }
     }, [editor?.canvas?.getActiveObject()]);
 
-    // Handle text input change - update both state and canvas
     const handleTextChange = (e) => {
         const newText = e.target.value;
         setCustomText(newText);
@@ -61,37 +56,32 @@ const EditTextTab = ({
         }
     };
 
-    // Handle font selection - close font selector and return to edit text
     const handleFontSelection = (font) => {
         setChangeFontFamily(font);
         setCurrentFont(font);
         
-        // Apply to active text object immediately
         const activeTextObj = getActiveTextObject();
         if (activeTextObj) {
             activeTextObj.set('fontFamily', font);
             editor.canvas.renderAll();
         }
         
-        setShowTextSelectTab(false); // Close font selector, stay in edit text
+        setShowTextSelectTab(false); 
     };
 
-    // Handle color selection - close color selector and return to edit text
     const handleColorSelection = (color) => {
         setChangeTextColor(color);
         setCurrentColor(color);
         
-        // Apply to active text object immediately
         const activeTextObj = getActiveTextObject();
         if (activeTextObj) {
             activeTextObj.set('fill', color);
             editor.canvas.renderAll();
         }
         
-        setShowColorTab(false); // Close color selector, stay in edit text
+        setShowColorTab(false); 
     };
 
-    // Handle font style changes
     const handleFontStyleChange = (styleType) => {
         const activeTextObj = getActiveTextObject();
         if (!activeTextObj) return;
@@ -111,7 +101,6 @@ const EditTextTab = ({
         editor.canvas.renderAll();
     };
 
-    // Show only one tab at a time
     const shouldShowEditText = !showTextSelectTab && !showColorTab;
 
     return (

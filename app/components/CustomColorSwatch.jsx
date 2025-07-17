@@ -12,10 +12,8 @@ const colorOptions = [
 
 export default function CustomColorSwatch({setTextColor, setChangeTextColor, selectedColor, setSelectedColor, setShowColorTab }) {
     
-    // Handle color selection - automatically close and return to edit text
     const handleColorClick = (color) => {
-        setChangeTextColor(color); // This will trigger the parent's handleColorSelection
-        // setShowColorTab(false) will be called from parent's handleColorSelection
+        setChangeTextColor(color); 
     };
 
     return (

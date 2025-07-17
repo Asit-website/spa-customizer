@@ -16,7 +16,6 @@ const ClipartTab = ({
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Fetch all available icon collections from Iconify API
   useEffect(() => {
     fetchIconCollections();
   }, []);
@@ -24,15 +23,13 @@ const ClipartTab = ({
   const fetchIconCollections = async () => {
     try {
       setLoading(true);
-      // Get all available icon collections
       const response = await fetch('https://api.iconify.design/collections');
       const collections = await response.json();
       
-      // Convert to array and get popular ones
       const popularCollections = Object.entries(collections)
-        .filter(([key, collection]) => collection.total > 100) // Only collections with 100+ icons
-        .sort((a, b) => b[1].total - a[1].total) // Sort by icon count
-        .slice(0, 30) // Top 30 collections
+        .filter(([key, collection]) => collection.total > 100) 
+        .sort((a, b) => b[1].total - a[1].total) 
+        .slice(0, 30) 
         .map(([key, collection]) => ({
           id: key,
           name: collection.name,
@@ -49,7 +46,6 @@ const ClipartTab = ({
       console.error('Failed to fetch icon collections:', error);
       setLoading(false);
       
-      // Fallback to predefined popular collections
       setIconCollections([
         { id: 'material-symbols', name: 'Material Symbols', total: 2500, category: 'Google' },
         { id: 'lucide', name: 'Lucide', total: 1000, category: 'Interface' },
@@ -70,7 +66,6 @@ const ClipartTab = ({
     }
   };
 
-  // Shape templates
   const shapeTemplates = [
     { name: 'Circle', svg: '<circle cx="50" cy="50" r="40" fill="#3B82F6"/>', category: 'basic' },
     { name: 'Square', svg: '<rect x="10" y="10" width="80" height="80" fill="#EF4444"/>', category: 'basic' },
@@ -88,7 +83,6 @@ const ClipartTab = ({
     { name: 'Cross', svg: '<polygon points="35,10 65,10 65,35 90,35 90,65 65,65 65,90 35,90 35,65 10,65 10,35 35,35" fill="#DC2626"/>', category: 'symbols' }
   ];
 
-  // Typography templates
   const typographyElements = [
     { name: 'Heading', text: 'HEADING', fontSize: 32, fontWeight: 'bold', fontFamily: 'Arial' },
     { name: 'Subheading', text: 'Subheading', fontSize: 24, fontWeight: '600', fontFamily: 'Georgia' },
@@ -102,7 +96,6 @@ const ClipartTab = ({
     { name: 'Thin', text: 'Thin Text', fontSize: 22, fontWeight: '100', fontFamily: 'Helvetica' }
   ];
 
-  // Decorative elements
   const decorativeElements = [
     { name: 'Flourish 1', svg: '<path d="M10,50 Q30,10 50,50 Q70,90 90,50" stroke="#9333EA" stroke-width="3" fill="none"/>', category: 'lines' },
     { name: 'Border 1', svg: '<rect x="5" y="5" width="90" height="90" fill="none" stroke="#DC2626" stroke-width="4" stroke-dasharray="10,5"/>', category: 'borders' },
@@ -118,7 +111,6 @@ const ClipartTab = ({
     { name: 'Branch', svg: '<path d="M20,80 Q30,60 50,50 Q70,40 80,20 M40,70 Q50,55 60,45 M30,65 Q40,60 50,55" stroke="#059669" stroke-width="2" fill="none"/>', category: 'nature' }
   ];
 
-  // Thematic collections
   const thematicCollections = [
     { name: 'Business', items: ['briefcase', 'chart-line', 'handshake', 'presentation', 'target'], icon: '💼' },
     { name: 'Nature', items: ['tree', 'leaf', 'flower', 'sun', 'mountain'], icon: '🌿' },
@@ -132,16 +124,13 @@ const ClipartTab = ({
     { name: 'Transportation', items: ['car', 'bus', 'train', 'bicycle', 'ship'], icon: '🚗' }
   ];
 
-  // Fetch icons from a specific collection
   const fetchIconsFromCollection = async (collectionId) => {
     try {
       setLoading(true);
-      // Get all icons from the collection
       const response = await fetch(`https://api.iconify.design/collection?prefix=${collectionId}`);
       const data = await response.json();
       
       if (data.uncategorized) {
-        // Convert icon names to full icon objects
         const icons = data.uncategorized.slice(0, 200).map(iconName => ({
           name: `${collectionId}:${iconName}`,
           displayName: iconName.replace(/-/g, ' ').replace(/_/g, ' '),
@@ -151,7 +140,6 @@ const ClipartTab = ({
         
         setSelectedIcons(icons);
       } else if (data.categories) {
-        // Handle categorized icons
         const allIcons = [];
         Object.entries(data.categories).forEach(([category, iconNames]) => {
           iconNames.slice(0, 50).forEach(iconName => {
@@ -172,13 +160,11 @@ const ClipartTab = ({
     }
   };
 
-  // Search icons across collections
   const searchIcons = async (query) => {
     if (!query.trim()) return;
     
     try {
       setLoading(true);
-      // Search across multiple popular collections
       const collections = ['material-symbols', 'lucide', 'heroicons', 'tabler', 'carbon', 'mdi', 'fa', 'bootstrap'];
       const searchPromises = collections.map(async (collection) => {
         try {
@@ -197,7 +183,7 @@ const ClipartTab = ({
       const results = await Promise.all(searchPromises);
       const allIcons = results.flat();
       
-      setSelectedIcons(allIcons.slice(0, 100)); // Limit to 100 results
+      setSelectedIcons(allIcons.slice(0, 100)); 
       setLoading(false);
     } catch (error) {
       console.error('Search failed:', error);
@@ -205,7 +191,6 @@ const ClipartTab = ({
     }
   };
 
-  // Emoji categories - hardcoded but comprehensive
   const emojiCategories = [
     { id: 'smileys_people', name: 'Smileys & People', emoji: '😀' },
     { id: 'animals_nature', name: 'Animals & Nature', emoji: '🐶' },
@@ -217,11 +202,9 @@ const ClipartTab = ({
     { id: 'flags', name: 'Flags', emoji: '🏳️' }
   ];
 
-  // Main categories - all dynamic
   const mainCategories = useMemo(() => {
     const categories = [];
     
-    // Product specific (dynamic)
     if (lastProduct?.designs?.length > 0) {
       categories.push({
         id: 'designs',
@@ -242,7 +225,6 @@ const ClipartTab = ({
       });
     }
 
-    // Dynamic external categories
     categories.push(
       {
         id: 'emoji',
@@ -348,15 +330,13 @@ const ClipartTab = ({
 
   const addShapeToCanvas = (shape) => {
     if (!handleAddDesignToCanvas) return;
-    
-    // Convert SVG to data URL
+
     const svgData = `<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">${shape.svg}</svg>`;
     const svgBlob = new Blob([svgData], { type: 'image/svg+xml' });
     const svgUrl = URL.createObjectURL(svgBlob);
     
     handleAddDesignToCanvas(svgUrl, 'center', 0, 0);
     
-    // Clean up the blob URL after a delay
     setTimeout(() => {
       URL.revokeObjectURL(svgUrl);
     }, 1000);
@@ -364,22 +344,19 @@ const ClipartTab = ({
 
   const addTypographyToCanvas = (typography) => {
     if (!addEmojiTextToCanvas) return;
-    
-    // Use emoji text canvas function but with typography styling
+
     addEmojiTextToCanvas(typography.text);
   };
 
   const addDecorativeToCanvas = (decorative) => {
     if (!handleAddDesignToCanvas) return;
-    
-    // Convert SVG to data URL
+
     const svgData = `<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">${decorative.svg}</svg>`;
     const svgBlob = new Blob([svgData], { type: 'image/svg+xml' });
     const svgUrl = URL.createObjectURL(svgBlob);
     
     handleAddDesignToCanvas(svgUrl, 'center', 0, 0);
-    
-    // Clean up the blob URL after a delay
+
     setTimeout(() => {
       URL.revokeObjectURL(svgUrl);
     }, 1000);
@@ -424,7 +401,7 @@ const ClipartTab = ({
     if (view === 'search-icons' && query.length > 2) {
       const timeoutId = setTimeout(() => {
         searchIcons(query);
-      }, 500); // Debounce search
+      }, 500); 
       
       return () => clearTimeout(timeoutId);
     }
@@ -487,7 +464,6 @@ const ClipartTab = ({
       </div>
       <hr className="border-t border-[#D3DBDF]" />
 
-      {/* Search Bar */}
       {(view === 'search-icons' || view === 'icon-list') && (
         <div className='py-3 px-3'>
           <div className="relative">
@@ -507,7 +483,6 @@ const ClipartTab = ({
         </div>
       )}
 
-      {/* Loading State */}
       {loading && (
         <div className="flex items-center justify-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
@@ -515,7 +490,6 @@ const ClipartTab = ({
         </div>
       )}
 
-      {/* Main Categories */}
       {view === 'main' && !loading && (
         <div className="p-3 space-y-3">
           {mainCategories.map((category) => (
@@ -538,7 +512,6 @@ const ClipartTab = ({
         </div>
       )}
 
-      {/* Emoji Picker */}
       {view === 'emoji' && (
         <div className="p-3">
           <EmojiPicker 
@@ -554,7 +527,6 @@ const ClipartTab = ({
         </div>
       )}
 
-      {/* Shapes */}
       {view === 'shapes' && !loading && (
         <div className="p-3">
           <div className="grid grid-cols-4 gap-3 max-h-80 overflow-y-auto">
@@ -580,7 +552,6 @@ const ClipartTab = ({
         </div>
       )}
 
-      {/* Typography */}
       {view === 'typography' && !loading && (
         <div className="p-3">
           <div className="space-y-3 max-h-80 overflow-y-auto">
@@ -612,7 +583,6 @@ const ClipartTab = ({
         </div>
       )}
 
-      {/* Decorative */}
       {view === 'decorative' && !loading && (
         <div className="p-3">
           <div className="grid grid-cols-3 gap-3 max-h-80 overflow-y-auto">
@@ -638,7 +608,6 @@ const ClipartTab = ({
         </div>
       )}
 
-      {/* Icon Collections - Illustrations */}
       {view === 'illustrations' && !loading && (
         <div className="p-3 space-y-2 max-h-96 overflow-y-auto">
           {iconCollections.map((collection) => (
@@ -672,7 +641,6 @@ const ClipartTab = ({
         </div>
       )}
 
-      {/* Icons Collections */}
       {view === 'icons' && !loading && (
         <div className="p-3 space-y-2 max-h-96 overflow-y-auto">
           {iconCollections.map((collection) => (
@@ -703,7 +671,6 @@ const ClipartTab = ({
         </div>
       )}
 
-      {/* Thematic Collections */}
       {view === 'thematic' && !loading && (
         <div className="p-3 space-y-2 max-h-96 overflow-y-auto">
           {thematicCollections.map((theme) => (
@@ -733,7 +700,6 @@ const ClipartTab = ({
         </div>
       )}
 
-      {/* Icon Grid */}
       {(view === 'icon-list' || view === 'thematic-icons') && !loading && (
         <div className="p-3">
           <div className="grid grid-cols-6 gap-3 max-h-80 overflow-y-auto">
@@ -762,7 +728,6 @@ const ClipartTab = ({
         </div>
       )}
 
-      {/* Search Icons View */}
       {view === 'search-icons' && !loading && (
         <div className="p-3">
           <div className="grid grid-cols-6 gap-3 max-h-80 overflow-y-auto">
@@ -799,7 +764,6 @@ const ClipartTab = ({
         </div>
       )}
 
-      {/* Designs & Patterns */}
       {view === 'designs' && (
         <div className="grid grid-cols-3 gap-2 p-3 max-h-80 overflow-y-auto">
           {lastProduct.designs?.map((design, index) => (

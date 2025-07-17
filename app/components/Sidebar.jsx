@@ -63,7 +63,6 @@ const Sidebar = ({
   const [hasUploadedImage, setHasUploadedImage] = useState(false);
   const [hasAddedText, setHasAddedText] = useState(false);
 
-  // Function to check if design exists on canvas
   const checkForDesignOnCanvas = () => {
     if (!editor?.canvas) return false;
     
@@ -77,7 +76,6 @@ const Sidebar = ({
     return designObjects.length > 0;
   };
 
-  // Function to check if text exists on canvas
   const checkForTextOnCanvas = () => {
     if (!editor?.canvas) return false;
     
@@ -87,7 +85,6 @@ const Sidebar = ({
     return textObjects.length > 0;
   };
 
-  // Monitor canvas changes to update states
   useEffect(() => {
     if (!editor?.canvas) return;
 
@@ -95,10 +92,8 @@ const Sidebar = ({
       const designExists = checkForDesignOnCanvas();
       const textExists = checkForTextOnCanvas();
       
-      // Update states based on canvas content
       if (!designExists && hasUploadedImage) {
         setHasUploadedImage(false);
-        // If currently showing image edit modal and no design exists, close it
         if (showImageEditModal) {
           setShowImageEditModal(false);
         }
@@ -106,35 +101,29 @@ const Sidebar = ({
       
       if (!textExists && hasAddedText) {
         setHasAddedText(false);
-        // If currently showing text edit modal and no text exists, close it
         if (showEditModal) {
           setShowEditModal(false);
         }
       }
 
-      // If text was just added and we're on text tab, show edit modal
       if (textExists && !hasAddedText && activeTab === "text") {
         setHasAddedText(true);
         setShowAddModal(false);
         setShowEditModal(true);
       }
 
-      // If design was just added and we're on edit tab, show preview modal
       if (designExists && !hasUploadedImage && activeTab === "edit") {
         setHasUploadedImage(true);
         setShowImageEditModal(true);
       }
     };
 
-    // Listen to canvas events
     const canvas = editor.canvas;
     canvas.on('object:removed', checkCanvasContent);
     canvas.on('object:added', () => {
-      // Small delay to ensure object is fully added
       setTimeout(checkCanvasContent, 100);
     });
 
-    // Initial check
     checkCanvasContent();
 
     return () => {
@@ -166,18 +155,15 @@ const Sidebar = ({
       setShowEditorModal(true);
     }
     if (key === "edit") {
-      // Check if design actually exists on canvas
       const designExists = checkForDesignOnCanvas();
       if (designExists) {
         setHasUploadedImage(true);
         setShowImageEditModal(true); 
       } else {
         setHasUploadedImage(false);
-        // Show upload tab since no design exists
       }
     }
     if (key === "text") {
-      // Check if text actually exists on canvas
       const textExists = checkForTextOnCanvas();
       if (textExists) {
         setHasAddedText(true);
@@ -222,12 +208,10 @@ const Sidebar = ({
         ))}
       </div>
 
-      {/* Editor Tab */}
       {activeTab === "editor" && showEditorModal && (
         <EditorTab setShowEditorModal={setShowEditorModal} />
       )}
 
-      {/* Edit Tab Flow */}
       {activeTab === "edit" && (
         <>
           {!hasUploadedImage && (
@@ -248,7 +232,6 @@ const Sidebar = ({
         </>
       )}
 
-      {/* Text Tab Flow */}
       {activeTab === "text" && (
         <>
           {!hasAddedText && showAddModal && (
@@ -283,7 +266,6 @@ const Sidebar = ({
         </>
       )}
 
-      {/* Colors Tab */}
       {activeTab === "colors" && showBgColorsModal && (
         <SelectColorsTab
           setShowBgColorsModal={setShowBgColorsModal}
@@ -293,7 +275,6 @@ const Sidebar = ({
         />
       )}
 
-      {/* Clipart Tab */}
       {activeTab === "clipart" && showClipartTab && (
         <ClipartTab
           addEmojiTextToCanvas={addEmojiTextToCanvas}

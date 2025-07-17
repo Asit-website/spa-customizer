@@ -25,7 +25,6 @@ const LayerContextMenu = ({
 
     if (!isVisible) return null;
 
-    // Determine object type for display
     const getObjectTypeLabel = () => {
         if (!selectedObject) return 'Object';
         
@@ -69,13 +68,11 @@ const LayerContextMenu = ({
 
     return (
         <>
-            {/* Overlay to close menu when clicking outside */}
             <div 
                 className="fixed inset-0 z-40" 
                 onClick={onClose}
             />
             
-            {/* Context Menu */}
             <div 
                 className="fixed bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-50 min-w-[180px]"
                 style={{ 
@@ -84,12 +81,10 @@ const LayerContextMenu = ({
                     transform: 'translate(-50%, -10px)'
                 }}
             >
-                {/* Header showing object type */}
                 <div className="px-4 py-2 text-xs text-gray-500 border-b border-gray-100 bg-gray-50">
                     {getObjectTypeLabel()} Options
                 </div>
 
-                {/* Delete */}
                 <div 
                     className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 cursor-pointer"
                     onClick={() => handleAction('delete')}
@@ -100,7 +95,6 @@ const LayerContextMenu = ({
                     Delete
                 </div>
 
-                {/* Lock/Unlock */}
                 <div 
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer"
                     onClick={() => handleAction('lock')}
@@ -124,7 +118,6 @@ const LayerContextMenu = ({
 
                 <hr className="my-1 border-gray-200" />
 
-                {/* Flip Horizontal */}
                 <div 
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer"
                     onClick={() => handleAction('flipHorizontal')}
@@ -133,7 +126,6 @@ const LayerContextMenu = ({
                     Flip Horizontal
                 </div>
 
-                {/* Flip Vertical */}
                 <div 
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer"
                     onClick={() => handleAction('flipVertical')}
@@ -144,7 +136,6 @@ const LayerContextMenu = ({
 
                 <hr className="my-1 border-gray-200" />
 
-                {/* Layer Controls */}
                 <div 
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer"
                     onClick={() => handleAction('bringToFront')}

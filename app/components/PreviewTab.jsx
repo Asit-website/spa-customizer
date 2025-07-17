@@ -27,7 +27,6 @@ const PreviewTab = ({
             return activeObj;
         }
         
-        // If no active object, try to find the most recently added design
         const objects = canvas.getObjects();
         const designObjects = objects.filter(obj => 
             obj.type === "image" && 
@@ -177,7 +176,6 @@ const PreviewTab = ({
     const flipStates = getFlipStates();
     const designProps = getDesignProperties();
 
-    // Force re-render when design properties change
     const [, forceUpdate] = React.useReducer(x => x + 1, 0);
     
     useEffect(() => {
@@ -311,7 +309,6 @@ const PreviewTab = ({
 
             {designProps ? (
                 <>
-                    {/* Width x Height Section */}
                     <div className='flex items-center gap-3 py-3 px-3'>
                         <div className="border border-[#D3DBDF] rounded-lg p-2 w-[30%]">
                             {designProps.imageSrc ? (
@@ -340,7 +337,6 @@ const PreviewTab = ({
                     </div>
                     <hr className="border-t border-[#D3DBDF] h-px" />
 
-                    {/* Flip Section */}
                     <div className='flex items-center justify-between py-3 px-3'>
                         <h3 className='text-[14px] text-black font-semibold'>Flip</h3>
                         <div className="flex items-center gap-3">
@@ -368,7 +364,6 @@ const PreviewTab = ({
                     </div>
                     <hr className="border-t border-[#D3DBDF] h-px" />
 
-                    {/* Alignment Section */}
                     <div className='py-3 px-3'>
                         <h3 className='text-[14px] text-black font-semibold mb-3'>Alignment</h3>
                         <div className="grid grid-cols-6 gap-2">
@@ -394,7 +389,6 @@ const PreviewTab = ({
                     </div>
                     <hr className="border-t border-[#D3DBDF] h-px" />
 
-                    {/* Opacity Section */}
                     <div className='py-3 px-3'>
                         <label className="text-[14px] text-black font-semibold block mb-2">Opacity</label>
                         <div className='flex items-center gap-2'>
@@ -416,7 +410,6 @@ const PreviewTab = ({
                     </div>
                     <hr className="border-t border-[#D3DBDF] h-px" />
 
-                    {/* Rotate Section */}
                     <div className='py-3 px-3'>
                         <label className="text-[14px] text-black font-semibold block mb-2">Rotate</label>
                         <div className='flex items-center gap-2'>
@@ -438,7 +431,6 @@ const PreviewTab = ({
                     </div>
                     <hr className="border-t border-[#D3DBDF] h-px" />
 
-                    {/* Arrange Section */}
                     <div className='py-3 px-3'>
                         <h3 className='text-[14px] text-black font-semibold mb-3'>Arrange</h3>
                         <div className="flex items-center gap-4">
@@ -458,7 +450,6 @@ const PreviewTab = ({
                     </div>
                     <hr className="border-t border-[#D3DBDF] h-px" />
 
-                    {/* Tools Section */}
                     <div className='py-3 px-3'>
                         <h3 className='text-[14px] text-black font-semibold mb-3'>Tools</h3>
 

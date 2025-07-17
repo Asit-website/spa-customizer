@@ -7,7 +7,7 @@ const EditTab = ({ handleAddDesignToCanvas, editor, setShowImageEditModal, setHa
     const handleFileSelect = (e) => {
         const file = e.target.files[0];
         if (file && file.type.startsWith('image/')) {
-            // Check file size (max 5MB)
+
             if (file.size > 5 * 1024 * 1024) {
                 alert('File size must be less than 5MB');
                 return;
@@ -24,16 +24,13 @@ const EditTab = ({ handleAddDesignToCanvas, editor, setShowImageEditModal, setHa
         setIsUploading(true);
         
         try {
-            // Create a URL from the selected file
             const reader = new FileReader();
             reader.onload = (e) => {
                 const imageUrl = e.target.result;
                 
-                // Add the design to canvas using the existing function
                 if (handleAddDesignToCanvas) {
                     handleAddDesignToCanvas(imageUrl, "center", 0, 0);
                     
-                    // After successful upload, switch to preview mode
                     setTimeout(() => {
                         if (setHasUploadedImage) {
                             setHasUploadedImage(true);
@@ -44,7 +41,6 @@ const EditTab = ({ handleAddDesignToCanvas, editor, setShowImageEditModal, setHa
                     }, 500);
                 }
                 
-                // Clear selection after successful upload
                 setSelectedFile(null);
             };
             
@@ -82,7 +78,7 @@ const EditTab = ({ handleAddDesignToCanvas, editor, setShowImageEditModal, setHa
                         />
                         <div className="text-center">
                             <div className="bg-[#3559C7] text-white px-6 py-2 rounded-md inline-block mb-3">
-                                {selectedFile ? selectedFile.name : "Choose a file"}
+                                {selectedFile ? "Image Uploaded" : "Choose a file"}
                             </div>
                             <p className='text-gray-500 text-[12px]'>
                                 We support JPG, PNG, EAPS<br />

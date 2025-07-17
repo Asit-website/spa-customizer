@@ -30,7 +30,6 @@ const Topbar = ({ setShowSidebar, onSave, isSaving }) => {
       <div className="flex items-center gap-3">
 
 
-        {/* Save Button */}
         <button 
           onClick={handleSaveClick}
           disabled={isSaving}
@@ -43,7 +42,6 @@ const Topbar = ({ setShowSidebar, onSave, isSaving }) => {
           {isSaving ? 'Saving...' : 'Save'}
         </button>
         
-        {/* User Button */}
         <img 
           className="cursor-pointer" 
           src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749338383/Buttons_klifkp.png" 

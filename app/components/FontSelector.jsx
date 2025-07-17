@@ -31,10 +31,8 @@ const FontSelector = ({ setSelectedFont, selectedFont, setShowTextSelectTab }) =
     loadFont();
   }, []);
 
-  // Handle font selection - automatically close and return to edit text
   const handleFontClick = (font) => {
-    setSelectedFont(font); // This will trigger the parent's handleFontSelection
-    // setShowTextSelectTab(false) will be called from parent's handleFontSelection
+    setSelectedFont(font); 
   };
 
   return (

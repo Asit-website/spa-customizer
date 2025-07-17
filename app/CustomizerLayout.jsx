@@ -193,6 +193,112 @@ const CustomizerLayout = () => {
         width: 300,
         description: "White T-Shirt",
         textTopRatio: 3.5,
+         designs: [
+          {
+            id: 1,
+            name: "Angry Doberman",
+            position: "center-top",
+            offsetX: 0,
+            offsetY: 40,
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967112/2234.preview_gd75zf.png"
+          },
+          {
+            id: 2,
+            name: "Bulldog Growl",
+            position: "center-top",
+            offsetX: 0,
+            offsetY: 40,
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2237.preview_okqvhu.png"
+          },
+          {
+            id: 3,
+            name: "Spiked Bulldog",
+            position: "center-top",
+            offsetX: 0,
+            offsetY: 40,
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2236.preview_xkl5hf.png"
+          },
+          {
+            id: 4,
+            name: "Roaring Wolf",
+            position: "center-top",
+            offsetX: 0,
+            offsetY: 40,
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2238.preview_bhedmv.png"
+          },
+          {
+            id: 5,
+            name: "Fighter",
+            position: "center",
+            offsetX: 0,
+            offsetY: -15,
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2243.preview_cgju7z.png"
+          },
+          {
+            id: 6,
+            name: "Husky Dog",
+            position: "center",
+            offsetX: 0,
+            offsetY: -15,
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967112/2235.preview_pftmvw.png"
+          },
+          {
+            id: 7,
+            name: "Bird",
+            position: "center-top",
+            offsetX: 0,
+            offsetY: 40,
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2241.preview_h9pntb.png"
+          },
+          {
+            id: 8,
+            name: "Devil",
+            position: "center",
+            offsetX: 0,
+            offsetY: -15,
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967112/2242.preview_gtqo2w.png"
+          },
+          {
+            id: 9,
+            name: "Roaring Tiger",
+            position: "center",
+            offsetX: 15,
+            offsetY: -45,
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2240.preview_zbpw5z.png"
+          },
+          {
+            id: 10,
+            name: "Tiger",
+            position: "top-center",
+            offsetX: 0,
+            offsetY: 60,
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2239.preview_nrrieg.png"
+          },
+          {
+            id: 11,
+            name: "Bee",
+            position: "bottom-left",
+            offsetX: 45,
+            offsetY: -60,
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967114/2246.preview_rx4u62.png"
+          },
+          {
+            id: 12,
+            name: "Dragon",
+            position: "center-top",
+            offsetX: -15,
+            offsetY: 20,
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967114/2245.preview_g7s5ml.png"
+          },
+          {
+            id: 13,
+            name: "Pirate Face",
+            position: "bottom-left",
+            offsetX: 55,
+            offsetY: -60,
+            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967114/2244.preview_f4vowr.png"
+          }
+        ],
       },
       {
         id: 2,
@@ -436,78 +542,152 @@ const CustomizerLayout = () => {
     });
   };
 
+  // const handleAddCustomText = () => {
+  //   if (!editor || !customText.trim()) return;
+
+  //   import("fabric").then((fabric) => {
+  //     const canvas = editor.canvas;
+
+  //     canvas.getObjects().forEach((obj) => {
+  //       if (obj.type === "i-text") {
+  //         canvas.remove(obj);
+  //       }
+  //     });
+
+  //     const imageObj = canvas.getObjects().find((obj) => obj.type === "image" && obj.isTshirtBase);
+  //     if (!imageObj) return;
+
+  //     const imageBounds = imageObj.getBoundingRect();
+  //     const currentProduct = products[products.length - 1];
+  //     const topRatio = currentProduct?.textTopRatio || 3.5;
+
+  //     const textObject = new fabric.IText(customText.slice(0, 9), {
+  //       left: imageBounds.left + imageBounds.width / 2,
+  //       top: imageBounds.top + imageBounds.height / topRatio,
+  //       originX: "center",
+  //       originY: "center",
+  //       fontSize: 28,
+  //       fill: setTextColor,
+  //       fontFamily: setTextFontFamily,
+  //       fontStyle: setFontStyle,
+  //       selectable: true,
+  //       evented: true,
+  //       moveCursor: "move",
+  //       hasControls: true,
+  //       hasBorders: true,
+  //       lockMovementX: false,
+  //       lockMovementY: false,
+  //       lockScalingX: false,
+  //       lockScalingY: false,
+  //       lockRotation: false,
+  //       editable: true
+  //     });
+
+  //     textObject.setControlsVisibility({
+  //       mt: true, mb: true, ml: true, mr: true,
+  //       bl: true, br: true, tl: true, tr: true,
+  //       mtr: true
+  //     });
+
+  //     canvas.add(textObject);
+  //     canvas.setActiveObject(textObject);
+
+  //     applyClippingToObject(textObject, imageObj);
+  //     canvas.requestRenderAll();
+
+  //     setProducts((prev) => {
+  //       const updated = [...prev];
+  //       const lastIndex = updated.length - 1;
+  //       updated[lastIndex] = {
+  //         ...updated[lastIndex],
+  //         text: customText.slice(0, 9),
+  //         fabricObject: textObject,
+  //       };
+  //       return updated;
+  //     });
+
+  //     setTextSize(28);
+  //     setTextSpacing(0);
+  //     setTextArc(0);
+  //     setCustomText("");
+  //     setShowAddModal(false);
+  //     setShowEditModal(true);
+  //   });
+  // };
+
   const handleAddCustomText = () => {
-    if (!editor || !customText.trim()) return;
+  if (!editor || !customText.trim()) return;
 
-    import("fabric").then((fabric) => {
-      const canvas = editor.canvas;
+  import("fabric").then((fabric) => {
+    const canvas = editor.canvas;
 
-      canvas.getObjects().forEach((obj) => {
-        if (obj.type === "i-text") {
-          canvas.remove(obj);
-        }
-      });
-
-      const imageObj = canvas.getObjects().find((obj) => obj.type === "image" && obj.isTshirtBase);
-      if (!imageObj) return;
-
-      const imageBounds = imageObj.getBoundingRect();
-      const currentProduct = products[products.length - 1];
-      const topRatio = currentProduct?.textTopRatio || 3.5;
-
-      const textObject = new fabric.IText(customText.slice(0, 9), {
-        left: imageBounds.left + imageBounds.width / 2,
-        top: imageBounds.top + imageBounds.height / topRatio,
-        originX: "center",
-        originY: "center",
-        fontSize: 28,
-        fill: setTextColor,
-        fontFamily: setTextFontFamily,
-        fontStyle: setFontStyle,
-        selectable: true,
-        evented: true,
-        moveCursor: "move",
-        hasControls: true,
-        hasBorders: true,
-        lockMovementX: false,
-        lockMovementY: false,
-        lockScalingX: false,
-        lockScalingY: false,
-        lockRotation: false,
-        editable: true
-      });
-
-      textObject.setControlsVisibility({
-        mt: true, mb: true, ml: true, mr: true,
-        bl: true, br: true, tl: true, tr: true,
-        mtr: true
-      });
-
-      canvas.add(textObject);
-      canvas.setActiveObject(textObject);
-
-      applyClippingToObject(textObject, imageObj);
-      canvas.requestRenderAll();
-
-      setProducts((prev) => {
-        const updated = [...prev];
-        const lastIndex = updated.length - 1;
-        updated[lastIndex] = {
-          ...updated[lastIndex],
-          text: customText.slice(0, 9),
-          fabricObject: textObject,
-        };
-        return updated;
-      });
-
-      setTextSize(28);
-      setTextSpacing(0);
-      setTextArc(0);
-      setCustomText("");
-      setShowAddModal(false);
-      setShowEditModal(true);
+    canvas.getObjects().forEach((obj) => {
+      if (obj.type === "i-text") {
+        canvas.remove(obj);
+      }
     });
-  };
+
+    const imageObj = canvas.getObjects().find((obj) => obj.type === "image" && obj.isTshirtBase);
+    if (!imageObj) return;
+
+    const imageBounds = imageObj.getBoundingRect();
+    const currentProduct = products[products.length - 1];
+    const topRatio = currentProduct?.textTopRatio || 3.5;
+
+    const textObject = new fabric.IText(customText.slice(0, 9), {
+      left: imageBounds.left + imageBounds.width / 2,
+      top: imageBounds.top + imageBounds.height / topRatio,
+      originX: "center",
+      originY: "center",
+      fontSize: 28,
+      fill: setTextColor,
+      fontFamily: setTextFontFamily,
+      fontStyle: setFontStyle,
+      selectable: true,
+      evented: true,
+      moveCursor: "move",
+      hasControls: true,
+      hasBorders: true,
+      lockMovementX: false,
+      lockMovementY: false,
+      lockScalingX: false,
+      lockScalingY: false,
+      lockRotation: false,
+      editable: true
+    });
+
+    textObject.setControlsVisibility({
+      mt: true, mb: true, ml: true, mr: true,
+      bl: true, br: true, tl: true, tr: true,
+      mtr: true
+    });
+
+    canvas.add(textObject);
+    canvas.setActiveObject(textObject);
+
+    constrainObjectToProduct(textObject, imageObj);
+    applyClippingToObject(textObject, imageObj);
+    canvas.requestRenderAll();
+
+    setProducts((prev) => {
+      const updated = [...prev];
+      const lastIndex = updated.length - 1;
+      updated[lastIndex] = {
+        ...updated[lastIndex],
+        text: customText.slice(0, 9),
+        fabricObject: textObject,
+      };
+      return updated;
+    });
+
+    setTextSize(28);
+    setTextSpacing(0);
+    setTextArc(0);
+    setCustomText("");
+    setShowAddModal(false);
+    setShowEditModal(true);
+  });
+};
 
   // const handleImageUpload = (e) => {
   //   const file = e.target.files[0];
@@ -637,7 +817,6 @@ const CustomizerLayout = () => {
 
     switch (action) {
       case "bringToFront":
-        // Move to end of array (top layer)
         if (currentIndex < objects.length - 1) {
           canvas.remove(obj);
           canvas.add(obj);
@@ -645,7 +824,6 @@ const CustomizerLayout = () => {
         break;
 
       case "sendToBack":
-        // Move to beginning of array (bottom layer)
         if (currentIndex > 0) {
           canvas.remove(obj);
           const newObjects = [obj, ...objects.filter(o => o !== obj)];
@@ -655,7 +833,6 @@ const CustomizerLayout = () => {
         break;
 
       case "bringForward":
-        // Move one step forward
         if (currentIndex < objects.length - 1) {
           const nextIndex = currentIndex + 1;
           [objects[currentIndex], objects[nextIndex]] = [objects[nextIndex], objects[currentIndex]];
@@ -664,7 +841,6 @@ const CustomizerLayout = () => {
         break;
 
       case "sendBackward":
-        // Move one step backward
         if (currentIndex > 0) {
           const prevIndex = currentIndex - 1;
           [objects[currentIndex], objects[prevIndex]] = [objects[prevIndex], objects[currentIndex]];
@@ -673,7 +849,6 @@ const CustomizerLayout = () => {
         break;
     }
 
-    // Ensure object coordinates are updated
     obj.setCoords();
     canvas.renderAll();
   };
@@ -692,43 +867,92 @@ const CustomizerLayout = () => {
     editor.canvas.requestRenderAll();
   };
 
+  // const addEmojiTextToCanvas = (emojiChar) => {
+  //   if (!editor || !editor.canvas) return;
+
+  //   import("fabric").then(({ IText }) => {
+  //     const canvas = editor.canvas;
+
+  //     const existingEmoji = canvas.getObjects().find(
+  //       (obj) => obj.isEmoji === true
+  //     );
+  //     if (existingEmoji) {
+  //       canvas.remove(existingEmoji);
+  //     }
+
+  //     const emojiText = new IText(emojiChar, {
+  //       left: canvas.getWidth() / 2,
+  //       top: canvas.getHeight() / 2,
+  //       originX: "center",
+  //       originY: "center",
+  //       fontSize: 48,
+  //       fill: "#000",
+  //       selectable: true,
+  //       evented: true,
+  //       hasBorders: true,
+  //       hasControls: true,
+  //       moveCursor: "move",
+  //       lockMovementX: false,
+  //       lockMovementY: false,
+  //       lockScalingX: false,
+  //       lockScalingY: false,
+  //       lockRotation: false,
+  //       editable: true
+  //     });
+
+  //     emojiText.isEmoji = true;
+  //     addAndBringToFront(emojiText);
+  //   });
+  // };
+
   const addEmojiTextToCanvas = (emojiChar) => {
-    if (!editor || !editor.canvas) return;
+  if (!editor || !editor.canvas) return;
 
-    import("fabric").then(({ IText }) => {
-      const canvas = editor.canvas;
+  import("fabric").then(({ IText }) => {
+    const canvas = editor.canvas;
+    const productImage = canvas.getObjects().find((obj) => obj.isTshirtBase);
+    if (!productImage) return;
 
-      const existingEmoji = canvas.getObjects().find(
-        (obj) => obj.isEmoji === true
-      );
-      if (existingEmoji) {
-        canvas.remove(existingEmoji);
-      }
+    const existingEmoji = canvas.getObjects().find(
+      (obj) => obj.isEmoji === true
+    );
+    if (existingEmoji) {
+      canvas.remove(existingEmoji);
+    }
 
-      const emojiText = new IText(emojiChar, {
-        left: canvas.getWidth() / 2,
-        top: canvas.getHeight() / 2,
-        originX: "center",
-        originY: "center",
-        fontSize: 48,
-        fill: "#000",
-        selectable: true,
-        evented: true,
-        hasBorders: true,
-        hasControls: true,
-        moveCursor: "move",
-        lockMovementX: false,
-        lockMovementY: false,
-        lockScalingX: false,
-        lockScalingY: false,
-        lockRotation: false,
-        editable: true
-      });
+    const productBounds = productImage.getBoundingRect();
 
-      emojiText.isEmoji = true;
-      addAndBringToFront(emojiText);
+    const emojiText = new IText(emojiChar, {
+      left: productBounds.left + productBounds.width / 2,
+      top: productBounds.top + productBounds.height / 2,
+      originX: "center",
+      originY: "center",
+      fontSize: 48,
+      fill: "#000",
+      selectable: true,
+      evented: true,
+      hasBorders: true,
+      hasControls: true,
+      moveCursor: "move",
+      lockMovementX: false,
+      lockMovementY: false,
+      lockScalingX: false,
+      lockScalingY: false,
+      lockRotation: false,
+      editable: true
     });
-  };
+
+    emojiText.isEmoji = true;
+    
+    canvas.add(emojiText);
+    canvas.bringToFront(emojiText);
+    canvas.setActiveObject(emojiText);
+
+    constrainObjectToProduct(emojiText, productImage);
+    applyClippingToObject(emojiText, productImage);
+    canvas.requestRenderAll();
+  });
+};
 
   // const handleAddDesignToCanvas = (url, position = "center", offsetX = 0, offsetY = 0) => {
   //   if (!editor || !url) return;
@@ -838,38 +1062,31 @@ const CustomizerLayout = () => {
       imgElement.src = url;
 
       imgElement.onload = () => {
-        // Create a temporary canvas to resize the image
         const tempCanvas = document.createElement('canvas');
         const tempCtx = tempCanvas.getContext('2d');
-        
-        // Calculate aspect ratio to maintain proportions
+
         const aspectRatio = imgElement.width / imgElement.height;
         let newWidth = targetWidth;
         let newHeight = targetHeight;
-        
+
         if (aspectRatio > 1) {
-          // Landscape
           newHeight = targetWidth / aspectRatio;
         } else {
-          // Portrait
           newWidth = targetHeight * aspectRatio;
         }
-        
-        // Set the temp canvas size
+
         tempCanvas.width = newWidth;
         tempCanvas.height = newHeight;
-        
-        // Optional: Enable image smoothing for better quality
+
+        tempCtx.clearRect(0, 0, newWidth, newHeight);
+
         tempCtx.imageSmoothingEnabled = true;
         tempCtx.imageSmoothingQuality = 'high';
-        
-        // Draw the resized image
+
         tempCtx.drawImage(imgElement, 0, 0, newWidth, newHeight);
-        
-        // Get the resized image data URL with specified quality
-        const resizedDataUrl = tempCanvas.toDataURL('image/jpeg', quality);
-        
-        // Create fabric image with resized data
+
+        const resizedDataUrl = tempCanvas.toDataURL('image/png', quality);
+
         const resizedImg = new Image();
         resizedImg.onload = () => {
           const maxWidth = imageBounds.width * 0.4;
@@ -900,7 +1117,6 @@ const CustomizerLayout = () => {
           let left = imageBounds.left + imageBounds.width / 2;
           let top = imageBounds.top + imageBounds.height / 2;
 
-          // Position logic (same as before)
           switch (position) {
             case "top-left":
               left = imageBounds.left + maxWidth / 2;
@@ -946,107 +1162,100 @@ const CustomizerLayout = () => {
           canvas.add(imgInstance);
           canvas.bringToFront(imgInstance);
           canvas.setActiveObject(imgInstance);
-
           applyClippingToObject(imgInstance, productImage);
           canvas.requestRenderAll();
         };
-        
+
         resizedImg.src = resizedDataUrl;
       };
     });
   };
 
-  // Improved addIconToCanvas function
   const addIconToCanvas = async (iconData) => {
-    if (!editor || !editor.canvas) return;
+  if (!editor || !editor.canvas) return;
 
-    try {
-      // Get SVG from Iconify API
-      const response = await fetch(`https://api.iconify.design/${iconData.name}.svg?color=%23000000&width=64&height=64`);
-      const svgText = await response.text();
+  try {
+    const response = await fetch(`https://api.iconify.design/${iconData.name}.svg?color=%23000000&width=64&height=64`);
+    const svgText = await response.text();
+    const svgBlob = new Blob([svgText], { type: 'image/svg+xml' });
+    const svgUrl = URL.createObjectURL(svgBlob);
 
-      // Convert SVG to data URL
-      const svgBlob = new Blob([svgText], { type: 'image/svg+xml' });
-      const svgUrl = URL.createObjectURL(svgBlob);
+    import("fabric").then(({ Image }) => {
+      const canvas = editor.canvas;
+      const productImage = canvas.getObjects().find((obj) => obj.isTshirtBase);
+      if (!productImage) return;
 
-      import("fabric").then(({ Image }) => {
-        const canvas = editor.canvas;
+      const productBounds = productImage.getBoundingRect();
 
-        // Create image from SVG
-        Image.fromURL(svgUrl, (img) => {
-          img.set({
-            left: canvas.getWidth() / 2,
-            top: canvas.getHeight() / 2,
-            originX: "center",
-            originY: "center",
-            scaleX: 0.8,
-            scaleY: 0.8,
-            selectable: true,
-            evented: true,
-            hasControls: true,
-            hasBorders: true,
-            moveCursor: "move",
-            lockMovementX: false,
-            lockMovementY: false,
-            lockScalingX: false,
-            lockScalingY: false,
-            lockRotation: false
-          });
-
-          img.isIcon = true;
-          img.iconData = iconData;
-          img.name = "icon-image";
-
-          // Add to canvas
-          const imageObj = canvas.getObjects().find((o) => o.type === "image" && o.isTshirtBase);
-
-          canvas.add(img);
-          canvas.bringToFront(img);
-          canvas.setActiveObject(img);
-
-          if (imageObj) {
-            applyClippingToObject(img, imageObj);
-          }
-
-          canvas.requestRenderAll();
-
-          // Clean up the blob URL
-          URL.revokeObjectURL(svgUrl);
-        });
-      });
-
-    } catch (error) {
-      console.error('Failed to load icon:', error);
-
-      // Fallback to symbol
-      import("fabric").then(({ IText }) => {
-        const canvas = editor.canvas;
-        const iconText = new IText('🔸', {
-          left: canvas.getWidth() / 2,
-          top: canvas.getHeight() / 2,
+      Image.fromURL(svgUrl, (img) => {
+        img.set({
+          left: productBounds.left + productBounds.width / 2,
+          top: productBounds.top + productBounds.height / 2,
           originX: "center",
           originY: "center",
-          fontSize: 48,
-          fill: "#000",
+          scaleX: 0.8,
+          scaleY: 0.8,
           selectable: true,
           evented: true,
           hasControls: true,
-          hasBorders: true
+          hasBorders: true,
+          moveCursor: "move",
+          lockMovementX: false,
+          lockMovementY: false,
+          lockScalingX: false,
+          lockScalingY: false,
+          lockRotation: false
         });
 
-        iconText.isIcon = true;
-        canvas.add(iconText);
-        canvas.setActiveObject(iconText);
+        img.isIcon = true;
+        img.iconData = iconData;
+        img.name = "icon-image";
 
-        const imageObj = canvas.getObjects().find((o) => o.type === "image" && o.isTshirtBase);
-        if (imageObj) {
-          applyClippingToObject(iconText, imageObj);
-        }
+        canvas.add(img);
+        canvas.bringToFront(img);
+        canvas.setActiveObject(img);
 
+        constrainObjectToProduct(img, productImage);
+        applyClippingToObject(img, productImage);
         canvas.requestRenderAll();
+
+        URL.revokeObjectURL(svgUrl);
       });
-    }
-  };
+    });
+
+  } catch (error) {
+    console.error('Failed to load icon:', error);
+
+    import("fabric").then(({ IText }) => {
+      const canvas = editor.canvas;
+      const productImage = canvas.getObjects().find((obj) => obj.isTshirtBase);
+      if (!productImage) return;
+
+      const productBounds = productImage.getBoundingRect();
+
+      const iconText = new IText('🔸', {
+        left: productBounds.left + productBounds.width / 2,
+        top: productBounds.top + productBounds.height / 2,
+        originX: "center",
+        originY: "center",
+        fontSize: 48,
+        fill: "#000",
+        selectable: true,
+        evented: true,
+        hasControls: true,
+        hasBorders: true
+      });
+
+      iconText.isIcon = true;
+      canvas.add(iconText);
+      canvas.setActiveObject(iconText);
+
+      constrainObjectToProduct(iconText, productImage);
+      applyClippingToObject(iconText, productImage);
+      canvas.requestRenderAll();
+    });
+  }
+};
 
   useEffect(() => {
     if (!editor || products.length === 0) return;
@@ -1118,7 +1327,6 @@ const CustomizerLayout = () => {
           editor.canvas.add(textObject);
           editor.canvas.setActiveObject(textObject);
 
-          // Apply clipping immediately
           applyClippingToObject(textObject, fabricImg);
           editor.canvas.requestRenderAll();
         } else {
@@ -1173,223 +1381,243 @@ const CustomizerLayout = () => {
   };
 
   const handleSave = () => {
-  console.log("handleSave called!");
-  
-  if (!editor?.canvas) {
-    alert('Canvas not ready!');
-    return;
-  }
-  
-  if (!selectedProduct) {
-    alert('No product selected!');
-    return;
-  }
+    console.log("handleSave called!");
 
-  setIsSaving(true);
-  
-  try {
-    // Get screenshot as data URL
-    const screenshotDataURL = editor.canvas.toDataURL('image/png', 0.8);
-    console.log("Screenshot created, length:", screenshotDataURL.length);
-    
-    // Collect all canvas objects with their properties
-    const canvasObjects = editor.canvas.getObjects().map(obj => {
-      const baseData = {
-        type: obj.type,
-        left: obj.left,
-        top: obj.top,
-        scaleX: obj.scaleX,
-        scaleY: obj.scaleY,
-        angle: obj.angle,
-        opacity: obj.opacity,
-        flipX: obj.flipX,
-        flipY: obj.flipY,
-        originX: obj.originX,
-        originY: obj.originY,
-        selectable: obj.selectable,
-        evented: obj.evented,
-        visible: obj.visible
+    if (!editor?.canvas) {
+      alert('Canvas not ready!');
+      return;
+    }
+
+    if (!selectedProduct) {
+      alert('No product selected!');
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      const screenshotDataURL = editor.canvas.toDataURL('image/png', 0.8);
+      console.log("Screenshot created, length:", screenshotDataURL.length);
+
+      const canvasObjects = editor.canvas.getObjects().map(obj => {
+        const baseData = {
+          type: obj.type,
+          left: obj.left,
+          top: obj.top,
+          scaleX: obj.scaleX,
+          scaleY: obj.scaleY,
+          angle: obj.angle,
+          opacity: obj.opacity,
+          flipX: obj.flipX,
+          flipY: obj.flipY,
+          originX: obj.originX,
+          originY: obj.originY,
+          selectable: obj.selectable,
+          evented: obj.evented,
+          visible: obj.visible
+        };
+
+        if (obj.type === 'i-text') {
+          return {
+            ...baseData,
+            text: obj.text,
+            fontSize: obj.fontSize,
+            fontFamily: obj.fontFamily,
+            fontStyle: obj.fontStyle,
+            fontWeight: obj.fontWeight,
+            fill: obj.fill,
+            textAlign: obj.textAlign,
+            charSpacing: obj.charSpacing,
+            lineHeight: obj.lineHeight,
+            isEmoji: obj.isEmoji || false,
+            editable: obj.editable
+          };
+        } else if (obj.type === 'image') {
+          return {
+            ...baseData,
+            src: obj.getSrc ? obj.getSrc() : obj._originalElement?.src,
+            isTshirtBase: obj.isTshirtBase || false,
+            name: obj.name,
+            isIcon: obj.isIcon || false,
+            hasControls: obj.hasControls,
+            hasBorders: obj.hasBorders,
+            lockMovementX: obj.lockMovementX,
+            lockMovementY: obj.lockMovementY,
+            lockScalingX: obj.lockScalingX,
+            lockScalingY: obj.lockScalingY,
+            lockRotation: obj.lockRotation
+          };
+        }
+
+        return baseData;
+      });
+
+      const saveData = {
+        id: Date.now(),
+        timestamp: new Date().toISOString(),
+
+        product: {
+          id: selectedProduct.id,
+          image: selectedProduct.image,
+          description: selectedProduct.description,
+          size: selectedProduct.size,
+          color: selectedProduct.color,
+          width: selectedProduct.width,
+          textTopRatio: selectedProduct.textTopRatio
+        },
+
+        canvas: {
+          width: editor.canvas.getWidth(),
+          height: editor.canvas.getHeight(),
+          objects: canvasObjects,
+          backgroundColor: editor.canvas.backgroundColor || ""
+        },
+
+        design: {
+          appliedDesigns: canvasObjects.filter(obj =>
+            obj.type === 'image' &&
+            !obj.isTshirtBase &&
+            obj.name === 'design-image'
+          ),
+          appliedPatterns: canvasObjects.filter(obj =>
+            obj.type === 'image' &&
+            obj.name === 'pattern-image'
+          ),
+          customUploads: canvasObjects.filter(obj =>
+            obj.type === 'image' &&
+            !obj.isTshirtBase &&
+            !obj.name
+          )
+        },
+
+        text: {
+          textObjects: canvasObjects.filter(obj => obj.type === 'i-text'),
+          currentTextColor: setTextColor,
+          currentFontFamily: setTextFontFamily,
+          currentFontStyle: setFontStyle,
+          currentTextSize: textSize,
+          currentTextSpacing: textSpacing,
+          currentTextArc: textArc,
+          textFlipX: setTextFlipX,
+          textFlipY: setTextFlipY
+        },
+
+        clipart: {
+          emojis: canvasObjects.filter(obj => obj.isEmoji),
+          icons: canvasObjects.filter(obj => obj.isIcon),
+          customIcons: canvasObjects.filter(obj =>
+            obj.type === 'image' &&
+            obj.name === 'icon-image'
+          )
+        },
+
+        pattern: {
+          appliedPattern: null 
+        },
+
+        imageSettings: {
+          flipX: setFlipX,
+          flipY: setFlipY,
+          selectedColor: selectedColor,
+          opacity: selectedProduct.opacity || 100,
+          rotation: selectedProduct.rotate || 0
+        },
+
+        uiState: {
+          showSidebar: showSidebar,
+          clippingPath: clippingPath,
+          customTextState: {
+            text: customText,
+            showEditModal: showEditModal,
+            showAddModal: showAddModal
+          }
+        },
+
+        metadata: {
+          canvasObjectCount: canvasObjects.length,
+          hasText: canvasObjects.some(obj => obj.type === 'i-text'),
+          hasDesign: canvasObjects.some(obj =>
+            obj.type === 'image' &&
+            !obj.isTshirtBase
+          ),
+          hasCustomUpload: canvasObjects.some(obj =>
+            obj.type === 'image' &&
+            !obj.isTshirtBase &&
+            !obj.name
+          )
+        },
+
+        screenshot: screenshotDataURL
       };
 
-      // Add type-specific properties
-      if (obj.type === 'i-text') {
-        return {
-          ...baseData,
-          text: obj.text,
-          fontSize: obj.fontSize,
-          fontFamily: obj.fontFamily,
-          fontStyle: obj.fontStyle,
-          fontWeight: obj.fontWeight,
-          fill: obj.fill,
-          textAlign: obj.textAlign,
-          charSpacing: obj.charSpacing,
-          lineHeight: obj.lineHeight,
-          isEmoji: obj.isEmoji || false,
-          editable: obj.editable
-        };
-      } else if (obj.type === 'image') {
-        return {
-          ...baseData,
-          src: obj.getSrc ? obj.getSrc() : obj._originalElement?.src,
-          isTshirtBase: obj.isTshirtBase || false,
-          name: obj.name,
-          isIcon: obj.isIcon || false,
-          hasControls: obj.hasControls,
-          hasBorders: obj.hasBorders,
-          lockMovementX: obj.lockMovementX,
-          lockMovementY: obj.lockMovementY,
-          lockScalingX: obj.lockScalingX,
-          lockScalingY: obj.lockScalingY,
-          lockRotation: obj.lockRotation
-        };
-      }
+      const existingSaves = JSON.parse(localStorage.getItem('customizations') || '[]');
+      existingSaves.push(saveData);
+      localStorage.setItem('customizations', JSON.stringify(existingSaves));
 
-      return baseData;
-    });
+      console.log("✅ Saved to localStorage!");
+      console.log("Save data structure:", saveData);
+      console.log("Total saves:", existingSaves.length);
 
-    // Create simplified save data structure (only essential data)
-    const saveData = {
-      id: Date.now(),
-      timestamp: new Date().toISOString(),
-      
-      // Product Information (simplified)
-      product: {
-        id: selectedProduct.id,
-        image: selectedProduct.image,
-        description: selectedProduct.description,
-        size: selectedProduct.size,
-        color: selectedProduct.color,
-        width: selectedProduct.width,
-        textTopRatio: selectedProduct.textTopRatio
-      },
-      
-      // Canvas State (essential only)
-      canvas: {
-        width: editor.canvas.getWidth(),
-        height: editor.canvas.getHeight(),
-        objects: canvasObjects,
-        backgroundColor: editor.canvas.backgroundColor || ""
-      },
-      
-      // Design Elements (applied designs only)
-      design: {
-        appliedDesigns: canvasObjects.filter(obj => 
-          obj.type === 'image' && 
-          !obj.isTshirtBase && 
-          obj.name === 'design-image'
-        ),
-        appliedPatterns: canvasObjects.filter(obj => 
-          obj.type === 'image' && 
-          obj.name === 'pattern-image'
-        ),
-        customUploads: canvasObjects.filter(obj => 
-          obj.type === 'image' && 
-          !obj.isTshirtBase && 
-          !obj.name
-        )
-      },
-      
-      // Text Settings (current state)
-      text: {
-        textObjects: canvasObjects.filter(obj => obj.type === 'i-text'),
-        currentTextColor: setTextColor,
-        currentFontFamily: setTextFontFamily,
-        currentFontStyle: setFontStyle,
-        currentTextSize: textSize,
-        currentTextSpacing: textSpacing,
-        currentTextArc: textArc,
-        textFlipX: setTextFlipX,
-        textFlipY: setTextFlipY
-      },
-      
-      // Clipart (simple tracking)
-      clipart: {
-        emojis: canvasObjects.filter(obj => obj.isEmoji),
-        icons: canvasObjects.filter(obj => obj.isIcon),
-        customIcons: canvasObjects.filter(obj => 
-          obj.type === 'image' && 
-          obj.name === 'icon-image'
-        )
-      },
-      
-      // Pattern (basic info)
-      pattern: {
-        appliedPattern: null // Track which pattern is applied if needed
-      },
-      
-      // Image Settings (essential only)
-      imageSettings: {
-        flipX: setFlipX,
-        flipY: setFlipY,
-        selectedColor: selectedColor,
-        opacity: selectedProduct.opacity || 100,
-        rotation: selectedProduct.rotate || 0
-      },
-      
-      // UI State (minimal)
-      uiState: {
-        showSidebar: showSidebar,
-        clippingPath: clippingPath,
-        customTextState: {
-          text: customText,
-          showEditModal: showEditModal,
-          showAddModal: showAddModal
-        }
-      },
-      
-      // Metadata (quick stats)
-      metadata: {
-        canvasObjectCount: canvasObjects.length,
-        hasText: canvasObjects.some(obj => obj.type === 'i-text'),
-        hasDesign: canvasObjects.some(obj => 
-          obj.type === 'image' && 
-          !obj.isTshirtBase
-        ),
-        hasCustomUpload: canvasObjects.some(obj => 
-          obj.type === 'image' && 
-          !obj.isTshirtBase && 
-          !obj.name
-        )
-      },
-      
-      // Screenshot
-      screenshot: screenshotDataURL
-    };
-    
-    // Save to localStorage
-    const existingSaves = JSON.parse(localStorage.getItem('customizations') || '[]');
-    existingSaves.push(saveData);
-    localStorage.setItem('customizations', JSON.stringify(existingSaves));
-    
-    console.log("✅ Saved to localStorage!");
-    console.log("Save data structure:", saveData);
-    console.log("Total saves:", existingSaves.length);
-    
-    // Create blob URL for viewing
-    fetch(screenshotDataURL)
-      .then(res => res.blob())
-      .then(blob => {
-        const viewableURL = URL.createObjectURL(blob);
-        console.log("🖼️ CLICK THIS URL TO VIEW SCREENSHOT:");
-        console.log(viewableURL);
-        
-        // Auto-open in new tab
-        window.open(viewableURL, '_blank');
-      })
-      .catch(err => console.log("Blob creation failed:", err));
-    
-    // Show success message
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 3000);
-    
-    alert('Saved successfully! Screenshot opened in new tab.');
-    
-  } catch (error) {
-    console.error('Save error:', error);
-    alert('Save failed: ' + error.message);
-  } finally {
-    setIsSaving(false);
+      fetch(screenshotDataURL)
+        .then(res => res.blob())
+        .then(blob => {
+          const viewableURL = URL.createObjectURL(blob);
+          console.log("🖼️ CLICK THIS URL TO VIEW SCREENSHOT:");
+          console.log(viewableURL);
+
+          window.open(viewableURL, '_blank');
+        })
+        .catch(err => console.log("Blob creation failed:", err));
+
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+
+      alert('Saved successfully! Screenshot opened in new tab.');
+
+    } catch (error) {
+      console.error('Save error:', error);
+      alert('Save failed: ' + error.message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const constrainObjectToProduct = (obj, productImage) => {
+  if (!obj || !productImage || obj.isTshirtBase) return;
+
+  const productBounds = productImage.getBoundingRect();
+  const objBounds = obj.getBoundingRect();
+
+  const padding = 10; 
+  const minX = productBounds.left + padding;
+  const maxX = productBounds.left + productBounds.width - padding;
+  const minY = productBounds.top + padding;
+  const maxY = productBounds.top + productBounds.height - padding;
+
+  const objWidth = objBounds.width;
+  const objHeight = objBounds.height;
+
+  let newLeft = obj.left;
+  let newTop = obj.top;
+
+  if (objBounds.left < minX) {
+    newLeft = minX + objWidth / 2;
+  } else if (objBounds.left + objWidth > maxX) {
+    newLeft = maxX - objWidth / 2;
   }
+
+  if (objBounds.top < minY) {
+    newTop = minY + objHeight / 2;
+  } else if (objBounds.top + objHeight > maxY) {
+    newTop = maxY - objHeight / 2;
+  }
+
+  obj.set({
+    left: newLeft,
+    top: newTop
+  });
+
+  obj.setCoords();
 };
 
 
@@ -1454,7 +1682,6 @@ const CustomizerLayout = () => {
     if (!editor || !editor.canvas) return;
 
     import("fabric").then(({ Canvas }) => {
-      // Fix bringToFront method
       if (!Canvas.prototype.bringToFront) {
         Canvas.prototype.bringToFront = function (object) {
           const objects = this.getObjects();
@@ -1467,18 +1694,15 @@ const CustomizerLayout = () => {
         };
       }
 
-      // Fix sendToBack method - use proper insertAt method
       if (!Canvas.prototype.sendToBack) {
         Canvas.prototype.sendToBack = function (object) {
           const objects = this.getObjects();
           const currentIndex = objects.indexOf(object);
           if (currentIndex !== -1 && currentIndex > 0) {
             this.remove(object);
-            // Use the correct method based on Fabric.js version
             if (typeof this.insertAt === 'function') {
               this.insertAt(object, 0);
             } else {
-              // Alternative method for newer versions
               objects.splice(0, 0, object);
               this._objects = objects;
               this.renderAll();
@@ -1488,13 +1712,11 @@ const CustomizerLayout = () => {
         };
       }
 
-      // Fix bringForward method
       if (!Canvas.prototype.bringForward) {
         Canvas.prototype.bringForward = function (object) {
           const objects = this.getObjects();
           const currentIndex = objects.indexOf(object);
           if (currentIndex !== -1 && currentIndex < objects.length - 1) {
-            // Swap with next object
             const nextIndex = currentIndex + 1;
             [objects[currentIndex], objects[nextIndex]] = [objects[nextIndex], objects[currentIndex]];
             this.renderAll();
@@ -1503,13 +1725,11 @@ const CustomizerLayout = () => {
         };
       }
 
-      // Fix sendBackwards method
       if (!Canvas.prototype.sendBackwards) {
         Canvas.prototype.sendBackwards = function (object) {
           const objects = this.getObjects();
           const currentIndex = objects.indexOf(object);
           if (currentIndex !== -1 && currentIndex > 0) {
-            // Swap with previous object
             const prevIndex = currentIndex - 1;
             [objects[currentIndex], objects[prevIndex]] = [objects[prevIndex], objects[currentIndex]];
             this.renderAll();
@@ -1520,48 +1740,131 @@ const CustomizerLayout = () => {
     });
   }, [editor]);
 
+  let clippingTimeout = null;
+  let isClippingInProgress = false;
+
+  const debouncedUpdateClipping = (obj) => {
+    if (isClippingInProgress) return;
+
+    if (clippingTimeout) {
+      clearTimeout(clippingTimeout);
+    }
+
+    clippingTimeout = setTimeout(() => {
+      isClippingInProgress = true;
+      updateClippingForObject(obj);
+      isClippingInProgress = false;
+    }, 100); 
+  };
+
+  let lastRenderTime = 0;
+  const throttledRender = (canvas) => {
+    const now = Date.now();
+    if (now - lastRenderTime > 16) { 
+      canvas.renderAll();
+      lastRenderTime = now;
+    }
+  };
+
+
   useEffect(() => {
-    if (!editor || !editor.canvas) return;
+  if (!editor || !editor.canvas) return;
 
-    editor.canvas.selection = true;
-    editor.canvas.skipTargetFind = false;
-    editor.canvas.hoverCursor = 'move';
-    editor.canvas.defaultCursor = 'move';
-    editor.canvas.allowTouchScrolling = false;
-    editor.canvas.targetFindTolerance = 10;
+  editor.canvas.selection = true;
+  editor.canvas.skipTargetFind = false;
+  editor.canvas.hoverCursor = 'move';
+  editor.canvas.defaultCursor = 'move';
+  editor.canvas.allowTouchScrolling = false;
+  editor.canvas.targetFindTolerance = 10;
 
-    const canvas = editor.canvas;
+  const canvas = editor.canvas;
 
-    const handleObjectMoving = (e) => {
-      updateClippingForObject(e.target);
-    };
+  const getProductImage = () => {
+    return canvas.getObjects().find((o) => o.type === "image" && o.isTshirtBase);
+  };
 
-    const handleObjectScaling = (e) => {
-      updateClippingForObject(e.target);
-    };
+  const handleObjectMoving = (e) => {
+    const productImage = getProductImage();
+    if (productImage) {
+      constrainObjectToProduct(e.target, productImage);
+    }
+    throttledRender(canvas);
+  };
 
-    const handleObjectRotating = (e) => {
-      updateClippingForObject(e.target);
-    };
+  const handleObjectScaling = (e) => {
+    const productImage = getProductImage();
+    if (productImage) {
+      constrainObjectToProduct(e.target, productImage);
+    }
+    throttledRender(canvas);
+  };
 
-    const handleObjectModified = (e) => {
-      updateClippingForObject(e.target);
-    };
+  const handleObjectRotating = (e) => {
+    const productImage = getProductImage();
+    if (productImage) {
+      constrainObjectToProduct(e.target, productImage);
+    }
+    throttledRender(canvas);
+  };
 
-    canvas.on('object:moving', handleObjectMoving);
-    canvas.on('object:scaling', handleObjectScaling);
-    canvas.on('object:rotating', handleObjectRotating);
-    canvas.on('object:modified', handleObjectModified);
+  const handleObjectModified = (e) => {
+    const productImage = getProductImage();
+    if (productImage) {
+      constrainObjectToProduct(e.target, productImage);
+    }
+    debouncedUpdateClipping(e.target);
+  };
 
-    canvas.renderAll();
+  const handleObjectMovingStart = (e) => {
+    e.target.isMoving = true;
+    if (clippingTimeout) {
+      clearTimeout(clippingTimeout);
+    }
+  };
 
-    return () => {
-      canvas.off('object:moving', handleObjectMoving);
-      canvas.off('object:scaling', handleObjectScaling);
-      canvas.off('object:rotating', handleObjectRotating);
-      canvas.off('object:modified', handleObjectModified);
-    };
-  }, [editor]);
+  const handleObjectMovingEnd = (e) => {
+    e.target.isMoving = false;
+    const productImage = getProductImage();
+    if (productImage) {
+      constrainObjectToProduct(e.target, productImage);
+    }
+    debouncedUpdateClipping(e.target);
+  };
+
+  const handleObjectAdded = (e) => {
+    const productImage = getProductImage();
+    if (productImage && !e.target.isTshirtBase) {
+      setTimeout(() => {
+        constrainObjectToProduct(e.target, productImage);
+        canvas.renderAll();
+      }, 50);
+    }
+  };
+
+  canvas.on('object:moving', handleObjectMoving);
+  canvas.on('object:scaling', handleObjectScaling);
+  canvas.on('object:rotating', handleObjectRotating);
+  canvas.on('object:modified', handleObjectModified);
+  canvas.on('object:moving', handleObjectMovingStart);
+  canvas.on('object:moved', handleObjectMovingEnd);
+  canvas.on('object:added', handleObjectAdded);
+
+  canvas.renderAll();
+
+  return () => {
+    canvas.off('object:moving', handleObjectMoving);
+    canvas.off('object:scaling', handleObjectScaling);
+    canvas.off('object:rotating', handleObjectRotating);
+    canvas.off('object:modified', handleObjectModified);
+    canvas.off('object:moving', handleObjectMovingStart);
+    canvas.off('object:moved', handleObjectMovingEnd);
+    canvas.off('object:added', handleObjectAdded);
+
+    if (clippingTimeout) {
+      clearTimeout(clippingTimeout);
+    }
+  };
+}, [editor]);
 
   const bringForward = () => {
     const canvas = editor?.canvas;
@@ -1572,13 +1875,10 @@ const CustomizerLayout = () => {
     const objects = canvas.getObjects();
     const currentIndex = objects.indexOf(activeObj);
 
-    // Check if object can be moved forward
     if (currentIndex !== -1 && currentIndex < objects.length - 1) {
-      // Swap with next object
       const nextIndex = currentIndex + 1;
       [objects[currentIndex], objects[nextIndex]] = [objects[nextIndex], objects[currentIndex]];
 
-      // Update canvas objects array
       canvas._objects = objects;
       activeObj.setCoords();
       canvas.renderAll();
@@ -1608,19 +1908,19 @@ const CustomizerLayout = () => {
             editor={editor}
             products={products}
             setProducts={setProducts}
-            selectedProduct={selectedProduct}           // Add this
-            setSelectedProduct={setSelectedProduct}     // Add this
-            customText={customText}                     // Add this
-            textSize={textSize}                         // Add this
-            textSpacing={textSpacing}                   // Add this
-            textArc={textArc}                           // Add this
-            setTextFontFamily={setTextFontFamily}       // Add this
-            setFontStyle={setFontStyle}                 // Add this
-            setTextColor={setTextColor}                 // Add this
-            setFlipX={setFlipX}                         // Add this
-            setFlipY={setFlipY}                         // Add this
-            setTextFlipX={setTextFlipX}                 // Add this
-            setTextFlipY={setTextFlipY}                 // Add this
+            selectedProduct={selectedProduct}           
+            setSelectedProduct={setSelectedProduct}     
+            customText={customText}                     
+            textSize={textSize}                         
+            textSpacing={textSpacing}                   
+            textArc={textArc}                           
+            setTextFontFamily={setTextFontFamily}       
+            setFontStyle={setFontStyle}                 
+            setTextColor={setTextColor}                 
+            setFlipX={setFlipX}                         
+            setFlipY={setFlipY}                         
+            setTextFlipX={setTextFlipX}                 
+            setTextFlipY={setTextFlipY}                 
             handleAddCustomText={handleAddCustomText}
             setCustomText={setCustomText}
             updateLastProduct={updateLastProduct}
