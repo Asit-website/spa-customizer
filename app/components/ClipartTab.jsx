@@ -2,12 +2,14 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Icon } from '@iconify/react';
 import EmojiPicker from 'emoji-picker-react';
 
-const ClipartTab = ({ 
-  setShowClipartTab, 
-  addEmojiTextToCanvas, 
-  lastProduct, 
+const ClipartTab = ({
+  setShowClipartTab,
+  addEmojiTextToCanvas,
+  lastProduct,
   handleAddDesignToCanvas,
-  addIconToCanvas
+  addIconToCanvas,
+  handleAddPatternToCanvas,
+  editor
 }) => {
   const [view, setView] = useState('main');
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -25,11 +27,11 @@ const ClipartTab = ({
       setLoading(true);
       const response = await fetch('https://api.iconify.design/collections');
       const collections = await response.json();
-      
+
       const popularCollections = Object.entries(collections)
-        .filter(([key, collection]) => collection.total > 100) 
-        .sort((a, b) => b[1].total - a[1].total) 
-        .slice(0, 30) 
+        .filter(([key, collection]) => collection.total > 100)
+        .sort((a, b) => b[1].total - a[1].total)
+        .slice(0, 30)
         .map(([key, collection]) => ({
           id: key,
           name: collection.name,
@@ -45,7 +47,7 @@ const ClipartTab = ({
     } catch (error) {
       console.error('Failed to fetch icon collections:', error);
       setLoading(false);
-      
+
       setIconCollections([
         { id: 'material-symbols', name: 'Material Symbols', total: 2500, category: 'Google' },
         { id: 'lucide', name: 'Lucide', total: 1000, category: 'Interface' },
@@ -129,7 +131,7 @@ const ClipartTab = ({
       setLoading(true);
       const response = await fetch(`https://api.iconify.design/collection?prefix=${collectionId}`);
       const data = await response.json();
-      
+
       if (data.uncategorized) {
         const icons = data.uncategorized.slice(0, 200).map(iconName => ({
           name: `${collectionId}:${iconName}`,
@@ -137,7 +139,7 @@ const ClipartTab = ({
           collection: collectionId,
           category: 'uncategorized'
         }));
-        
+
         setSelectedIcons(icons);
       } else if (data.categories) {
         const allIcons = [];
@@ -162,7 +164,7 @@ const ClipartTab = ({
 
   const searchIcons = async (query) => {
     if (!query.trim()) return;
-    
+
     try {
       setLoading(true);
       const collections = ['material-symbols', 'lucide', 'heroicons', 'tabler', 'carbon', 'mdi', 'fa', 'bootstrap'];
@@ -179,11 +181,11 @@ const ClipartTab = ({
           return [];
         }
       });
-      
+
       const results = await Promise.all(searchPromises);
       const allIcons = results.flat();
-      
-      setSelectedIcons(allIcons.slice(0, 100)); 
+
+      setSelectedIcons(allIcons.slice(0, 100));
       setLoading(false);
     } catch (error) {
       console.error('Search failed:', error);
@@ -204,7 +206,7 @@ const ClipartTab = ({
 
   const mainCategories = useMemo(() => {
     const categories = [];
-    
+
     if (lastProduct?.designs?.length > 0) {
       categories.push({
         id: 'designs',
@@ -214,11 +216,11 @@ const ClipartTab = ({
         description: 'Custom designs for this product'
       });
     }
-    
+
     if (lastProduct?.patterns?.length > 0) {
       categories.push({
         id: 'patterns',
-        name: 'Patterns', 
+        name: 'Patterns',
         icon: '🌟',
         count: lastProduct.patterns.length,
         description: 'Pattern designs for this product'
@@ -290,11 +292,11 @@ const ClipartTab = ({
   const handleMainCategoryClick = (categoryId) => {
     setSelectedCategory(categoryId);
     setSearchQuery('');
-    
+
     if (categoryId === 'search-icons') {
       setSelectedIcons([]);
     }
-    
+
     setView(categoryId);
   };
 
@@ -334,9 +336,9 @@ const ClipartTab = ({
     const svgData = `<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">${shape.svg}</svg>`;
     const svgBlob = new Blob([svgData], { type: 'image/svg+xml' });
     const svgUrl = URL.createObjectURL(svgBlob);
-    
+
     handleAddDesignToCanvas(svgUrl, 'center', 0, 0);
-    
+
     setTimeout(() => {
       URL.revokeObjectURL(svgUrl);
     }, 1000);
@@ -354,7 +356,7 @@ const ClipartTab = ({
     const svgData = `<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">${decorative.svg}</svg>`;
     const svgBlob = new Blob([svgData], { type: 'image/svg+xml' });
     const svgUrl = URL.createObjectURL(svgBlob);
-    
+
     handleAddDesignToCanvas(svgUrl, 'center', 0, 0);
 
     setTimeout(() => {
@@ -382,10 +384,10 @@ const ClipartTab = ({
           return [];
         }
       });
-      
+
       const results = await Promise.all(iconPromises);
       const allIcons = results.flat();
-      
+
       setSelectedIcons(allIcons.slice(0, 50));
       setLoading(false);
     } catch (error) {
@@ -397,20 +399,20 @@ const ClipartTab = ({
   const handleSearch = (e) => {
     const query = e.target.value;
     setSearchQuery(query);
-    
+
     if (view === 'search-icons' && query.length > 2) {
       const timeoutId = setTimeout(() => {
         searchIcons(query);
-      }, 500); 
-      
+      }, 500);
+
       return () => clearTimeout(timeoutId);
     }
   };
 
   const filteredIcons = useMemo(() => {
     if (!searchQuery || view !== 'icon-list') return selectedIcons;
-    
-    return selectedIcons.filter(icon => 
+
+    return selectedIcons.filter(icon =>
       icon.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       icon.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -418,12 +420,12 @@ const ClipartTab = ({
 
   const getHeaderTitle = () => {
     const backIcon = (
-      <img 
-        src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1750138078/chevron-right_p6kmcp.svg" 
-        className="rotate-180 w-4" 
+      <img
+        src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1750138078/chevron-right_p6kmcp.svg"
+        className="rotate-180 w-4"
       />
     );
-    
+
     const titles = {
       'main': 'Clipart & Icons',
       'emoji': 'Emoji Picker',
@@ -439,9 +441,9 @@ const ClipartTab = ({
       'designs': 'Product Designs',
       'patterns': 'Product Patterns'
     };
-    
+
     if (view === 'main') return titles[view];
-    
+
     return (
       <span className='flex items-center gap-1 cursor-pointer' onClick={handleBack}>
         {backIcon}
@@ -467,11 +469,11 @@ const ClipartTab = ({
       {(view === 'search-icons' || view === 'icon-list') && (
         <div className='py-3 px-3'>
           <div className="relative">
-            <input 
-              type="search" 
+            <input
+              type="search"
               value={searchQuery}
               onChange={handleSearch}
-              className="block w-full p-3 text-sm pr-8 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500" 
+              className="block w-full p-3 text-sm pr-8 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
               placeholder={view === 'search-icons' ? "Search 100K+ icons..." : "Filter icons..."}
             />
             <div className="absolute inset-y-0 end-3 flex items-center ps-3 pointer-events-none">
@@ -493,9 +495,9 @@ const ClipartTab = ({
       {view === 'main' && !loading && (
         <div className="p-3 space-y-3">
           {mainCategories.map((category) => (
-            <div 
-              key={category.id} 
-              onClick={() => handleMainCategoryClick(category.id)} 
+            <div
+              key={category.id}
+              onClick={() => handleMainCategoryClick(category.id)}
               className="flex items-center p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors border border-gray-100"
             >
               <div className="text-2xl mr-3">{category.icon}</div>
@@ -514,7 +516,7 @@ const ClipartTab = ({
 
       {view === 'emoji' && (
         <div className="p-3">
-          <EmojiPicker 
+          <EmojiPicker
             onEmojiClick={handleEmojiClick}
             width="100%"
             height={400}
@@ -537,7 +539,7 @@ const ClipartTab = ({
                 className="flex flex-col items-center p-2 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
                 title={shape.name}
               >
-                <div 
+                <div
                   className="w-12 h-12 mb-1 flex items-center justify-center"
                   dangerouslySetInnerHTML={{
                     __html: `<svg width="48" height="48" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">${shape.svg}</svg>`
@@ -562,7 +564,7 @@ const ClipartTab = ({
                 className="flex items-center p-3 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors border border-gray-100"
               >
                 <div className="flex-1">
-                  <div 
+                  <div
                     className="text-gray-800"
                     style={{
                       fontSize: `${Math.min(typography.fontSize, 20)}px`,
@@ -593,7 +595,7 @@ const ClipartTab = ({
                 className="flex flex-col items-center p-2 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
                 title={decorative.name}
               >
-                <div 
+                <div
                   className="w-16 h-16 mb-1 flex items-center justify-center"
                   dangerouslySetInnerHTML={{
                     __html: `<svg width="64" height="64" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">${decorative.svg}</svg>`
@@ -611,16 +613,16 @@ const ClipartTab = ({
       {view === 'illustrations' && !loading && (
         <div className="p-3 space-y-2 max-h-96 overflow-y-auto">
           {iconCollections.map((collection) => (
-            <div 
+            <div
               key={collection.id}
               onClick={() => handleIconCollectionClick(collection.id)}
               className="flex items-center p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors border border-gray-100"
             >
               <div className="mr-3 w-8 h-8 flex items-center justify-center">
-                <Icon 
-                  icon={`${collection.id}:home`} 
-                  width={20} 
-                  height={20} 
+                <Icon
+                  icon={`${collection.id}:home`}
+                  width={20}
+                  height={20}
                   className="text-gray-600"
                   onError={() => (
                     <Icon icon={`${collection.id}:star`} width={20} height={20} className="text-gray-600" />
@@ -644,16 +646,16 @@ const ClipartTab = ({
       {view === 'icons' && !loading && (
         <div className="p-3 space-y-2 max-h-96 overflow-y-auto">
           {iconCollections.map((collection) => (
-            <div 
+            <div
               key={collection.id}
               onClick={() => handleIconCollectionClick(collection.id)}
               className="flex items-center p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors border border-gray-100"
             >
               <div className="mr-3 w-8 h-8 flex items-center justify-center">
-                <Icon 
-                  icon={`${collection.id}:home`} 
-                  width={20} 
-                  height={20} 
+                <Icon
+                  icon={`${collection.id}:home`}
+                  width={20}
+                  height={20}
                   className="text-gray-600"
                 />
               </div>
@@ -674,7 +676,7 @@ const ClipartTab = ({
       {view === 'thematic' && !loading && (
         <div className="p-3 space-y-2 max-h-96 overflow-y-auto">
           {thematicCollections.map((theme) => (
-            <div 
+            <div
               key={theme.name}
               onClick={() => {
                 setSelectedCategory(theme.name);
@@ -717,7 +719,7 @@ const ClipartTab = ({
               </div>
             ))}
           </div>
-          
+
           {filteredIcons.length === 0 && (
             <div className="text-center py-8 text-gray-500">
               <Icon icon="material-symbols:search-off" width={48} height={48} className="mx-auto mb-2 text-gray-300" />
@@ -745,7 +747,7 @@ const ClipartTab = ({
               </div>
             ))}
           </div>
-          
+
           {view === 'search-icons' && searchQuery.length <= 2 && (
             <div className="text-center py-8 text-gray-500">
               <Icon icon="material-symbols:search" width={48} height={48} className="mx-auto mb-2 text-gray-300" />
@@ -753,7 +755,7 @@ const ClipartTab = ({
               <p className="text-xs mt-1">Search across Material, Lucide, Heroicons, and more!</p>
             </div>
           )}
-          
+
           {selectedIcons.length === 0 && searchQuery.length > 2 && (
             <div className="text-center py-8 text-gray-500">
               <Icon icon="material-symbols:search-off" width={48} height={48} className="mx-auto mb-2 text-gray-300" />
@@ -778,7 +780,7 @@ const ClipartTab = ({
         </div>
       )}
 
-      {view === 'patterns' && (
+      {/* {view === 'patterns' && (
         <div className="grid grid-cols-3 gap-2 p-3 max-h-80 overflow-y-auto">
           {lastProduct.patterns?.map((pattern, index) => (
             <img
@@ -790,7 +792,51 @@ const ClipartTab = ({
             />
           ))}
         </div>
+      )} */}
+
+
+      {view === 'patterns' && (
+        <div className="p-3 max-h-80 overflow-y-auto">
+
+          <div className="grid grid-cols-2 gap-3">
+            {lastProduct.patterns?.map((pattern, index) => (
+              <div key={index} className="border-2 border-blue-300 rounded-lg p-3">
+                <img
+                  src={pattern.url}
+                  alt={`pattern-${index}`}
+                  className="w-full h-16 object-contain rounded mb-2"
+                />
+
+                <div className="grid grid-cols-1 gap-2">
+                  <button
+                    onClick={() => {
+                      console.log(`🔴 TOP 50% - Pattern ${index}`);
+                      handleAddPatternToCanvas(pattern.url, 'top');
+                    }}
+                    className="bg-red-500 text-white text-xs py-2 rounded hover:bg-red-600 font-medium"
+                  >
+                    🔴 TOP 50%
+                  </button>
+                  <button
+                    onClick={() => {
+                      console.log(`🔵 BOTTOM 50% - Pattern ${index}`);
+                      handleAddPatternToCanvas(pattern.url, 'bottom');
+                    }}
+                    className="bg-blue-500 text-white text-xs py-2 rounded hover:bg-blue-600 font-medium"
+                  >
+                    🔵 BOTTOM 50%
+                  </button>
+                </div>
+
+              </div>
+            ))}
+          </div>
+
+        </div>
       )}
+
+
+
     </div>
   );
 };

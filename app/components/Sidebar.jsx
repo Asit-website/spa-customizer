@@ -44,7 +44,9 @@ const Sidebar = ({
   // handleImageUpload,
   bringForward,
   handleAddDesignToCanvas,
+  constrainObjectToProduct,
   addIconToCanvas,
+  handleAddPatternToCanvas,
   setProducts,
   selectedProduct,
   setSelectedProduct,
@@ -65,23 +67,23 @@ const Sidebar = ({
 
   const checkForDesignOnCanvas = () => {
     if (!editor?.canvas) return false;
-    
+
     const objects = editor.canvas.getObjects();
-    const designObjects = objects.filter(obj => 
-      obj.type === "image" && 
-      !obj.isTshirtBase && 
+    const designObjects = objects.filter(obj =>
+      obj.type === "image" &&
+      !obj.isTshirtBase &&
       obj.name === "design-image"
     );
-    
+
     return designObjects.length > 0;
   };
 
   const checkForTextOnCanvas = () => {
     if (!editor?.canvas) return false;
-    
+
     const objects = editor.canvas.getObjects();
     const textObjects = objects.filter(obj => obj.type === "i-text");
-    
+
     return textObjects.length > 0;
   };
 
@@ -91,14 +93,14 @@ const Sidebar = ({
     const checkCanvasContent = () => {
       const designExists = checkForDesignOnCanvas();
       const textExists = checkForTextOnCanvas();
-      
+
       if (!designExists && hasUploadedImage) {
         setHasUploadedImage(false);
         if (showImageEditModal) {
           setShowImageEditModal(false);
         }
       }
-      
+
       if (!textExists && hasAddedText) {
         setHasAddedText(false);
         if (showEditModal) {
@@ -137,7 +139,7 @@ const Sidebar = ({
       handleAddCustomText();
       setHasAddedText(true);
       setShowAddModal(false);
-      setShowEditModal(true); 
+      setShowEditModal(true);
     }
   };
 
@@ -158,7 +160,7 @@ const Sidebar = ({
       const designExists = checkForDesignOnCanvas();
       if (designExists) {
         setHasUploadedImage(true);
-        setShowImageEditModal(true); 
+        setShowImageEditModal(true);
       } else {
         setHasUploadedImage(false);
       }
@@ -215,8 +217,8 @@ const Sidebar = ({
       {activeTab === "edit" && (
         <>
           {!hasUploadedImage && (
-            <EditTab 
-              handleAddDesignToCanvas={handleAddDesignToCanvas} 
+            <EditTab
+              handleAddDesignToCanvas={handleAddDesignToCanvas}
               editor={editor}
               setShowImageEditModal={setShowImageEditModal}
               setHasUploadedImage={setHasUploadedImage}
@@ -227,6 +229,7 @@ const Sidebar = ({
               editor={editor}
               setShowImageEditModal={setShowImageEditModal}
               updateArrange={updateArrange}
+              constrainObjectToProduct={constrainObjectToProduct}
             />
           )}
         </>
@@ -282,6 +285,8 @@ const Sidebar = ({
           lastProduct={lastProduct}
           handleAddDesignToCanvas={handleAddDesignToCanvas}
           addIconToCanvas={addIconToCanvas}
+          editor={editor}
+          handleAddPatternToCanvas={handleAddPatternToCanvas}
         />
       )}
     </div>

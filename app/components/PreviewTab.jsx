@@ -2,15 +2,16 @@
 
 import React, { useEffect, useCallback } from 'react'
 
-const PreviewTab = ({ 
-    updateArrange, 
+const PreviewTab = ({
+    updateArrange,
     setShowImageEditModal,
-    editor 
+    constrainObjectToProduct,
+    editor
 }) => {
 
     const apiKey = process.env.NEXT_PUBLIC_API_KEY;
     const canvas = editor?.canvas;
-    
+
     const [isRemovingBg, setIsRemovingBg] = React.useState(false);
 
     const isCanvasReady = useCallback(() => {
@@ -21,25 +22,71 @@ const PreviewTab = ({
         if (!isCanvasReady()) {
             return null;
         }
-        
+
         const activeObj = canvas.getActiveObject();
         if (activeObj && activeObj.type === "image" && !activeObj.isTshirtBase) {
             return activeObj;
         }
-        
+
         const objects = canvas.getObjects();
-        const designObjects = objects.filter(obj => 
-            obj.type === "image" && 
-            !obj.isTshirtBase && 
+        const designObjects = objects.filter(obj =>
+            obj.type === "image" &&
+            !obj.isTshirtBase &&
             obj.name === "design-image"
         );
-        
+
         if (designObjects.length > 0) {
             return designObjects[designObjects.length - 1];
         }
-        
+
         return null;
     }, [canvas, isCanvasReady]);
+
+    // const handleAlign = useCallback((alignment) => {
+    //     if (!isCanvasReady()) return;
+
+    //     const designObj = getActiveDesignObject();
+    //     if (!designObj) return;
+
+    //     try {
+    //         const canvasWidth = canvas.getWidth();
+    //         const canvasHeight = canvas.getHeight();
+    //         const objWidth = designObj.width * designObj.scaleX;
+    //         const objHeight = designObj.height * designObj.scaleY;
+
+    //         const productImage = canvas.getObjects().find(obj => obj.isTshirtBase);
+
+    //         switch (alignment) {
+    //             case 'left':
+    //                 designObj.set({ left: objWidth / 2 });
+    //                 break;
+    //             case 'center':
+    //                 designObj.set({ left: canvasWidth / 2 });
+    //                 break;
+    //             case 'right':
+    //                 designObj.set({ left: canvasWidth - objWidth / 2 });
+    //                 break;
+    //             case 'top':
+    //                 designObj.set({ top: objHeight / 2 });
+    //                 break;
+    //             case 'middle':
+    //                 designObj.set({ top: canvasHeight / 2 });
+    //                 break;
+    //             case 'bottom':
+    //                 designObj.set({ top: canvasHeight - objHeight / 2 });
+    //                 break;
+    //         }
+
+    //         if (productImage) {
+    //             constrainObjectToProduct(designObj, productImage);
+    //         }
+
+    //         designObj.setCoords();
+    //         canvas.renderAll();
+    //     } catch (error) {
+    //         console.error("Error aligning design:", error);
+    //     }
+    // }, [canvas, getActiveDesignObject, isCanvasReady]);
 
     const handleAlign = useCallback((alignment) => {
         if (!isCanvasReady()) return;
@@ -48,38 +95,54 @@ const PreviewTab = ({
         if (!designObj) return;
 
         try {
-            const canvasWidth = canvas.getWidth();
-            const canvasHeight = canvas.getHeight();
+            const productImage = canvas.getObjects().find(obj => obj.isTshirtBase);
+            if (!productImage) {
+                console.warn("Product image not found, cannot align to product");
+                return;
+            }
+
+            const productBounds = productImage.getBoundingRect();
+            const padding = 10; 
+
+            const productLeft = productBounds.left + padding;
+            const productRight = productBounds.left + productBounds.width - padding;
+            const productTop = productBounds.top + padding;
+            const productBottom = productBounds.top + productBounds.height - padding;
+            const productCenterX = productBounds.left + productBounds.width / 2;
+            const productCenterY = productBounds.top + productBounds.height / 2;
+
             const objWidth = designObj.width * designObj.scaleX;
             const objHeight = designObj.height * designObj.scaleY;
 
             switch (alignment) {
                 case 'left':
-                    designObj.set({ left: objWidth / 2 });
+                    designObj.set({ left: productLeft + objWidth / 2 });
                     break;
                 case 'center':
-                    designObj.set({ left: canvasWidth / 2 });
+                    designObj.set({ left: productCenterX });
                     break;
                 case 'right':
-                    designObj.set({ left: canvasWidth - objWidth / 2 });
+                    designObj.set({ left: productRight - objWidth / 2 });
                     break;
                 case 'top':
-                    designObj.set({ top: objHeight / 2 });
+                    designObj.set({ top: productTop + objHeight / 2 });
                     break;
                 case 'middle':
-                    designObj.set({ top: canvasHeight / 2 });
+                    designObj.set({ top: productCenterY });
                     break;
                 case 'bottom':
-                    designObj.set({ top: canvasHeight - objHeight / 2 });
+                    designObj.set({ top: productBottom - objHeight / 2 });
                     break;
             }
-            
+
+            constrainObjectToProduct(designObj, productImage);
+
             designObj.setCoords();
             canvas.renderAll();
         } catch (error) {
             console.error("Error aligning design:", error);
         }
-    }, [canvas, getActiveDesignObject, isCanvasReady]);
+    }, [canvas, getActiveDesignObject, isCanvasReady, constrainObjectToProduct]);
 
     const handleFlip = useCallback((direction) => {
         if (!isCanvasReady()) return;
@@ -95,7 +158,7 @@ const PreviewTab = ({
                 const newFlipY = !designObj.flipY;
                 designObj.set('flipY', newFlipY);
             }
-            
+
             designObj.setCoords();
             canvas.renderAll();
         } catch (error) {
@@ -163,7 +226,7 @@ const PreviewTab = ({
     const getDesignProperties = useCallback(() => {
         const designObj = getActiveDesignObject();
         if (!designObj) return null;
-        
+
         return {
             opacity: Math.round((designObj.opacity || 1) * 100),
             rotation: Math.round(designObj.angle || 0),
@@ -177,14 +240,14 @@ const PreviewTab = ({
     const designProps = getDesignProperties();
 
     const [, forceUpdate] = React.useReducer(x => x + 1, 0);
-    
+
     useEffect(() => {
         const interval = setInterval(() => {
             if (getActiveDesignObject()) {
                 forceUpdate();
             }
         }, 100);
-        
+
         return () => clearInterval(interval);
     }, [getActiveDesignObject]);
 
@@ -196,7 +259,7 @@ const PreviewTab = ({
 
         try {
             setIsRemovingBg(true);
-            
+
             const currentImageSrc = designObj.getSrc();
             if (!currentImageSrc) {
                 console.error("No image source found");
@@ -205,14 +268,14 @@ const PreviewTab = ({
 
             const response = await fetch(currentImageSrc);
             const blob = await response.blob();
-            
+
             const form = new FormData();
             form.append("image_file", blob);
-            
+
             const clipdropResponse = await fetch("https://clipdrop-api.co/remove-background/v1", {
                 method: "POST",
                 headers: {
-                    "x-api-key": apiKey, 
+                    "x-api-key": apiKey,
                 },
                 body: form,
             });
@@ -221,7 +284,7 @@ const PreviewTab = ({
                 const buffer = await clipdropResponse.arrayBuffer();
                 const resultBlob = new Blob([buffer], { type: "image/png" });
                 const resultImageUrl = URL.createObjectURL(resultBlob);
-                
+
                 import("fabric").then(({ Image }) => {
                     const img = new window.Image();
                     img.crossOrigin = "anonymous";
@@ -298,8 +361,8 @@ const PreviewTab = ({
                 <div className='flex items-center gap-2'>
                     <h3 className='text-[16px] text-black font-semibold'>Preview</h3>
                 </div>
-                <div 
-                    onClick={() => setShowImageEditModal && setShowImageEditModal(false)} 
+                <div
+                    onClick={() => setShowImageEditModal && setShowImageEditModal(false)}
                     className='cursor-pointer'
                 >
                     <img src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749341803/Vector_hm0yzo.png" alt="Close" />
@@ -312,9 +375,9 @@ const PreviewTab = ({
                     <div className='flex items-center gap-3 py-3 px-3'>
                         <div className="border border-[#D3DBDF] rounded-lg p-2 w-[30%]">
                             {designProps.imageSrc ? (
-                                <img 
-                                    src={designProps.imageSrc} 
-                                    alt="Design" 
+                                <img
+                                    src={designProps.imageSrc}
+                                    alt="Design"
                                     className="w-full h-12 object-contain rounded"
                                 />
                             ) : (
@@ -453,7 +516,7 @@ const PreviewTab = ({
                     <div className='py-3 px-3'>
                         <h3 className='text-[14px] text-black font-semibold mb-3'>Tools</h3>
 
-                        <button 
+                        <button
                             className={`w-full border border-gray-300 rounded-md py-3 text-[14px] flex items-center justify-start gap-3 mb-3 hover:bg-gray-50 transition-colors ${isRemovingBg ? 'opacity-50 cursor-not-allowed' : ''}`}
                             onClick={handleRemoveBackground}
                             disabled={isRemovingBg}
@@ -463,8 +526,8 @@ const PreviewTab = ({
                                 {isRemovingBg ? 'Removing...' : 'Remove Background'}
                             </span>
                         </button>
-                        
-                        <button 
+
+                        <button
                             className='w-full border border-gray-300 rounded-md py-3 text-[14px] flex items-center justify-start gap-3 hover:bg-gray-50 transition-colors'
                             onClick={handleUpscale}
                         >
