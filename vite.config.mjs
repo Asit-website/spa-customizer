@@ -18,6 +18,5 @@ export default defineConfig({
     },
     outDir: 'public/widget',
     emptyOutDir: true,
-    minify: true,
   },
 })
