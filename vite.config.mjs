@@ -6,6 +6,7 @@ import path from 'path'
 export default defineConfig({
   plugins: [react()],
   define: {
+    // ✅ This is crucial for React to work in browser builds
     'process.env.NODE_ENV': JSON.stringify('production'),
   },
   build: {
@@ -15,9 +16,9 @@ export default defineConfig({
       fileName: 'embed-widget',
       formats: ['umd'],
     },
+    // ✅ DO NOT USE "external" — you want to fully bundle React
     outDir: 'public/widget',
     emptyOutDir: true,
     minify: true,
-    // ✅ DO NOT include rollupOptions.external here
   },
 })
