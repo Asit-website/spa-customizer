@@ -15,8 +15,18 @@ export default defineConfig({
       fileName: 'embed-widget',
       formats: ['umd'],
     },
-    // ✅ REMOVE rollupOptions.external
+    // ✅ Remove or comment out external
+    // rollupOptions: {
+    //   external: ['react', 'react-dom'],
+    //   output: {
+    //     globals: {
+    //       react: 'React',
+    //       'react-dom': 'ReactDOM',
+    //     },
+    //   },
+    // },
     outDir: 'public/widget',
     emptyOutDir: true,
+    minify: true, // optional
   },
 });
