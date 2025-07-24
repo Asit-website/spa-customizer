@@ -1,10 +1,10 @@
-// embed-widget.jsx
+
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import CustomizerLayout from './app/CustomizerLayout'
 
 if (typeof ReactDOM === 'undefined') {
-  console.error('❌ ReactDOM not found');
+  console.error('ReactDOM not found');
 }
 
 window.mountProductCustomizer = function (selector = '#customizer-root', props = {}) {

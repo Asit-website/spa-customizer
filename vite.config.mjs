@@ -17,6 +17,7 @@ export default defineConfig({
       formats: ['umd'],
     },
     outDir: 'public/widget',
-    emptyOutDir: true
+    emptyOutDir: true,
+    minify: false
   },
 })
