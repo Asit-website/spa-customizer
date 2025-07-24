@@ -5,6 +5,7 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [react()],
+   publicDir: false, 
   define: {
       'process.env.NODE_ENV': JSON.stringify('production'),
       'process.env': '{}', // fallback to avoid undefined
