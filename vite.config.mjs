@@ -24,4 +24,8 @@ export default defineConfig({
     outDir: 'public/widget',
     emptyOutDir: true,
   },
+  define: {
+    'process.env.NODE_ENV': JSON.stringify('production'),
+    'process.env': '{}', // fallback to avoid undefined
+  },
 });
