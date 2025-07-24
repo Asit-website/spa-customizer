@@ -6,8 +6,8 @@ import path from 'path'
 export default defineConfig({
   plugins: [react()],
   define: {
-    // ✅ This is what Vite will replace in the UMD bundle
-    'process.env.NODE_ENV': '"production"',
+      'process.env.NODE_ENV': JSON.stringify('production'),
+      'process.env': '{}', // fallback to avoid undefined
   },
   build: {
     lib: {
@@ -17,6 +17,6 @@ export default defineConfig({
       formats: ['umd'],
     },
     outDir: 'public/widget',
-    emptyOutDir: true,
+    emptyOutDir: true
   },
 })
