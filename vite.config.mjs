@@ -14,7 +14,7 @@ export default defineConfig({
     lib: {
       entry: path.resolve(__dirname, 'embed-widget.jsx'),
       name: 'EmbedWidget',
-      fileName: 'embed-widget',
+      fileName: 'bc-customiser-app',
       formats: ['umd'],
     },
     outDir: 'public/bc-app',
