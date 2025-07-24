@@ -1,13 +1,14 @@
 // vite.config.mjs
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import path from 'path'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
+  publicDir: false, // ✅ prevents public/ from being copied into UMD build
   define: {
-      'process.env.NODE_ENV': JSON.stringify('production'),
-      'process.env': '{}', // fallback to avoid undefined
+    'process.env.NODE_ENV': JSON.stringify('production'),
+    'process.env': '{}',
   },
   build: {
     lib: {
@@ -16,8 +17,16 @@ export default defineConfig({
       fileName: 'embed-widget',
       formats: ['umd'],
     },
-    outDir: 'public/widget',
+    rollupOptions: {
+      external: ['react', 'react-dom'],
+      output: {
+        globals: {
+          react: 'React',
+          'react-dom': 'ReactDOM',
+        },
+      },
+    },
+    outDir: 'public/bc-app',
     emptyOutDir: true,
-    minify: false
   },
-})
+});
