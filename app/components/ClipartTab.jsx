@@ -5,7 +5,7 @@ import EmojiPicker from 'emoji-picker-react';
 const ClipartTab = ({
   setShowClipartTab,
   addEmojiTextToCanvas,
-  lastProduct,
+  selectedProduct,  // ✅ Fixed: was lastProduct
   handleAddDesignToCanvas,
   addIconToCanvas,
   handleAddPatternToCanvas,
@@ -204,25 +204,26 @@ const ClipartTab = ({
     { id: 'flags', name: 'Flags', emoji: '🏳️' }
   ];
 
+  // ✅ Updated to use selectedProduct instead of lastProduct
   const mainCategories = useMemo(() => {
     const categories = [];
 
-    if (lastProduct?.designs?.length > 0) {
+    if (selectedProduct?.designs?.length > 0) {
       categories.push({
         id: 'designs',
         name: 'Designs',
         icon: '🎨',
-        count: lastProduct.designs.length,
+        count: selectedProduct.designs.length,
         description: 'Custom designs for this product'
       });
     }
 
-    if (lastProduct?.patterns?.length > 0) {
+    if (selectedProduct?.patterns?.length > 0) {
       categories.push({
         id: 'patterns',
         name: 'Patterns',
         icon: '🌟',
-        count: lastProduct.patterns.length,
+        count: selectedProduct.patterns.length,
         description: 'Pattern designs for this product'
       });
     }
@@ -287,7 +288,7 @@ const ClipartTab = ({
     );
 
     return categories;
-  }, [lastProduct, iconCollections, shapeTemplates.length, typographyElements.length, decorativeElements.length, thematicCollections.length]);
+  }, [selectedProduct, iconCollections, shapeTemplates.length, typographyElements.length, decorativeElements.length, thematicCollections.length]);
 
   const handleMainCategoryClick = (categoryId) => {
     setSelectedCategory(categoryId);
@@ -768,7 +769,7 @@ const ClipartTab = ({
 
       {view === 'designs' && (
         <div className="grid grid-cols-3 gap-2 p-3 max-h-80 overflow-y-auto">
-          {lastProduct.designs?.map((design, index) => (
+          {selectedProduct?.designs?.map((design, index) => (
             <img
               key={index}
               src={design.url}
@@ -780,26 +781,10 @@ const ClipartTab = ({
         </div>
       )}
 
-      {/* {view === 'patterns' && (
-        <div className="grid grid-cols-3 gap-2 p-3 max-h-80 overflow-y-auto">
-          {lastProduct.patterns?.map((pattern, index) => (
-            <img
-              key={index}
-              src={pattern.url}
-              alt={`pattern-${index}`}
-              className="w-20 h-20 object-contain cursor-pointer border border-gray-200 rounded hover:border-blue-500 p-1 transition-colors"
-              onClick={() => handleAddDesignToCanvas(pattern.url)}
-            />
-          ))}
-        </div>
-      )} */}
-
-
       {view === 'patterns' && (
         <div className="p-3 max-h-80 overflow-y-auto">
-
           <div className="grid grid-cols-2 gap-3">
-            {lastProduct.patterns?.map((pattern, index) => (
+            {selectedProduct?.patterns?.map((pattern, index) => (
               <div key={index} className="border-2 border-blue-300 rounded-lg p-3">
                 <img
                   src={pattern.url}
@@ -827,15 +812,11 @@ const ClipartTab = ({
                     🔵 BOTTOM 50%
                   </button>
                 </div>
-
               </div>
             ))}
           </div>
-
         </div>
       )}
-
-
 
     </div>
   );

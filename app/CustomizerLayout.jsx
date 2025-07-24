@@ -11,7 +11,7 @@ import LayerContextMenu from "./components/LayerContextMenu";
 import useCanvasContextMenu from "./hooks/useCanvasContextMenu";
 import tripo3DService from './services/tripo3DService';
 
-const CustomizerLayout = () => {
+const CustomizerLayout = ({ selectedProduct }) => {
 
   import("fabric").then(({ Canvas }) => {
     if (Canvas && !Canvas.prototype.updateZIndices) {
@@ -24,44 +24,38 @@ const CustomizerLayout = () => {
     }
   });
 
-  const textColor = "#000";
-  const fontFamily = "Ubuntu";
-  const fontStyle = "normal";
-  const flipX = false;
-  const flipY = false;
-  const textFlipX = false;
-  const textFlipY = false;
-
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [allProducts, setAllProducts] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [showChatBox, setShowChatBox] = useState(false);
-  const { editor, onReady } = useFabricJSEditor();
+  // Text customization states
   const [customText, setCustomText] = useState("");
-  const [showAddModal, setShowAddModal] = useState(true);
-  const [showEditModal, setShowEditModal] = useState(false);
   const [textSize, setTextSize] = useState(28);
   const [textSpacing, setTextSpacing] = useState(0);
   const [textArc, setTextArc] = useState(0);
-  const [selectedColor, setSelectedColor] = useState({});
+
+  // Text properties
+  const [textColor, setTextColor] = useState("#000");
+  const [fontFamily, setFontFamily] = useState("Ubuntu");
+  const [fontStyle, setFontStyle] = useState("normal");
+  const [textFlipX, setTextFlipX] = useState(false);
+  const [textFlipY, setTextFlipY] = useState(false);
+
+  // Image properties  
+  const [flipX, setFlipX] = useState(false);
+  const [flipY, setFlipY] = useState(false);
+  const [selectedColor, setSelectedColor] = useState({ color: "#ffffff", name: "White" });
+
+  // UI states
+  const [showAddModal, setShowAddModal] = useState(true);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [showSidebar, setShowSidebar] = useState(true);
-  const [clippingPath, setClippingPath] = useState(null);
+  const [showChatBox, setShowChatBox] = useState(false);
 
-  const [setTextColor, setChangeTextColor] = useState("#000");
-  const [setTextFontFamily, setChangeFontFamily] = useState("Ubuntu");
-  const [setFontStyle, setChangeFontStyle] = useState("normal");
-  const [setFlipX, setChangeFlipX] = useState(false);
-  const [setFlipY, setChangeFlipy] = useState(false);
-  const [setTextFlipX, setChangeTextFlipX] = useState(false);
-  const [setTextFlipY, setChangeTextFlipY] = useState(false);
-
+  // Save states
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-
   const [savingWith3D, setSavingWith3D] = useState(false);
   const [save3DProgress, setSave3DProgress] = useState('');
-
   const [currentProductId, setCurrentProductId] = useState(null);
+
+  const { editor, onReady } = useFabricJSEditor();
 
   const {
     contextMenu,
@@ -76,27 +70,28 @@ const CustomizerLayout = () => {
     handleSendToBack
   } = useCanvasContextMenu(editor);
 
-  const createClippingPath = (imageObj) => {
-    if (!imageObj || !editor?.canvas) return null;
-
-    import("fabric").then(({ Rect }) => {
-      const imageBounds = imageObj.getBoundingRect();
-
-      const clipPath = new Rect({
-        left: imageBounds.left,
-        top: imageBounds.top,
-        width: imageBounds.width,
-        height: imageBounds.height,
-        originX: 'left',
-        originY: 'top',
-        absolutePositioned: true,
-        inverted: false,
-        exclude: false
-      });
-
-      setClippingPath(clipPath);
-      return clipPath;
-    });
+  // Helper function to get current product data with customizations
+  const getCurrentProductData = () => {
+    if (!selectedProduct) return null;
+    
+    return {
+      ...selectedProduct,
+      text: customText,
+      textSize,
+      textSpacing,
+      textArc,
+      fontFamily,
+      fontStyle,
+      fill: textColor,
+      imgflipX: flipX,
+      imgflipY: flipY,
+      flipX: textFlipX,
+      flipY: textFlipY,
+      opacity: 100,
+      rotate: 0,
+      alignment: "center",
+      color: selectedColor.color,
+    };
   };
 
   const createTshirtMask = (imageObj, callback) => {
@@ -227,662 +222,90 @@ const CustomizerLayout = () => {
     obj.setCoords();
   };
 
-  useEffect(() => {
-    const backendProducts = [
-      {
-        id: 1,
-        image: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751090639/168e035a-9303-40ec-a455-351ddfb4cd9d_z4oxn2.png",
-        size: "M",
-        color: "White",
-        width: 300,
-        description: "White T-Shirt",
-        textTopRatio: 3.5,
-        designs: [
-          {
-            id: 1,
-            name: "Angry Doberman",
-            position: "center-top",
-            offsetX: 0,
-            offsetY: 40,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967112/2234.preview_gd75zf.png"
-          },
-          {
-            id: 2,
-            name: "Bulldog Growl",
-            position: "center-top",
-            offsetX: 0,
-            offsetY: 40,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2237.preview_okqvhu.png"
-          },
-          {
-            id: 3,
-            name: "Spiked Bulldog",
-            position: "center-top",
-            offsetX: 0,
-            offsetY: 40,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2236.preview_xkl5hf.png"
-          },
-          {
-            id: 4,
-            name: "Roaring Wolf",
-            position: "center-top",
-            offsetX: 0,
-            offsetY: 40,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2238.preview_bhedmv.png"
-          },
-          {
-            id: 5,
-            name: "Fighter",
-            position: "center",
-            offsetX: 0,
-            offsetY: -15,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2243.preview_cgju7z.png"
-          },
-          {
-            id: 6,
-            name: "Husky Dog",
-            position: "center",
-            offsetX: 0,
-            offsetY: -15,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967112/2235.preview_pftmvw.png"
-          },
-          {
-            id: 7,
-            name: "Bird",
-            position: "center-top",
-            offsetX: 0,
-            offsetY: 40,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2241.preview_h9pntb.png"
-          },
-          {
-            id: 8,
-            name: "Devil",
-            position: "center",
-            offsetX: 0,
-            offsetY: -15,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967112/2242.preview_gtqo2w.png"
-          },
-          {
-            id: 9,
-            name: "Roaring Tiger",
-            position: "center",
-            offsetX: 15,
-            offsetY: -45,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2240.preview_zbpw5z.png"
-          },
-          {
-            id: 10,
-            name: "Tiger",
-            position: "top-center",
-            offsetX: 0,
-            offsetY: 60,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2239.preview_nrrieg.png"
-          },
-          {
-            id: 11,
-            name: "Bee",
-            position: "bottom-left",
-            offsetX: 45,
-            offsetY: -60,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967114/2246.preview_rx4u62.png"
-          },
-          {
-            id: 12,
-            name: "Dragon",
-            position: "center-top",
-            offsetX: -15,
-            offsetY: 20,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967114/2245.preview_g7s5ml.png"
-          },
-          {
-            id: 13,
-            name: "Pirate Face",
-            position: "bottom-left",
-            offsetX: 55,
-            offsetY: -60,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967114/2244.preview_f4vowr.png"
-          }
-        ],
-        patterns: [
-          {
-            id: 1,
-            name: "Pattern 1",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752239240/2_1_oazqo6.jpg"
-          },
-          {
-            id: 2,
-            name: "Pattern 2",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752239240/1_mvfosf.jpg"
-          },
-          {
-            id: 3,
-            name: "Pattern 3",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143461/2219.preview_p5wup6.png"
-          },
-          {
-            id: 4,
-            name: "Pattern 4",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143461/2221.preview_ij7u1b.png"
-          },
-          {
-            id: 5,
-            name: "Pattern 5",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143461/2223.preview_zpedw7.png"
-          },
-          {
-            id: 6,
-            name: "Pattern 6",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143461/2220.preview_uzy9xy.png"
-          },
-          {
-            id: 7,
-            name: "Pattern 7",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2226.preview_dkhkth.png"
-          },
-          {
-            id: 8,
-            name: "Pattern 8",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2225.preview_jopp92.png"
-          },
-          {
-            id: 9,
-            name: "Pattern 9",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2224.preview_fwheor.png"
-          },
-          {
-            id: 10,
-            name: "Pattern 10",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2229.preview_yemknx.png"
-          },
-          {
-            id: 11,
-            name: "Pattern 11",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2227.preview_ixqzpl.png"
-          },
-          {
-            id: 12,
-            name: "Pattern 12",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2230.preview_mjhidt.png"
-          },
-          {
-            id: 13,
-            name: "Pattern 13",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2222.preview_poqyfa.png"
-          },
-          {
-            id: 14,
-            name: "Pattern 14",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143463/2231.preview_eozedv.png"
-          },
-          {
-            id: 15,
-            name: "Pattern 15",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2228.preview_sy0c6v.png"
-          }
-        ]
-      },
-      {
-        id: 2,
-        image: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1753167221/fb5aa71062827239fe1e8500148aea01e9f51fee_sldcl6.png",
-        size: "M",
-        color: "White",
-        width: 300,
-        description: "White Polo T-Shirt",
-        textTopRatio: 3.5,
-        designs: [
-          {
-            id: 1,
-            name: "Angry Doberman",
-            position: "center-top",
-            offsetX: 0,
-            offsetY: 40,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967112/2234.preview_gd75zf.png"
-          },
-          {
-            id: 2,
-            name: "Bulldog Growl",
-            position: "center-top",
-            offsetX: 0,
-            offsetY: 40,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2237.preview_okqvhu.png"
-          },
-          {
-            id: 3,
-            name: "Spiked Bulldog",
-            position: "center-top",
-            offsetX: 0,
-            offsetY: 40,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2236.preview_xkl5hf.png"
-          },
-          {
-            id: 4,
-            name: "Roaring Wolf",
-            position: "center-top",
-            offsetX: 0,
-            offsetY: 40,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2238.preview_bhedmv.png"
-          },
-          {
-            id: 5,
-            name: "Fighter",
-            position: "center",
-            offsetX: 0,
-            offsetY: -15,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2243.preview_cgju7z.png"
-          },
-          {
-            id: 6,
-            name: "Husky Dog",
-            position: "center",
-            offsetX: 0,
-            offsetY: -15,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967112/2235.preview_pftmvw.png"
-          },
-          {
-            id: 7,
-            name: "Bird",
-            position: "center-top",
-            offsetX: 0,
-            offsetY: 40,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2241.preview_h9pntb.png"
-          },
-          {
-            id: 8,
-            name: "Devil",
-            position: "center",
-            offsetX: 0,
-            offsetY: -15,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967112/2242.preview_gtqo2w.png"
-          },
-          {
-            id: 9,
-            name: "Roaring Tiger",
-            position: "center",
-            offsetX: 15,
-            offsetY: -45,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2240.preview_zbpw5z.png"
-          },
-          {
-            id: 10,
-            name: "Tiger",
-            position: "top-center",
-            offsetX: 0,
-            offsetY: 60,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2239.preview_nrrieg.png"
-          },
-          {
-            id: 11,
-            name: "Bee",
-            position: "bottom-left",
-            offsetX: 45,
-            offsetY: -60,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967114/2246.preview_rx4u62.png"
-          },
-          {
-            id: 12,
-            name: "Dragon",
-            position: "center-top",
-            offsetX: -15,
-            offsetY: 20,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967114/2245.preview_g7s5ml.png"
-          },
-          {
-            id: 13,
-            name: "Pirate Face",
-            position: "bottom-left",
-            offsetX: 55,
-            offsetY: -60,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967114/2244.preview_f4vowr.png"
-          }
-        ],
-        patterns: [
-          {
-            id: 1,
-            name: "Pattern 1",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752239240/2_1_oazqo6.jpg"
-          },
-          {
-            id: 2,
-            name: "Pattern 2",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752239240/1_mvfosf.jpg"
-          },
-          {
-            id: 3,
-            name: "Pattern 3",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143461/2219.preview_p5wup6.png"
-          },
-          {
-            id: 4,
-            name: "Pattern 4",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143461/2221.preview_ij7u1b.png"
-          },
-          {
-            id: 5,
-            name: "Pattern 5",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143461/2223.preview_zpedw7.png"
-          },
-          {
-            id: 6,
-            name: "Pattern 6",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143461/2220.preview_uzy9xy.png"
-          },
-          {
-            id: 7,
-            name: "Pattern 7",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2226.preview_dkhkth.png"
-          },
-          {
-            id: 8,
-            name: "Pattern 8",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2225.preview_jopp92.png"
-          },
-          {
-            id: 9,
-            name: "Pattern 9",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2224.preview_fwheor.png"
-          },
-          {
-            id: 10,
-            name: "Pattern 10",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2229.preview_yemknx.png"
-          },
-          {
-            id: 11,
-            name: "Pattern 11",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2227.preview_ixqzpl.png"
-          },
-          {
-            id: 12,
-            name: "Pattern 12",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2230.preview_mjhidt.png"
-          },
-          {
-            id: 13,
-            name: "Pattern 13",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2222.preview_poqyfa.png"
-          },
-          {
-            id: 14,
-            name: "Pattern 14",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143463/2231.preview_eozedv.png"
-          },
-          {
-            id: 15,
-            name: "Pattern 15",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2228.preview_sy0c6v.png"
-          }
-        ]
-      },
-      {
-        id: 3,
-        image: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752304872/WhatsApp-Image-2025-07-10-at-3.53_zd5fbb.png",
-        size: "L",
-        color: "White",
-        width: 300,
-        description: "White Sando",
-        textTopRatio: 2.8,
-        designs: [
-          {
-            id: 1,
-            name: "Angry Doberman",
-            position: "center-top",
-            offsetX: 0,
-            offsetY: 40,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967112/2234.preview_gd75zf.png"
-          },
-          {
-            id: 2,
-            name: "Bulldog Growl",
-            position: "center-top",
-            offsetX: 0,
-            offsetY: 40,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2237.preview_okqvhu.png"
-          },
-          {
-            id: 3,
-            name: "Spiked Bulldog",
-            position: "center-top",
-            offsetX: 0,
-            offsetY: 40,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2236.preview_xkl5hf.png"
-          },
-          {
-            id: 4,
-            name: "Roaring Wolf",
-            position: "center-top",
-            offsetX: 0,
-            offsetY: 40,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2238.preview_bhedmv.png"
-          },
-          {
-            id: 5,
-            name: "Fighter",
-            position: "center",
-            offsetX: 0,
-            offsetY: -15,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2243.preview_cgju7z.png"
-          },
-          {
-            id: 6,
-            name: "Husky Dog",
-            position: "center",
-            offsetX: 0,
-            offsetY: -15,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967112/2235.preview_pftmvw.png"
-          },
-          {
-            id: 7,
-            name: "Bird",
-            position: "center-top",
-            offsetX: 0,
-            offsetY: 40,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2241.preview_h9pntb.png"
-          },
-          {
-            id: 8,
-            name: "Devil",
-            position: "center",
-            offsetX: 0,
-            offsetY: -15,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967112/2242.preview_gtqo2w.png"
-          },
-          {
-            id: 9,
-            name: "Roaring Tiger",
-            position: "center",
-            offsetX: 15,
-            offsetY: -45,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2240.preview_zbpw5z.png"
-          },
-          {
-            id: 10,
-            name: "Tiger",
-            position: "top-center",
-            offsetX: 0,
-            offsetY: 60,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967113/2239.preview_nrrieg.png"
-          },
-          {
-            id: 11,
-            name: "Bee",
-            position: "bottom-left",
-            offsetX: 45,
-            offsetY: -60,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967114/2246.preview_rx4u62.png"
-          },
-          {
-            id: 12,
-            name: "Dragon",
-            position: "center-top",
-            offsetX: -15,
-            offsetY: 20,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967114/2245.preview_g7s5ml.png"
-          },
-          {
-            id: 13,
-            name: "Pirate Face",
-            position: "bottom-left",
-            offsetX: 55,
-            offsetY: -60,
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1751967114/2244.preview_f4vowr.png"
-          }
-        ],
-        patterns: [
-          {
-            id: 1,
-            name: "Pattern 1",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752239240/2_1_oazqo6.jpg"
-          },
-          {
-            id: 2,
-            name: "Pattern 2",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752239240/1_mvfosf.jpg"
-          },
-          {
-            id: 3,
-            name: "Pattern 3",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143461/2219.preview_p5wup6.png"
-          },
-          {
-            id: 4,
-            name: "Pattern 4",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143461/2221.preview_ij7u1b.png"
-          },
-          {
-            id: 5,
-            name: "Pattern 5",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143461/2223.preview_zpedw7.png"
-          },
-          {
-            id: 6,
-            name: "Pattern 6",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143461/2220.preview_uzy9xy.png"
-          },
-          {
-            id: 7,
-            name: "Pattern 7",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2226.preview_dkhkth.png"
-          },
-          {
-            id: 8,
-            name: "Pattern 8",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2225.preview_jopp92.png"
-          },
-          {
-            id: 9,
-            name: "Pattern 9",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2224.preview_fwheor.png"
-          },
-          {
-            id: 10,
-            name: "Pattern 10",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2229.preview_yemknx.png"
-          },
-          {
-            id: 11,
-            name: "Pattern 11",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2227.preview_ixqzpl.png"
-          },
-          {
-            id: 12,
-            name: "Pattern 12",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2230.preview_mjhidt.png"
-          },
-          {
-            id: 13,
-            name: "Pattern 13",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2222.preview_poqyfa.png"
-          },
-          {
-            id: 14,
-            name: "Pattern 14",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143463/2231.preview_eozedv.png"
-          },
-          {
-            id: 15,
-            name: "Pattern 15",
-            url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1752143462/2228.preview_sy0c6v.png"
-          }
-        ]
-      }
-    ];
-
-    setAllProducts(backendProducts);
-
-    const mergedProduct = {
-      ...backendProducts[0],
-      text: customText,
-      textSize,
-      textSpacing,
-      textArc,
-      fontFamily,
-      fontStyle,
-      fill: textColor,
-      imgflipX: flipX,
-      imgflipY: flipY,
-      flipX: textFlipX,
-      flipY: textFlipY,
-      opacity: 100,
-      rotate: 0,
-      alignment: "center",
-    };
-
-    setProducts([mergedProduct]);
-  }, []);
-
   const handleColorChange = (colorObj) => {
     setSelectedColor(colorObj);
-    updateLastProduct("color", colorObj.color);
     updateTshirtColor(colorObj.color);
   };
 
   const updateTshirtColor = (color) => {
+    if (!editor?.canvas) {
+      console.error('❌ Canvas not available for color change');
+      return;
+    }
+    
+    console.log('🎨 Changing t-shirt color to:', color);
+    
     const canvas = editor.canvas;
-    canvas.getObjects().forEach((obj) => {
-      if (obj.type === "image" && obj.isTshirtBase) {
-        import("fabric").then(({ filters }) => {
-          obj.filters = [
-            new filters.BlendColor({
-              color: color,
-              mode: "multiply",
-              alpha: 1,
-            }),
-          ];
-          obj.applyFilters();
-          canvas.renderAll();
-        });
-      }
+    const baseLayer = canvas.getObjects().find((obj) => obj.type === "image" && obj.isTshirtBase);
+    
+    if (!baseLayer) {
+      console.error('❌ No base layer found for color change');
+      return;
+    }
+    
+    import("fabric").then(({ filters }) => {
+      baseLayer.filters = [
+        new filters.BlendColor({
+          color: color,
+          mode: "multiply",
+          alpha: 1,
+        }),
+      ];
+      baseLayer.applyFilters();
+      
+      // Ensure base layer remains locked after color change
+      baseLayer.set({
+        selectable: false,
+        evented: false,
+        lockMovementX: true,
+        lockMovementY: true,
+        lockScalingX: true,
+        lockScalingY: true,
+        lockRotation: true,
+        hasControls: false,
+        hasBorders: false
+      });
+      
+      baseLayer.setCoords();
+      canvas.renderAll();
+      console.log('✅ Color changed and base layer re-locked');
     });
   };
 
   const handleAddCustomText = () => {
     if (!editor || !customText.trim()) return;
 
+    console.log('🔤 Adding custom text:', customText);
+
     import("fabric").then((fabric) => {
       const canvas = editor.canvas;
 
-      canvas.getObjects().forEach((obj) => {
-        if (obj.type === "i-text") {
-          canvas.remove(obj);
-        }
-      });
+      // Remove existing text objects (but not emojis)
+      const existingText = canvas.getObjects().filter(obj => obj.type === "i-text" && !obj.isEmoji);
+      existingText.forEach(obj => canvas.remove(obj));
 
       const imageObj = canvas.getObjects().find((obj) => obj.type === "image" && obj.isTshirtBase);
-      if (!imageObj) return;
+      if (!imageObj) {
+        console.error('❌ No base product image found');
+        alert('Error: Product not loaded properly. Please refresh the page.');
+        return;
+      }
 
       const imageBounds = imageObj.getBoundingRect();
-      const currentProduct = products[products.length - 1];
-      const topRatio = currentProduct?.textTopRatio || 3.5;
+      const topRatio = selectedProduct?.textTopRatio || 3.5;
+
+      console.log('📍 Image bounds:', imageBounds);
+      console.log('📏 Text position ratio:', topRatio);
 
       const textObject = new fabric.IText(customText.slice(0, 9), {
         left: imageBounds.left + imageBounds.width / 2,
         top: imageBounds.top + imageBounds.height / topRatio,
         originX: "center",
         originY: "center",
-        fontSize: 28,
-        fill: setTextColor,
-        fontFamily: setTextFontFamily,
-        fontStyle: setFontStyle,
+        fontSize: textSize,
+        fill: textColor,
+        fontFamily: fontFamily,
+        fontStyle: fontStyle,
         selectable: true,
         evented: true,
         moveCursor: "move",
@@ -905,24 +328,14 @@ const CustomizerLayout = () => {
       canvas.add(textObject);
       canvas.setActiveObject(textObject);
 
-      constrainObjectToProduct(textObject, imageObj);
-      applyClippingToObject(textObject, imageObj);
-      canvas.requestRenderAll();
+      // Apply constraints after a small delay
+      setTimeout(() => {
+        constrainObjectToProduct(textObject, imageObj);
+        applyClippingToObject(textObject, imageObj);
+        canvas.renderAll();
+        console.log('✅ Text added successfully');
+      }, 100);
 
-      setProducts((prev) => {
-        const updated = [...prev];
-        const lastIndex = updated.length - 1;
-        updated[lastIndex] = {
-          ...updated[lastIndex],
-          text: customText.slice(0, 9),
-          fabricObject: textObject,
-        };
-        return updated;
-      });
-
-      setTextSize(28);
-      setTextSpacing(0);
-      setTextArc(0);
       setCustomText("");
       setShowAddModal(false);
       setShowEditModal(true);
@@ -1011,21 +424,6 @@ const CustomizerLayout = () => {
 
     obj.setCoords();
     canvas.renderAll();
-  };
-
-  const addAndBringToFront = (obj) => {
-    const imageObj = editor.canvas.getObjects().find((o) => o.type === "image" && o.isTshirtBase);
-
-    editor.canvas.add(obj);
-    editor.canvas.bringToFront?.(obj);
-    editor.canvas.setActiveObject(obj);
-
-    if (imageObj) {
-      constrainObjectToProduct(obj, imageObj);
-      applyClippingToObject(obj, imageObj);
-    }
-
-    editor.canvas.requestRenderAll();
   };
 
   const addEmojiTextToCanvas = (emojiChar) => {
@@ -1200,10 +598,7 @@ const CustomizerLayout = () => {
   };
 
   const handleAddPatternToCanvas = (url, position = "bottom") => {
-    console.log("🎯 Adding pattern:", { url, position });
-
     if (!handleAddDesignToCanvas || !editor?.canvas || !url) {
-      console.error("❌ Missing requirements");
       return;
     }
 
@@ -1226,7 +621,6 @@ const CustomizerLayout = () => {
         };
       }
     } catch (error) {
-      console.warn("Using fallback bounds");
       baseBounds = {
         left: canvas.getWidth() * 0.2,
         top: canvas.getHeight() * 0.1,
@@ -1234,8 +628,6 @@ const CustomizerLayout = () => {
         height: canvas.getHeight() * 0.8
       };
     }
-
-    console.log("📐 Base bounds:", baseBounds);
 
     const targetWidth = baseBounds.width * 0.9;
     const targetHeight = baseBounds.height * 0.5;
@@ -1247,19 +639,12 @@ const CustomizerLayout = () => {
       offsetY = (baseBounds.height * 0.25);
     }
 
-    console.log("📏 Calculated:", {
-      targetWidth: targetWidth.toFixed(0),
-      targetHeight: targetHeight.toFixed(0),
-      offsetY: offsetY.toFixed(0)
-    });
-
     try {
       canvas.getObjects()
         .filter(obj => obj.name && (obj.name.includes('pattern') || obj.name.includes('design-image')))
         .forEach(obj => canvas.remove(obj));
-      console.log("🗑️ Cleaned existing patterns");
     } catch (error) {
-      console.warn("Cleanup error:", error);
+      console.warn("Pattern cleanup error:", error);
     }
 
     try {
@@ -1272,35 +657,10 @@ const CustomizerLayout = () => {
         targetHeight,
         0.9
       );
-
-      console.log("✅ Pattern added successfully - NO MODIFICATION AT ALL");
-
-      setTimeout(() => {
-        try {
-          const designObj = canvas.getObjects().find(obj => obj.name === "design-image");
-
-          if (designObj) {
-            console.log("✅ Pattern found and verified:", {
-              position: position === 'top' ? 'TOP 50%' : 'BOTTOM 50%',
-              left: designObj.left,
-              top: designObj.top,
-              width: (designObj.width * designObj.scaleX).toFixed(0),
-              height: (designObj.height * designObj.scaleY).toFixed(0),
-              visible: true,
-              name: designObj.name
-            });
-          } else {
-            console.warn("⚠️ Pattern object not found");
-          }
-        } catch (error) {
-          console.warn("Verification error:", error);
-        }
-      }, 50);
-
     } catch (error) {
-      console.error("❌ Pattern addition failed:", error);
+      console.error("Pattern addition failed:", error);
     }
-  }
+  };
 
   const addIconToCanvas = async (iconData) => {
     if (!editor || !editor.canvas) return;
@@ -1388,239 +748,182 @@ const CustomizerLayout = () => {
     }
   };
 
-  // Enhanced canvas event handlers
-  let clippingTimeout = null;
-  let isClippingInProgress = false;
-
-  const debouncedUpdateClipping = (obj) => {
-    if (isClippingInProgress) return;
-
-    if (clippingTimeout) {
-      clearTimeout(clippingTimeout);
-    }
-
-    clippingTimeout = setTimeout(() => {
-      isClippingInProgress = true;
-      updateClippingForObject(obj);
-      isClippingInProgress = false;
-    }, 100);
-  };
-
-  let lastRenderTime = 0;
-  const throttledRender = (canvas) => {
-    const now = Date.now();
-    if (now - lastRenderTime > 16) {
-      canvas.renderAll();
-      lastRenderTime = now;
-    }
-  };
-
-  // Canvas initialization useEffect
+  // Initialize canvas when selectedProduct changes - REMOVED PERSISTENCE
   useEffect(() => {
-    if (!editor || !editor.canvas || products.length === 0) return;
+    if (!selectedProduct || !editor?.canvas) return;
 
-    const lastProduct = products[products.length - 1];
-    if (!lastProduct?.image) return;
+    console.log(`🆕 Initializing fresh canvas for product ${selectedProduct.id}`);
 
-    import("fabric").then(({ Image, IText }) => {
-      const img1 = new window.Image();
-      img1.crossOrigin = "anonymous";
-      img1.src = lastProduct.image;
+    const initializeCanvas = () => {
+      // Always initialize fresh canvas - no more checking for saved state
+      console.log(`📝 Creating fresh canvas for product ${selectedProduct.id}`);
+      
+      import("fabric").then(({ Image }) => {
+        editor.canvas.clear();
 
-      img1.onload = () => {
-        const desiredWidth = 300;
-        const scale = desiredWidth / img1.width;
+        const img = new window.Image();
+        img.crossOrigin = "anonymous";
+        img.src = selectedProduct.image;
 
-        const fabricImg = new Image(img1, {
-          left: editor.canvas.getWidth() / 2,
-          top: editor.canvas.getHeight() / 2,
-          isTshirtBase: true,
-          originX: "center",
-          originY: "center",
-          flipX: lastProduct.flipX,
-          flipY: lastProduct.flipY,
-          angle: lastProduct.rotate || 0,
-          opacity: (lastProduct.opacity || 100) / 100,
-          selectable: false,
-          evented: false,
-          scaleX: scale,
-          scaleY: scale,
-          hasControls: false,
-          hasBorders: false,
-          lockMovementX: true,
-          lockMovementY: true,
-          lockScalingX: true,
-          lockScalingY: true,
-          lockRotation: true
-        });
+        img.onload = () => {
+          const desiredWidth = 300;
+          const scale = desiredWidth / img.width;
 
-        fabricImg.customId = lastProduct.id;
-        editor.canvas.add(fabricImg);
-
-        if (lastProduct.text && lastProduct.text.trim()) {
-          const textObject = new IText(lastProduct.text, {
+          const fabricImg = new Image(img, {
             left: editor.canvas.getWidth() / 2,
-            top: editor.canvas.getHeight() / 3.5,
-            fontSize: lastProduct.textSize || 28,
-            fill: lastProduct.fill || "#000",
-            fontFamily: lastProduct.fontFamily || "Ubuntu",
-            fontStyle: lastProduct.fontStyle || "normal",
+            top: editor.canvas.getHeight() / 2,
+            isTshirtBase: true,
             originX: "center",
             originY: "center",
-            flipX: lastProduct.flipX,
-            flipY: lastProduct.flipY,
-            selectable: true,
-            evented: true,
-            hasControls: true,
-            hasBorders: true,
-            lockMovementX: false,
-            lockMovementY: false,
-            lockScalingX: false,
-            lockScalingY: false,
-            lockRotation: false,
-            moveCursor: "move",
-            editable: true
+            scaleX: scale,
+            scaleY: scale,
+            // Lock properties
+            selectable: false,
+            evented: false,
+            hasControls: false,
+            hasBorders: false,
+            lockMovementX: true,
+            lockMovementY: true,
+            lockScalingX: true,
+            lockScalingY: true,
+            lockRotation: true,
+            // Visual properties
+            flipX: flipX,
+            flipY: flipY
           });
 
-          textObject.customId = lastProduct.id;
-          editor.canvas.add(textObject);
-          editor.canvas.setActiveObject(textObject);
+          fabricImg.customId = selectedProduct.id;
+          
+          editor.canvas.add(fabricImg);
+          
+          // Ensure it's locked and render
+          setTimeout(() => {
+            fabricImg.setCoords();
+            editor.canvas.renderAll();
+            console.log(`✅ Fresh canvas ready with locked base layer`);
+          }, 50);
+        };
 
-          applyClippingToObject(textObject, fabricImg);
-          editor.canvas.requestRenderAll();
-        } else {
-          editor.canvas.renderAll();
-        }
-      };
-    });
-  }, [editor]);
+        img.onerror = () => {
+          console.error('Failed to load product image:', selectedProduct.image);
+        };
+      });
+    };
 
-  // Canvas event handlers useEffect
+    // Initialize after small delay
+    const timeoutId = setTimeout(initializeCanvas, 100);
+    return () => clearTimeout(timeoutId);
+  }, [selectedProduct?.id, editor]);
+
+  // Setup canvas event handlers - REMOVED PERSISTENCE SAVING
   useEffect(() => {
     if (!editor || !editor.canvas) return;
 
-    editor.canvas.selection = true;
-    editor.canvas.skipTargetFind = false;
-    editor.canvas.hoverCursor = 'move';
-    editor.canvas.defaultCursor = 'move';
-    editor.canvas.allowTouchScrolling = false;
-    editor.canvas.targetFindTolerance = 10;
-
     const canvas = editor.canvas;
+
+    // Basic canvas settings
+    canvas.selection = true;
+    canvas.hoverCursor = 'move';
+    canvas.defaultCursor = 'default';
 
     const getProductImage = () => {
       return canvas.getObjects().find((o) => o.type === "image" && o.isTshirtBase);
     };
 
     const handleObjectMoving = (e) => {
-      const productImage = getProductImage();
-      if (productImage) {
-        constrainObjectToProduct(e.target, productImage);
+      // Don't allow base layer to move
+      if (e.target.isTshirtBase) {
+        e.target.set({
+          left: canvas.getWidth() / 2,
+          top: canvas.getHeight() / 2
+        });
+        e.target.setCoords();
+        return;
       }
-      throttledRender(canvas);
-    };
 
-    const handleObjectScaling = (e) => {
+      // Constrain other objects to product bounds
       const productImage = getProductImage();
       if (productImage) {
         constrainObjectToProduct(e.target, productImage);
       }
-      throttledRender(canvas);
-    };
-
-    const handleObjectRotating = (e) => {
-      const productImage = getProductImage();
-      if (productImage) {
-        constrainObjectToProduct(e.target, productImage);
-      }
-      throttledRender(canvas);
     };
 
     const handleObjectModified = (e) => {
+      // Don't allow base layer modifications
+      if (e.target.isTshirtBase) {
+        return;
+      }
+
       const productImage = getProductImage();
       if (productImage) {
         constrainObjectToProduct(e.target, productImage);
+        updateClippingForObject(e.target);
       }
-      debouncedUpdateClipping(e.target);
+      
+      // REMOVED: Canvas state saving to localStorage
     };
 
-    const handleObjectAdded = (e) => {
-      const productImage = getProductImage();
-      if (productImage && !e.target.isTshirtBase) {
-        setTimeout(() => {
-          constrainObjectToProduct(e.target, productImage);
-          canvas.renderAll();
-        }, 50);
+    const handleSelectionCreated = (e) => {
+      // Prevent selection of base layer
+      if (e.selected && e.selected.some(obj => obj.isTshirtBase)) {
+        canvas.discardActiveObject();
+        canvas.renderAll();
       }
     };
 
+    // Add event listeners
     canvas.on('object:moving', handleObjectMoving);
-    canvas.on('object:scaling', handleObjectScaling);
-    canvas.on('object:rotating', handleObjectRotating);
+    canvas.on('object:scaling', handleObjectMoving);
+    canvas.on('object:rotating', handleObjectMoving);
     canvas.on('object:modified', handleObjectModified);
-    canvas.on('object:added', handleObjectAdded);
-
-    canvas.renderAll();
+    canvas.on('selection:created', handleSelectionCreated);
+    canvas.on('selection:updated', handleSelectionCreated);
 
     return () => {
       canvas.off('object:moving', handleObjectMoving);
-      canvas.off('object:scaling', handleObjectScaling);
-      canvas.off('object:rotating', handleObjectRotating);
+      canvas.off('object:scaling', handleObjectMoving);
+      canvas.off('object:rotating', handleObjectMoving);
       canvas.off('object:modified', handleObjectModified);
-      canvas.off('object:added', handleObjectAdded);
-
-      if (clippingTimeout) {
-        clearTimeout(clippingTimeout);
-      }
+      canvas.off('selection:created', handleSelectionCreated);
+      canvas.off('selection:updated', handleSelectionCreated);
     };
-  }, [editor]);
+  }, [editor, selectedProduct?.id]);
 
-  // Product updates useEffect
+  // Update text properties for active text object
   useEffect(() => {
-    if (!editor || !editor.canvas || products.length === 0) return;
+    if (!editor || !editor.canvas) return;
 
-    const lastProduct = products[products.length - 1];
+    const canvas = editor.canvas;
+    const activeObject = canvas.getActiveObject();
 
-    editor.canvas.getObjects().forEach((obj) => {
-      if (obj.customId === lastProduct.id) {
-        if (obj.type === "image") {
-          obj.set({
-            opacity: lastProduct.opacity / 100,
-            angle: lastProduct.rotate,
-            flipX: setFlipX,
-            flipY: setFlipY,
-          });
-        } else if (obj.type === "i-text") {
-          obj.set({
-            selectable: true,
-            evented: true,
-            hasControls: true,
-            hasBorders: true,
-            lockMovementX: false,
-            lockMovementY: false,
-            editable: false,
-            moveCursor: "move",
-          });
-        }
-      }
-    });
+    if (activeObject && activeObject.type === "i-text") {
+      console.log('🔤 Updating text properties');
+      activeObject.set({
+        fill: textColor,
+        fontFamily: fontFamily,
+        fontStyle: fontStyle,
+        flipX: textFlipX,
+        flipY: textFlipY
+      });
+      canvas.renderAll();
+    }
+  }, [textColor, fontFamily, fontStyle, textFlipX, textFlipY, editor]);
 
-    editor.canvas.renderAll();
-  }, [products]);
+  // Debug canvas state
+  useEffect(() => {
+    if (editor?.canvas) {
+      const canvas = editor.canvas;
+      const objects = canvas.getObjects();
+      console.log('🖼️ Canvas objects:', objects.length);
+      console.log('📋 Objects detail:', objects.map(obj => ({
+        type: obj.type,
+        isTshirtBase: obj.isTshirtBase,
+        selectable: obj.selectable,
+        evented: obj.evented
+      })));
+    }
+  }, [editor?.canvas]);
 
-  const updateLastProduct = (key, value) => {
-    setProducts((prev) => {
-      const updated = [...prev];
-      const lastIndex = updated.length - 1;
-      updated[lastIndex] = {
-        ...updated[lastIndex],
-        [key]: value,
-      };
-      return updated;
-    });
-  };
-
-  // Cloudinary upload function
   const baseUrl = "https://my-backend-blond.vercel.app";
 
   const uploadToCloudinaryImg = async ({ image }) => {
@@ -1628,44 +931,25 @@ const CustomizerLayout = () => {
       const formdata = new FormData();
       formdata.append("image", image);
 
-      console.log('📤 Uploading to cloudinary:', `${baseUrl}/uploadfile`);
-
       const response = await fetch(`${baseUrl}/uploadfile`, {
         method: "POST",
         body: formdata,
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
         throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
-      console.log('✅ Upload success:', data);
       return data;
 
     } catch (error) {
-      console.error('❌ Upload error:', error);
+      console.error('Upload error:', error);
       throw error;
     }
   };
 
-  function extractMongoId(product) {
-    // Your database returns _id as a direct string property
-    const id = product._id;
-
-    if (id && typeof id === 'string' && id.length > 0) {
-      console.log(`✅ Found MongoDB _id: ${id}`);
-      return id;
-    }
-
-    console.warn("❌ No valid _id found in product:", product);
-    return null;
-  }
-
   const handleSave = async (generateWith3D = false) => {
-    console.log("handleSave called with 3D generation:", generateWith3D);
-
     if (!editor?.canvas) {
       alert('Canvas not ready!');
       return;
@@ -1683,18 +967,15 @@ const CustomizerLayout = () => {
     }
 
     try {
-      // 🎯 STEP 1: Take Screenshot
-      console.log("📸 Step 1: Taking screenshot...");
+      // Take screenshot
       const screenshotDataURL = editor.canvas.toDataURL('image/png', 0.8);
-      console.log("Screenshot created, length:", screenshotDataURL.length);
-
+      
       if (!screenshotDataURL || screenshotDataURL === 'data:,') {
         throw new Error('Failed to capture design screenshot');
       }
 
-      // 🎯 STEP 2: Upload Screenshot to Cloudinary
-      console.log("☁️ Step 2: Uploading screenshot to Cloudinary...");
-      let screenshotCloudinaryUrl = screenshotDataURL; // fallback
+      // Upload screenshot to Cloudinary
+      let screenshotCloudinaryUrl = screenshotDataURL;
 
       try {
         const response = await fetch(screenshotDataURL);
@@ -1707,14 +988,12 @@ const CustomizerLayout = () => {
 
         if (cloudinaryResponse && cloudinaryResponse.url) {
           screenshotCloudinaryUrl = cloudinaryResponse.url;
-          console.log("✅ Step 2 Complete: Screenshot uploaded to Cloudinary:", screenshotCloudinaryUrl);
         }
       } catch (uploadError) {
-        console.error("❌ Cloudinary screenshot upload failed:", uploadError);
-        // Continue with base64 fallback
+        console.error("Screenshot upload failed:", uploadError);
       }
 
-      // Step 3: Collect canvas data
+      // Collect canvas data
       const canvasObjects = editor.canvas.getObjects().map(obj => {
         const baseData = {
           type: obj.type,
@@ -1768,7 +1047,9 @@ const CustomizerLayout = () => {
         return baseData;
       });
 
-      // Create save data structure
+      // Create save data structure using getCurrentProductData()
+      const currentProduct = getCurrentProductData();
+      
       const saveData = {
         timestamp: new Date().toISOString(),
         product: {
@@ -1776,7 +1057,7 @@ const CustomizerLayout = () => {
           image: selectedProduct.image,
           description: selectedProduct.description,
           size: selectedProduct.size,
-          color: selectedProduct.color,
+          color: selectedColor.color,
           width: selectedProduct.width,
           textTopRatio: selectedProduct.textTopRatio
         },
@@ -1786,78 +1067,28 @@ const CustomizerLayout = () => {
           objects: canvasObjects,
           backgroundColor: editor.canvas.backgroundColor || "#ffffff"
         },
-        design: {
-          appliedDesigns: canvasObjects.filter(obj =>
-            obj.type === 'image' &&
-            !obj.isTshirtBase &&
-            obj.name === 'design-image'
-          ),
-          appliedPatterns: canvasObjects.filter(obj =>
-            obj.type === 'image' &&
-            obj.name === 'pattern-image'
-          ),
-          customUploads: canvasObjects.filter(obj =>
-            obj.type === 'image' &&
-            !obj.isTshirtBase &&
-            !obj.name
-          )
-        },
-        text: {
-          textObjects: canvasObjects.filter(obj => obj.type === 'i-text'),
-          currentTextColor: setTextColor,
-          currentFontFamily: setTextFontFamily,
-          currentFontStyle: setFontStyle,
-          currentTextSize: textSize,
-          currentTextSpacing: textSpacing,
-          currentTextArc: textArc,
-          textFlipX: setTextFlipX,
-          textFlipY: setTextFlipY
-        },
-        clipart: {
-          emojis: canvasObjects.filter(obj => obj.type === 'i-text' && obj.isEmoji),
-          icons: canvasObjects.filter(obj => obj.type === 'image' && obj.isIcon),
-          customIcons: []
-        },
-        imageSettings: {
-          flipX: false,
-          flipY: false,
-          selectedColor: {
-            color: "#ffffff",
-            name: "White"
-          },
-          opacity: 1,
-          rotation: 0
-        },
-        uiState: {
-          showSidebar: true,
-          clippingPath: {},
-          customTextState: {
-            text: "",
-            showEditModal: false,
-            showAddModal: false
-          }
-        },
-        metadata: {
-          canvasObjectCount: canvasObjects.length,
-          hasText: canvasObjects.some(obj => obj.type === 'i-text'),
-          hasDesign: canvasObjects.some(obj =>
-            obj.type === 'image' &&
-            !obj.isTshirtBase
-          ),
-          hasCustomUpload: canvasObjects.some(obj =>
-            obj.type === 'image' &&
-            !obj.isTshirtBase &&
-            !obj.name
-          )
+        customizations: {
+          text: customText,
+          textSize: textSize,
+          textSpacing: textSpacing,
+          textArc: textArc,
+          textColor: textColor,
+          fontFamily: fontFamily,
+          fontStyle: fontStyle,
+          textFlipX: textFlipX,
+          textFlipY: textFlipY,
+          flipX: flipX,
+          flipY: flipY,
+          selectedColor: selectedColor
         },
         screenshot: screenshotCloudinaryUrl,
         model3D: null
       };
 
-      // 🎯 STEP 4-8: Generate 3D model if requested (Following Handwritten Steps)
+      // Generate 3D model if requested
       if (generateWith3D) {
         try {
-          console.log("🚀 Step 4: Starting 3D generation process...");
+          setSave3DProgress('Generating 3D model...');
 
           const meaningfulObjects = canvasObjects.filter(obj => {
             if (obj.isTshirtBase) return false;
@@ -1869,24 +1100,13 @@ const CustomizerLayout = () => {
             throw new Error('No custom content found. Please add text, designs, or images to generate 3D model.');
           }
 
-          console.log(`✅ Found ${meaningfulObjects.length} meaningful objects for 3D generation`);
-
-          setSave3DProgress('Step 4: Sending image to Tripo3D API...');
-
-          const onProgress = (message) => {
-            console.log('3D Progress:', message);
-            setSave3DProgress(message);
-          };
-
           const imageUrlForTripo = screenshotCloudinaryUrl.startsWith('http')
             ? screenshotCloudinaryUrl
             : screenshotDataURL;
 
-          console.log("📤 Step 4: Using image URL for Tripo3D:", imageUrlForTripo.substring(0, 100) + "...");
-
           const model3DResult = await tripo3DService.generate3DFromScreenshot(
             imageUrlForTripo,
-            onProgress,
+            (message) => setSave3DProgress(message),
             {
               face_limit: 10000,
               texture_resolution: 1024,
@@ -1894,57 +1114,40 @@ const CustomizerLayout = () => {
             }
           );
 
-          console.log('🎯 Step 5: 3D Generation Result:', model3DResult);
-
           if (!model3DResult || !model3DResult.model) {
-            throw new Error('Step 5 Failed: 3D generation completed but no model URL returned');
+            throw new Error('3D generation failed');
           }
 
-          if (!model3DResult.model.startsWith('http')) {
-            throw new Error(`Step 5 Failed: Invalid model URL format: ${model3DResult.model}`);
-          }
-
-          console.log("✅ Step 5 Complete: GLB URL extracted from data.result.pbr_model.url:", model3DResult.model);
-
-          setSave3DProgress('Step 6-7: Uploading GLB file to Cloudinary via server...');
-
+          // Upload GLB to Cloudinary
+          setSave3DProgress('Uploading 3D model...');
+          
           let finalGlbUrl = model3DResult.model;
           let storageType = 'tripo3d';
-          let CloudGlbUrl = model3DResult.model;
 
           try {
             const formData = new FormData();
             formData.append("url", finalGlbUrl);
 
-            const response = await fetch("https://my-backend-blond.vercel.app/uploadfile", {
+            const response = await fetch(`${baseUrl}/uploadfile`, {
               method: "POST",
               body: formData
             });
 
-            if (!response.ok) {
-              const errorText = await response.text();
-              throw new Error(`Upload failed: ${response.status} ${errorText}`);
+            if (response.ok) {
+              const uploadResult = await response.json();
+              if (uploadResult && uploadResult.url) {
+                finalGlbUrl = uploadResult.url;
+                storageType = 'cloudinary';
+              }
             }
-
-            const uploadResult = await response.json();
-            console.log("📦 Step 7: Cloudinary GLB upload response:", uploadResult);
-
-            if (uploadResult && uploadResult.url) {
-              CloudGlbUrl = uploadResult.url;
-              storageType = 'cloudinary';
-              console.log('🎉 Step 7 Complete: GLB uploaded to Cloudinary:', CloudGlbUrl);
-            } else {
-              console.warn('⚠️ Step 7 Warning: Invalid Cloudinary upload response, using original Tripo3D URL');
-            }
-
           } catch (uploadError) {
-            console.warn('⚠️ Step 6-7 Warning: GLB upload to Cloudinary failed:', uploadError);
+            console.warn('GLB upload to Cloudinary failed:', uploadError);
           }
 
           saveData.model3D = {
-            url: CloudGlbUrl,
+            url: finalGlbUrl,
             originalTripoUrl: model3DResult.model,
-            cloudinaryUrl: storageType === 'cloudinary' ? CloudGlbUrl : null,
+            cloudinaryUrl: storageType === 'cloudinary' ? finalGlbUrl : null,
             renderedImage: model3DResult.rendered_image,
             taskId: model3DResult.task_id,
             generatedAt: model3DResult.generatedAt,
@@ -1954,42 +1157,17 @@ const CustomizerLayout = () => {
             isReal: true
           };
 
-          console.log("✅ Step 8: 3D model data prepared for MongoDB!");
-          console.log("🎯 Final GLB URL for database:", finalGlbUrl);
-          console.log("📊 Storage type:", storageType);
-
-          if (storageType === 'cloudinary') {
-            setSave3DProgress('✅ Steps 1-8 Complete: 3D model on Cloudinary! No CORS! 🎉');
-          } else {
-            setSave3DProgress('⚠️ Steps 1-7 Complete: Using Tripo3D URL (might have CORS) 📦');
-          }
+          setSave3DProgress('3D model generated successfully!');
 
         } catch (error) {
-          console.error("❌ 3D generation process failed:", error);
-          setSave3DProgress('3D generation failed ❌');
-
-          let errorMessage = `3D generation failed: ${error.message}\n\n`;
-
-          if (error.message.includes('No custom content')) {
-            errorMessage += 'Please add custom text, images, or designs to your t-shirt first.';
-          } else if (error.message.includes('Step 4')) {
-            errorMessage += 'Failed to send image to Tripo3D API. Check your API key and connection.';
-          } else if (error.message.includes('Step 5')) {
-            errorMessage += 'Tripo3D API failed to generate 3D model from your image.';
-          } else if (error.message.includes('Step 6-7')) {
-            errorMessage += 'GLB upload to Cloudinary failed, but 3D model was generated.';
-          }
-
-          alert(errorMessage);
-          return {
-            success: false,
-            error: error.message
-          };
+          console.error("3D generation failed:", error);
+          setSave3DProgress('3D generation failed');
+          alert(`3D generation failed: ${error.message}`);
+          return { success: false, error: error.message };
         }
       }
 
-      // 🎯 STEP 8: Save to MongoDB Database
-      console.log("💾 Step 8: Saving to MongoDB database...");
+      // Save to MongoDB
       let savedProductId = null;
 
       try {
@@ -2001,48 +1179,17 @@ const CustomizerLayout = () => {
           body: JSON.stringify(saveData)
         });
 
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => null);
-          throw new Error(`Database API Error ${response.status}: ${errorData?.message || response.statusText}`);
+        if (response.ok) {
+          const result = await response.json();
+          savedProductId = result._id || result.data?._id || result.product?._id;
+          
+          if (savedProductId) {
+            setCurrentProductId(savedProductId);
+          }
         }
-
-        const result = await response.json();
-        console.log("✅ Step 8 Complete: Saved to MongoDB successfully!", result);
-
-        savedProductId = result._id || result.data?._id || result.product?._id;
-        console.log("🎯 MongoDB _id:", savedProductId);
-
-        if (savedProductId) {
-          localStorage.setItem('lastSavedProductId', savedProductId);
-          console.log("💾 Saved product _id to localStorage:", savedProductId);
-          setCurrentProductId && setCurrentProductId(savedProductId);
-        }
-
-        saveData._id = savedProductId;
-
       } catch (apiError) {
-        console.error("❌ Step 8 Failed: Database save error:", apiError);
-
-        const saveLocallyAnyway = confirm(
-          `Database save failed: ${apiError.message}\n\nDo you want to save locally instead?`
-        );
-
-        if (!saveLocallyAnyway) {
-          throw new Error(`Database save failed: ${apiError.message}`);
-        }
+        console.error("Database save error:", apiError);
       }
-
-      // Backup to localStorage
-      const existingSaves = JSON.parse(localStorage.getItem('customizations') || '[]');
-      const localSaveData = {
-        ...saveData,
-        _id: savedProductId,
-        localSaveTimestamp: new Date().toISOString()
-      };
-      existingSaves.push(localSaveData);
-      localStorage.setItem('customizations', JSON.stringify(existingSaves));
-
-      console.log("✅ Backup saved to localStorage!");
 
       // Show screenshot in new tab
       try {
@@ -2054,7 +1201,6 @@ const CustomizerLayout = () => {
         console.log("Screenshot preview failed:", err);
       }
 
-      // 🎯 STEP 9: Success - Ready to Get from Database
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
 
@@ -2062,14 +1208,10 @@ const CustomizerLayout = () => {
 
       if (generateWith3D && saveData.model3D && saveData.model3D.isReal) {
         const storageInfo = saveData.model3D.storage === 'cloudinary'
-          ? '✅ Cloudinary Storage (No CORS Issues)'
-          : '⚠️ Tripo3D Storage (Might Have CORS Issues)';
+          ? '✅ Cloudinary Storage'
+          : '⚠️ Tripo3D Storage';
 
-        successMessage = `🎉 All Steps Complete! Design + 3D Model Saved!\n\nMongoDB ID: ${savedProductId}\nStorage: ${storageInfo}\nGLB URL: ${saveData.model3D.url}\n\n✅ Step 9: Ready to fetch from database!\nScreenshot opened in new tab.`;
-      } else if (generateWith3D) {
-        successMessage = `Design saved but 3D generation failed.\nMongoDB ID: ${savedProductId}\nPlease try generating 3D again. 📸`;
-      } else {
-        successMessage = `✅ Design saved successfully!\nMongoDB ID: ${savedProductId}\nScreenshot opened in new tab. 📸`;
+        successMessage = `🎉 Design + 3D Model Saved!\n\nMongoDB ID: ${savedProductId}\nStorage: ${storageInfo}\nGLB URL: ${saveData.model3D.url}`;
       }
 
       alert(successMessage);
@@ -2079,184 +1221,19 @@ const CustomizerLayout = () => {
         productId: savedProductId,
         has3D: !!(saveData.model3D && saveData.model3D.isReal),
         model3DUrl: saveData.model3D?.url || null,
-        storageType: saveData.model3D?.storage || null,
-        followedHandwrittenSteps: true
+        storageType: saveData.model3D?.storage || null
       };
 
     } catch (error) {
-      console.error('❌ HandleSave error:', error);
+      console.error('Save error:', error);
       alert('Save failed: ' + error.message);
-      return {
-        success: false,
-        error: error.message
-      };
+      return { success: false, error: error.message };
     } finally {
       setIsSaving(false);
       setSavingWith3D(false);
       setSave3DProgress('');
     }
   };
-
-
-  // useEffect(() => {
-  //   const lastSavedId = localStorage.getItem('lastSavedProductId');
-  //   if (lastSavedId) {
-  //     console.log('🔄 Loading last saved product:', lastSavedId);
-  //     setCurrentProductId(lastSavedId);
-  //   }
-  // }, []);
-
-
-  // Alignment useEffect
-  useEffect(() => {
-    if (!editor || !editor.canvas || products.length === 0) return;
-
-    const lastProduct = products[products.length - 1];
-
-    editor.canvas.getObjects().forEach((obj) => {
-      if (obj.customId === lastProduct.id) {
-        const canvasW = editor.canvas.getWidth();
-        const canvasH = editor.canvas.getHeight();
-
-        switch (lastProduct.alignment) {
-          case "left":
-            obj.set({ left: 0 });
-            break;
-          case "center":
-            obj.set({ left: canvasW / 2 });
-            break;
-          case "right":
-            obj.set({ left: canvasW });
-            break;
-          case "top":
-            obj.set({ top: 0 });
-            break;
-          case "middle":
-            obj.set({ top: canvasH / 2 });
-            break;
-          case "bottom":
-            obj.set({ top: canvasH });
-            break;
-          default:
-            break;
-        }
-
-        obj.setCoords();
-      }
-    });
-
-    editor.canvas.renderAll();
-  }, [products[products.length - 1]?.alignment]);
-
-  // Text updates useEffect
-  useEffect(() => {
-    if (!editor || !editor.canvas) return;
-
-    const activeObject = editor.canvas.getActiveObject();
-
-    if (activeObject && activeObject.type === "i-text") {
-      activeObject.set({
-        fill: setTextColor,
-        fontFamily: setTextFontFamily,
-        fontStyle: setFontStyle,
-        flipX: setTextFlipX,
-        flipY: setTextFlipY
-      });
-      editor.canvas.renderAll();
-    }
-  }, [setTextColor, setTextFontFamily, setFontStyle, setTextFlipX, setTextFlipY]);
-
-  // Fabric.js methods enhancement useEffect
-  useEffect(() => {
-    if (!editor || !editor.canvas) return;
-
-    import("fabric").then(({ Canvas }) => {
-      if (!Canvas.prototype.bringToFront) {
-        Canvas.prototype.bringToFront = function (object) {
-          const objects = this.getObjects();
-          const currentIndex = objects.indexOf(object);
-          if (currentIndex !== -1 && currentIndex < objects.length - 1) {
-            this.remove(object);
-            this.add(object);
-          }
-          return this;
-        };
-      }
-
-      if (!Canvas.prototype.sendToBack) {
-        Canvas.prototype.sendToBack = function (object) {
-          const objects = this.getObjects();
-          const currentIndex = objects.indexOf(object);
-          if (currentIndex !== -1 && currentIndex > 0) {
-            this.remove(object);
-            if (typeof this.insertAt === 'function') {
-              this.insertAt(object, 0);
-            } else {
-              objects.splice(0, 0, object);
-              this._objects = objects;
-              this.renderAll();
-            }
-          }
-          return this;
-        };
-      }
-
-      if (!Canvas.prototype.bringForward) {
-        Canvas.prototype.bringForward = function (object) {
-          const objects = this.getObjects();
-          const currentIndex = objects.indexOf(object);
-          if (currentIndex !== -1 && currentIndex < objects.length - 1) {
-            const nextIndex = currentIndex + 1;
-            [objects[currentIndex], objects[nextIndex]] = [objects[nextIndex], objects[currentIndex]];
-            this.renderAll();
-          }
-          return this;
-        };
-      }
-
-      if (!Canvas.prototype.sendBackwards) {
-        Canvas.prototype.sendBackwards = function (object) {
-          const objects = this.getObjects();
-          const currentIndex = objects.indexOf(object);
-          if (currentIndex !== -1 && currentIndex > 0) {
-            const prevIndex = currentIndex - 1;
-            [objects[currentIndex], objects[prevIndex]] = [objects[prevIndex], objects[currentIndex]];
-            this.renderAll();
-          }
-          return this;
-        };
-      }
-    });
-  }, [editor]);
-
-  const bringForward = () => {
-    const canvas = editor?.canvas;
-    const activeObj = canvas?.getActiveObject();
-
-    if (!activeObj || !canvas) return;
-
-    const objects = canvas.getObjects();
-    const currentIndex = objects.indexOf(activeObj);
-
-    if (currentIndex !== -1 && currentIndex < objects.length - 1) {
-      const nextIndex = currentIndex + 1;
-      [objects[currentIndex], objects[nextIndex]] = [objects[nextIndex], objects[currentIndex]];
-
-      canvas._objects = objects;
-      activeObj.setCoords();
-      canvas.renderAll();
-    }
-  };
-
-
-  useEffect(() => {
-    if (editor?.canvas) {
-      console.log("Canvas initialized with", editor.canvas.getObjects().length, "objects");
-      console.log("Canvas objects:", editor.canvas.getObjects());
-    }
-  }, [editor?.canvas]);
-
-  const [lastModel3DUrl, setLastModel3DUrl] = useState(null);
 
   return (
     <div className="w-full h-screen flex justify-center items-center bg-gray-100 relative max-w-[1720px] mx-auto">
@@ -2271,17 +1248,14 @@ const CustomizerLayout = () => {
 
       {(showSidebar && selectedProduct) && (
         <Sidebar
-          bringForward={bringForward}
+          bringForward={() => updateArrange('bringForward')}
           editor={editor}
-          products={products}
-          setProducts={setProducts}
           selectedProduct={selectedProduct}
-          setSelectedProduct={setSelectedProduct}
           customText={customText}
           textSize={textSize}
           textSpacing={textSpacing}
           textArc={textArc}
-          setTextFontFamily={setTextFontFamily}
+          setTextFontFamily={setFontFamily}
           setFontStyle={setFontStyle}
           setTextColor={setTextColor}
           setFlipX={setFlipX}
@@ -2290,7 +1264,6 @@ const CustomizerLayout = () => {
           setTextFlipY={setTextFlipY}
           handleAddCustomText={handleAddCustomText}
           setCustomText={setCustomText}
-          updateLastProduct={updateLastProduct}
           showAddModal={showAddModal}
           showEditModal={showEditModal}
           setShowAddModal={setShowAddModal}
@@ -2303,14 +1276,14 @@ const CustomizerLayout = () => {
           setSelectedColor={setSelectedColor}
           addEmojiTextToCanvas={addEmojiTextToCanvas}
           updateArrange={updateArrange}
-          setChangeTextColor={setChangeTextColor}
-          setChangeFontFamily={setChangeFontFamily}
-          setChangeFontStyle={setChangeFontStyle}
-          setChangeFlipX={setChangeFlipX}
-          setChangeFlipy={setChangeFlipy}
+          setChangeTextColor={setTextColor}
+          setChangeFontFamily={setFontFamily}
+          setChangeFontStyle={setFontStyle}
+          setChangeFlipX={setFlipX}
+          setChangeFlipy={setFlipY}
           alignFabricObject={alignFabricObject}
-          setChangeTextFlipX={setChangeTextFlipX}
-          setChangeTextFlipY={setChangeTextFlipY}
+          setChangeTextFlipX={setTextFlipX}
+          setChangeTextFlipY={setTextFlipY}
           handleAddDesignToCanvas={handleAddDesignToCanvas}
           addIconToCanvas={addIconToCanvas}
           handleAddPatternToCanvas={handleAddPatternToCanvas}
@@ -2318,59 +1291,20 @@ const CustomizerLayout = () => {
         />
       )}
 
-      {selectedProduct && <RightSmallPreview products={products} />}
-
-      {/* CENTER: 2D/3D Canvas Area (MAIN CHANGE) */}
       {selectedProduct && (
-        // <CenterCanvas3D onReady={onReady} editor={editor} model3DUrl={lastModel3DUrl} />
-        <CenterCanvas3D
-          onReady={onReady}
-          editor={editor}
-          savedProductId={currentProductId}  // ✅ Pass saved product ID
+        <RightSmallPreview 
+          currentProduct={getCurrentProductData()}
         />
       )}
 
-      {/* Product Selection (when no product selected) */}
-      {!selectedProduct && (
-        <div className="flex gap-4">
-          {allProducts.map((product) => (
-            <div
-              key={product.id}
-              className={`p-3 border rounded cursor-pointer w-44 transition hover:shadow-lg ${selectedProduct?.id === product.id ? "border-blue-600 ring-2 ring-blue-300" : "border-gray-300"
-                }`}
-              onClick={() => {
-                const mergedProduct = {
-                  ...product,
-                  text: customText,
-                  textSize,
-                  textSpacing,
-                  textArc,
-                  fontFamily: setTextFontFamily,
-                  fontStyle: setFontStyle,
-                  fill: setTextColor,
-                  imgflipX: setFlipX,
-                  imgflipY: setFlipY,
-                  flipX: setTextFlipX,
-                  flipY: setTextFlipY,
-                  opacity: 100,
-                  rotate: 0,
-                  alignment: "center",
-                };
-                setSelectedProduct(product);
-                setProducts([mergedProduct]);
-              }}
-            >
-              <img src={product.image} alt={product.description} className="w-full h-44 object-contain" />
-              <div className="mt-2 text-center">
-                <p className="font-semibold text-sm">{product.description}</p>
-                <p className="text-xs text-gray-500">Size: {product.size}</p>
-                <p className="text-xs text-gray-500">Color: {product.color}</p>
-              </div>
-            </div>
-          ))}
-        </div>
+      {selectedProduct && (
+        <CenterCanvas3D
+          onReady={onReady}
+          editor={editor}
+          savedProductId={currentProductId}
+        />
       )}
-      {/* Bottom Controls */}
+
       {selectedProduct && (
         <div className="bottom-7 left-1/2 transform -translate-x-1/2 absolute flex items-center gap-2 border border-[#D3DBDF] bg-white p-3.5 rounded-lg">
           <div className="flex items-center gap-2">
@@ -2477,4 +1411,3 @@ const CustomizerLayout = () => {
 };
 
 export default CustomizerLayout;
-

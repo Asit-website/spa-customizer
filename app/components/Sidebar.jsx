@@ -9,12 +9,11 @@ import SelectColorsTab from "./SelectColorsTab";
 import ClipartTab from "./ClipartTab";
 
 const Sidebar = ({
-  products,
   editor,
+  selectedProduct, // Direct product instead of products array
   handleAddCustomText,
   customText,
   setCustomText,
-  updateLastProduct,
   showAddModal,
   showEditModal,
   setShowEditModal,
@@ -31,32 +30,20 @@ const Sidebar = ({
   addEmojiTextToCanvas,
   updateArrange,
   setTextColor,
-  setChangeTextColor,
   setTextFontFamily,
-  setChangeFontFamily,
   setFontStyle,
-  setChangeFontStyle,
-  setChangeFlipX,
-  setChangeFlipy,
   alignFabricObject,
-  setChangeTextFlipX,
-  setChangeTextFlipY,
-  // handleImageUpload,
   bringForward,
   handleAddDesignToCanvas,
   constrainObjectToProduct,
   addIconToCanvas,
   handleAddPatternToCanvas,
-  setProducts,
-  selectedProduct,
-  setSelectedProduct,
   setFlipX,
   setFlipY,
   setTextFlipX,
   setTextFlipY
 }) => {
   const [activeTab, setActiveTab] = useState("editor");
-  const lastProduct = products[products.length - 1];
   const [showClipartTab, setShowClipartTab] = useState(false);
   const [showEditorModal, setShowEditorModal] = useState(true);
   const [showImageEditModal, setShowImageEditModal] = useState(false);
@@ -222,6 +209,7 @@ const Sidebar = ({
               editor={editor}
               setShowImageEditModal={setShowImageEditModal}
               setHasUploadedImage={setHasUploadedImage}
+              selectedProduct={selectedProduct}
             />
           )}
           {hasUploadedImage && showImageEditModal && (
@@ -248,7 +236,6 @@ const Sidebar = ({
           {hasAddedText && showEditModal && (
             <EditTextTab
               setTextColor={setTextColor}
-              setChangeTextColor={setChangeTextColor}
               editor={editor}
               setShowEditModal={setShowEditModal}
               customText={customText}
@@ -258,11 +245,9 @@ const Sidebar = ({
               textSpacing={textSpacing}
               setTextSpacing={setTextSpacing}
               setTextFontFamily={setTextFontFamily}
-              setChangeFontFamily={setChangeFontFamily}
-              setChangeFontStyle={setChangeFontStyle}
               setFontStyle={setFontStyle}
-              setChangeTextFlipX={setChangeTextFlipX}
-              setChangeTextFlipY={setChangeTextFlipY}
+              setTextFlipX={setTextFlipX}
+              setTextFlipY={setTextFlipY}
               bringForward={bringForward}
             />
           )}
@@ -282,7 +267,7 @@ const Sidebar = ({
         <ClipartTab
           addEmojiTextToCanvas={addEmojiTextToCanvas}
           setShowClipartTab={setShowClipartTab}
-          lastProduct={lastProduct}
+          selectedProduct={selectedProduct} // Pass selectedProduct instead of lastProduct
           handleAddDesignToCanvas={handleAddDesignToCanvas}
           addIconToCanvas={addIconToCanvas}
           editor={editor}

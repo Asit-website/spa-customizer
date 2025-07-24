@@ -3,10 +3,9 @@ import FontSelector from './FontSelector';
 import CustomColorSwatch from './CustomColorSwatch';
 
 const EditTextTab = ({ 
-    setChangeTextFlipX, 
-    setChangeTextFlipY, 
-    setTextColor, 
-    setChangeTextColor, 
+    setTextFlipX,      // ✅ Fixed: was setChangeTextFlipX
+    setTextFlipY,      // ✅ Fixed: was setChangeTextFlipY
+    setTextColor,      // ✅ Direct state setter
     editor, 
     setShowEditModal, 
     customText, 
@@ -15,10 +14,8 @@ const EditTextTab = ({
     setTextSize, 
     setTextSpacing, 
     textSpacing, 
-    setTextFontFamily, 
-    setChangeFontFamily, 
-    setFontStyle, 
-    setChangeFontStyle, 
+    setTextFontFamily, // ✅ Direct state setter
+    setFontStyle,      // ✅ Direct state setter  
     bringForward 
 }) => {
 
@@ -32,7 +29,6 @@ const EditTextTab = ({
         const activeObj = editor.canvas.getActiveObject();
         return activeObj && activeObj.type === "i-text" ? activeObj : null;
     };
-
 
     useEffect(() => {
         const activeTextObj = getActiveTextObject();
@@ -57,7 +53,7 @@ const EditTextTab = ({
     };
 
     const handleFontSelection = (font) => {
-        setChangeFontFamily(font);
+        setTextFontFamily(font);  // ✅ Fixed: direct state update
         setCurrentFont(font);
         
         const activeTextObj = getActiveTextObject();
@@ -70,7 +66,7 @@ const EditTextTab = ({
     };
 
     const handleColorSelection = (color) => {
-        setChangeTextColor(color);
+        setTextColor(color);  // ✅ Fixed: direct state update
         setCurrentColor(color);
         
         const activeTextObj = getActiveTextObject();
@@ -90,15 +86,37 @@ const EditTextTab = ({
             const currentWeight = activeTextObj.fontWeight;
             const newWeight = currentWeight === 'bold' ? 'normal' : 'bold';
             activeTextObj.set('fontWeight', newWeight);
-            setChangeFontStyle(newWeight);
+            setFontStyle(newWeight);  // ✅ Fixed: direct state update
         } else if (styleType === 'italic') {
             const currentStyle = activeTextObj.fontStyle;
             const newStyle = currentStyle === 'italic' ? 'normal' : 'italic';
             activeTextObj.set('fontStyle', newStyle);
-            setChangeFontStyle(newStyle);
+            setFontStyle(newStyle);  // ✅ Fixed: direct state update
         }
         
         editor.canvas.renderAll();
+    };
+
+    const handleFlipX = () => {
+        const activeTextObj = getActiveTextObject();
+        if (activeTextObj) {
+            const currentFlipX = activeTextObj.flipX;
+            const newFlipX = !currentFlipX;
+            activeTextObj.set('flipX', newFlipX);
+            setTextFlipX(newFlipX);  // ✅ Update state
+            editor.canvas.renderAll();
+        }
+    };
+
+    const handleFlipY = () => {
+        const activeTextObj = getActiveTextObject();
+        if (activeTextObj) {
+            const currentFlipY = activeTextObj.flipY;
+            const newFlipY = !currentFlipY;
+            activeTextObj.set('flipY', newFlipY);
+            setTextFlipY(newFlipY);  // ✅ Update state
+            editor.canvas.renderAll();
+        }
     };
 
     const shouldShowEditText = !showTextSelectTab && !showColorTab;
@@ -136,16 +154,16 @@ const EditTextTab = ({
                         </div>
                         <div className="flex items-center gap-3">
                             <img 
-                                onClick={() => setChangeTextFlipX(prev => !prev)} 
+                                onClick={handleFlipX}  // ✅ Fixed: proper handler
                                 className='w-[22px] cursor-pointer' 
                                 src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507255/tune-vertical_ezas8p.png" 
-                                alt="flip" 
+                                alt="flip horizontal" 
                             />
                             <img 
-                                onClick={() => setChangeTextFlipY(prev => !prev)} 
+                                onClick={handleFlipY}  // ✅ Fixed: proper handler
                                 className='w-[22px] cursor-pointer' 
                                 src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749507254/flip-vertical_ajs5ur.png" 
-                                alt="flip" 
+                                alt="flip vertical" 
                             />
                         </div>
                     </div>
@@ -209,12 +227,6 @@ const EditTextTab = ({
                             className="w-full"
                         />
 
-                        <label className="text-[14px] text-black font-medium">Arc</label>
-                        <input
-                            type="range"
-                            className="w-full"
-                        />
-
                         <label className="text-[14px] text-black font-medium">Spacing</label>
                         <input
                             type="range"
@@ -243,22 +255,22 @@ const EditTextTab = ({
                                 onClick={bringForward} 
                                 className='w-[20px] cursor-pointer' 
                                 src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508122/arrange-bring-forward_vigco4.png" 
-                                alt="" 
+                                alt="bring forward" 
                             />
                             <img 
                                 className='w-[20px] cursor-pointer' 
                                 src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508122/arrange-bring-to-front_povosv.png" 
-                                alt="" 
+                                alt="bring to front" 
                             />
                             <img 
                                 className='w-[20px] cursor-pointer' 
                                 src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508122/arrange-send-backward_buzw6f.png" 
-                                alt="" 
+                                alt="send backward" 
                             />
                             <img 
                                 className='w-[20px] cursor-pointer' 
                                 src="https://res.cloudinary.com/dd9tagtiw/image/upload/v1749508121/arrange-send-to-back_bcyzlu.png" 
-                                alt="" 
+                                alt="send to back" 
                             />
                         </div>
                     </div>

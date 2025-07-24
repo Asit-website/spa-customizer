@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import CustomizerLayout from "./CustomizerLayout";
+import ProductsShowCase from "./components/ProductsShowCase";
+import { backendProducts } from "./productsData"; 
 
 export default function Home() {
 
@@ -19,7 +20,7 @@ export default function Home() {
 
   return (
     <>
-        <CustomizerLayout/>
+      <ProductsShowCase products={backendProducts} />
     </>
   );
 }
