@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "build:widget": "vite build"
   },
   "dependencies": {
     "@iconify/react": "^6.0.0",
@@ -28,8 +29,11 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@vitejs/plugin-react": "^4.7.0",
+    "cross-env": "^7.0.3",
     "eslint": "^9",
     "eslint-config-next": "15.3.3",
-    "tailwindcss": "^4"
+    "tailwindcss": "^4",
+    "vite": "^7.0.6"
   }
 }
