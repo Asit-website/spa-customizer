@@ -5,7 +5,6 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
-  publicDir: false, // ✅ prevents public/ from being copied into UMD build
   define: {
     'process.env.NODE_ENV': JSON.stringify('production'),
     'process.env': '{}',
