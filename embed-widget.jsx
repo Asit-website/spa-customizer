@@ -1,10 +1,14 @@
-window.mountProductCustomizer = function (selector = "#customizer-root", props = {}) {
-  const container = document.querySelector(selector);
-  if (!container) {
-    console.warn("No container found for customizer");
-    return;
-  }
+// embed-widget.jsx
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import CustomizerLayout from './app/CustomizerLayout'
 
-  const root = ReactDOM.createRoot(container);
-  root.render(<ProductCustomizer {...props} />);
-};
+window.mountProductCustomizer = function (selector = '#customizer-root', props = {}) {
+  const container = document.querySelector(selector)
+  if (container) {
+    const root = ReactDOM.createRoot(container)
+    root.render(<CustomizerLayout {...props} />)
+  } else {
+    console.warn('No mount target found for ProductCustomizer')
+  }
+}
