@@ -3,10 +3,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import CustomizerLayout from './app/CustomizerLayout'
 
-if (typeof ReactDOM === 'undefined') {
-  console.error('ReactDOM not found');
-}
-
+if (typeof ReactDOM === 'undefined') { console.error('ReactDOM not found'); }
 window.mountProductCustomizer = function (selector = '#customizer-root', props = {}) {
   const container = document.querySelector(selector)
   if (container) {
