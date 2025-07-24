@@ -10,23 +10,15 @@ export default defineConfig({
   },
   build: {
     lib: {
-      entry: path.resolve(__dirname, 'embed-widget.jsx'),
+      entry: path.resolve(__dirname, 'embed-widget.jsx'), // ✅ your entry file
       name: 'EmbedWidget',
       fileName: 'embed-widget',
       formats: ['umd'],
     },
-    // ✅ Remove or comment out external
-    // rollupOptions: {
-    //   external: ['react', 'react-dom'],
-    //   output: {
-    //     globals: {
-    //       react: 'React',
-    //       'react-dom': 'ReactDOM',
-    //     },
-    //   },
-    // },
+    // ✅ DO NOT use "external" here
+    // Everything, including React, must be bundled
     outDir: 'public/widget',
     emptyOutDir: true,
-    minify: true, // optional
+    minify: false,
   },
 });

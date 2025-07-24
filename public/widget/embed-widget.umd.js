@@ -1,9 +1,63 @@
-(function(e){typeof define=="function"&&define.amd?define(e):e()})(function(){"use strict";var e={exports:{}},n={};/**
- * @license React
- * react-jsx-runtime.production.js
- *
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */var d;function R(){if(d)return n;d=1;var u=Symbol.for("react.transitional.element"),i=Symbol.for("react.fragment");function o(x,r,t){var s=null;if(t!==void 0&&(s=""+t),r.key!==void 0&&(s=""+r.key),"key"in r){t={};for(var c in r)c!=="key"&&(t[c]=r[c])}else t=r;return r=t.ref,{$$typeof:u,type:x,key:s,ref:r!==void 0?r:null,props:t}}return n.Fragment=i,n.jsx=o,n.jsxs=o,n}var a;function f(){return a||(a=1,e.exports=R()),e.exports}var l=f();window.mountProductCustomizer=function(u="#customizer-root",i={}){const o=document.querySelector(u);if(!o){console.warn("No container found for customizer");return}ReactDOM.createRoot(o).render(l.jsx(ProductCustomizer,{...i}))}});
+(function(factory) {
+  typeof define === "function" && define.amd ? define(factory) : factory();
+})(function() {
+  "use strict";
+  var jsxRuntime = { exports: {} };
+  var reactJsxRuntime_production = {};
+  /**
+   * @license React
+   * react-jsx-runtime.production.js
+   *
+   * Copyright (c) Meta Platforms, Inc. and affiliates.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE file in the root directory of this source tree.
+   */
+  var hasRequiredReactJsxRuntime_production;
+  function requireReactJsxRuntime_production() {
+    if (hasRequiredReactJsxRuntime_production) return reactJsxRuntime_production;
+    hasRequiredReactJsxRuntime_production = 1;
+    var REACT_ELEMENT_TYPE = Symbol.for("react.transitional.element"), REACT_FRAGMENT_TYPE = Symbol.for("react.fragment");
+    function jsxProd(type, config, maybeKey) {
+      var key = null;
+      void 0 !== maybeKey && (key = "" + maybeKey);
+      void 0 !== config.key && (key = "" + config.key);
+      if ("key" in config) {
+        maybeKey = {};
+        for (var propName in config)
+          "key" !== propName && (maybeKey[propName] = config[propName]);
+      } else maybeKey = config;
+      config = maybeKey.ref;
+      return {
+        $$typeof: REACT_ELEMENT_TYPE,
+        type,
+        key,
+        ref: void 0 !== config ? config : null,
+        props: maybeKey
+      };
+    }
+    reactJsxRuntime_production.Fragment = REACT_FRAGMENT_TYPE;
+    reactJsxRuntime_production.jsx = jsxProd;
+    reactJsxRuntime_production.jsxs = jsxProd;
+    return reactJsxRuntime_production;
+  }
+  var hasRequiredJsxRuntime;
+  function requireJsxRuntime() {
+    if (hasRequiredJsxRuntime) return jsxRuntime.exports;
+    hasRequiredJsxRuntime = 1;
+    {
+      jsxRuntime.exports = requireReactJsxRuntime_production();
+    }
+    return jsxRuntime.exports;
+  }
+  var jsxRuntimeExports = requireJsxRuntime();
+  window.mountProductCustomizer = function(selector = "#customizer-root", props = {}) {
+    const container = document.querySelector(selector);
+    if (!container) {
+      console.warn("No container found for customizer");
+      return;
+    }
+    const root = ReactDOM.createRoot(container);
+    root.render(/* @__PURE__ */ jsxRuntimeExports.jsx(ProductCustomizer, { ...props }));
+  };
+});
