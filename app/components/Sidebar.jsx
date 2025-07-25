@@ -38,6 +38,7 @@ const Sidebar = ({
   constrainObjectToProduct,
   addIconToCanvas,
   handleAddPatternToCanvas,
+  applyClippingToObject,
   setFlipX,
   setFlipY,
   setTextFlipX,
@@ -218,6 +219,7 @@ const Sidebar = ({
               setShowImageEditModal={setShowImageEditModal}
               updateArrange={updateArrange}
               constrainObjectToProduct={constrainObjectToProduct}
+              applyClippingToObject={applyClippingToObject}
             />
           )}
         </>

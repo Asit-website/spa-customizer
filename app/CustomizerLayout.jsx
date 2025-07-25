@@ -5,7 +5,7 @@ import Topbar from "./components/Topbar";
 import Sidebar from "./components/Sidebar";
 import RightSmallPreview from "./components/RightSmallPreview";
 import { FaMinus, FaPlus } from "react-icons/fa6";
-import { useFabricJSEditor,FabricJSCanvas } from "fabricjs-react";
+import { useFabricJSEditor, FabricJSCanvas } from "fabricjs-react";
 import LayerContextMenu from "./components/LayerContextMenu";
 import useCanvasContextMenu from "./hooks/useCanvasContextMenu";
 
@@ -90,6 +90,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
     };
   };
 
+  // Create T-shirt mask for clipping designs
   const createTshirtMask = (imageObj, callback) => {
     if (!imageObj) return;
 
@@ -142,6 +143,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
     });
   };
 
+  // Apply clipping mask to object so it gets cut properly within t-shirt bounds
   const applyClippingToObject = (obj, imageObj) => {
     if (!imageObj || !obj) return;
 
@@ -170,6 +172,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
     });
   };
 
+  // Update clipping for any object
   const updateClippingForObject = (obj) => {
     const canvas = editor?.canvas;
     if (!canvas || !obj || obj.isTshirtBase) return;
@@ -180,6 +183,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
     }
   };
 
+  // Constrain object to product bounds
   const constrainObjectToProduct = (obj, productImage) => {
     if (!obj || !productImage || obj.isTshirtBase) return;
 
@@ -471,6 +475,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
     });
   };
 
+  // Enhanced function to add design with backend position data
   const handleAddDesignToCanvas = (url, position = "center", offsetX = 0, offsetY = 0, targetWidth = 80, targetHeight = 80, quality = 0.8) => {
     if (!editor || !url) return;
 
@@ -519,10 +524,10 @@ const CustomizerLayout = ({ selectedProduct }) => {
             scaleX: scale,
             scaleY: scale,
             name: "design-image",
-            selectable: true,
-            evented: true,
+            selectable: false,
+            evented: false,
             hasControls: true,
-            hasBorders: true,
+            hasBorders: false,
             moveCursor: "move",
             lockMovementX: false,
             lockMovementY: false,
@@ -537,6 +542,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
           let left = imageBounds.left + imageBounds.width / 2;
           let top = imageBounds.top + imageBounds.height / 2;
 
+          // Use backend position data to calculate exact placement
           switch (position) {
             case "top-left":
               left = imageBounds.left + maxWidth / 2;
@@ -583,9 +589,12 @@ const CustomizerLayout = ({ selectedProduct }) => {
           canvas.bringToFront(imgInstance);
           canvas.setActiveObject(imgInstance);
 
+          // Apply clipping mask to ensure design gets cut properly if it goes beyond t-shirt bounds
           constrainObjectToProduct(imgInstance, productImage);
           applyClippingToObject(imgInstance, productImage);
           canvas.requestRenderAll();
+          
+          console.log(`✅ Design added with clipping mask at position: ${position}`);
         };
 
         resizedImg.src = resizedDataUrl;
@@ -702,6 +711,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
           canvas.bringToFront(img);
           canvas.setActiveObject(img);
 
+          // Apply clipping mask to icon as well
           constrainObjectToProduct(img, productImage);
           applyClippingToObject(img, productImage);
           canvas.requestRenderAll();
@@ -744,14 +754,30 @@ const CustomizerLayout = ({ selectedProduct }) => {
     }
   };
 
+  // Apply specific design from backend data when user selects it
+  const applySelectedDesign = (designData) => {
+    if (!designData || !editor?.canvas) return;
+
+    console.log('🎨 Applying user-selected design:', designData.name);
+
+    handleAddDesignToCanvas(
+      designData.url,
+      designData.position,
+      designData.offsetX,
+      designData.offsetY,
+      designData.targetWidth || 80,
+      designData.targetHeight || 80
+    );
+  };
+
   // Initialize canvas when selectedProduct changes
   useEffect(() => {
     if (!selectedProduct || !editor?.canvas) return;
 
-    console.log(`🆕 Initializing fresh canvas for product ${selectedProduct.id}`);
+    console.log(`🆕 Initializing canvas for product ${selectedProduct.id}`);
 
     const initializeCanvas = () => {
-      console.log(`📝 Creating fresh canvas for product ${selectedProduct.id}`);
+      console.log(`📝 Creating canvas for product ${selectedProduct.id}`);
       
       import("fabric").then(({ Image }) => {
         editor.canvas.clear();
@@ -795,7 +821,9 @@ const CustomizerLayout = ({ selectedProduct }) => {
           setTimeout(() => {
             fabricImg.setCoords();
             editor.canvas.renderAll();
-            console.log(`✅ Fresh canvas ready with locked base layer`);
+            
+            // Don't auto-apply designs anymore - wait for user selection
+            console.log(`✅ Canvas ready - waiting for user to select designs`);
           }, 50);
         };
 
@@ -1178,6 +1206,8 @@ const CustomizerLayout = ({ selectedProduct }) => {
           addIconToCanvas={addIconToCanvas}
           handleAddPatternToCanvas={handleAddPatternToCanvas}
           constrainObjectToProduct={constrainObjectToProduct}
+          applySelectedDesign={applySelectedDesign}
+          applyClippingToObject={applyClippingToObject}
         />
       )}
 
@@ -1187,21 +1217,14 @@ const CustomizerLayout = ({ selectedProduct }) => {
         />
       )}
 
-      {/* {selectedProduct && (
-        <CenterCanvas3D
+      {selectedProduct && (
+        <FabricJSCanvas 
+          className="canvas-container" 
           onReady={onReady}
           editor={editor}
-          savedProductId={currentProductId}
+          savedProductId={currentProductId} 
         />
-      )} */}
-
-      {
-        selectedProduct && (
-          <FabricJSCanvas className="canvas-container" onReady={onReady}
-          editor={editor}
-          savedProductId={currentProductId} />
-        )
-      }
+      )}
 
       {selectedProduct && (
         <div className="bottom-7 left-1/2 transform -translate-x-1/2 absolute flex items-center gap-2 border border-[#D3DBDF] bg-white p-3.5 rounded-lg">

@@ -6,6 +6,7 @@ const PreviewTab = ({
     updateArrange,
     setShowImageEditModal,
     constrainObjectToProduct,
+    applyClippingToObject, 
     editor
 }) => {
 
@@ -41,52 +42,6 @@ const PreviewTab = ({
 
         return null;
     }, [canvas, isCanvasReady]);
-
-    // const handleAlign = useCallback((alignment) => {
-    //     if (!isCanvasReady()) return;
-
-    //     const designObj = getActiveDesignObject();
-    //     if (!designObj) return;
-
-    //     try {
-    //         const canvasWidth = canvas.getWidth();
-    //         const canvasHeight = canvas.getHeight();
-    //         const objWidth = designObj.width * designObj.scaleX;
-    //         const objHeight = designObj.height * designObj.scaleY;
-
-    //         const productImage = canvas.getObjects().find(obj => obj.isTshirtBase);
-
-    //         switch (alignment) {
-    //             case 'left':
-    //                 designObj.set({ left: objWidth / 2 });
-    //                 break;
-    //             case 'center':
-    //                 designObj.set({ left: canvasWidth / 2 });
-    //                 break;
-    //             case 'right':
-    //                 designObj.set({ left: canvasWidth - objWidth / 2 });
-    //                 break;
-    //             case 'top':
-    //                 designObj.set({ top: objHeight / 2 });
-    //                 break;
-    //             case 'middle':
-    //                 designObj.set({ top: canvasHeight / 2 });
-    //                 break;
-    //             case 'bottom':
-    //                 designObj.set({ top: canvasHeight - objHeight / 2 });
-    //                 break;
-    //         }
-
-    //         if (productImage) {
-    //             constrainObjectToProduct(designObj, productImage);
-    //         }
-
-    //         designObj.setCoords();
-    //         canvas.renderAll();
-    //     } catch (error) {
-    //         console.error("Error aligning design:", error);
-    //     }
-    // }, [canvas, getActiveDesignObject, isCanvasReady]);
 
     const handleAlign = useCallback((alignment) => {
         if (!isCanvasReady()) return;
@@ -135,14 +90,23 @@ const PreviewTab = ({
                     break;
             }
 
+            // Apply constraints to keep within bounds
             constrainObjectToProduct(designObj, productImage);
+
+            // 🔥 IMPORTANT: Apply clipping mask after alignment
+            if (applyClippingToObject && typeof applyClippingToObject === 'function') {
+                applyClippingToObject(designObj, productImage);
+                console.log('✂️ Clipping mask applied after alignment');
+            }
 
             designObj.setCoords();
             canvas.renderAll();
+            
+            console.log(`✅ Design aligned to ${alignment} with clipping mask`);
         } catch (error) {
             console.error("Error aligning design:", error);
         }
-    }, [canvas, getActiveDesignObject, isCanvasReady, constrainObjectToProduct]);
+    }, [canvas, getActiveDesignObject, isCanvasReady, constrainObjectToProduct, applyClippingToObject]);
 
     const handleFlip = useCallback((direction) => {
         if (!isCanvasReady()) return;
@@ -159,12 +123,18 @@ const PreviewTab = ({
                 designObj.set('flipY', newFlipY);
             }
 
+            // Apply clipping after flip as well
+            const productImage = canvas.getObjects().find(obj => obj.isTshirtBase);
+            if (productImage && applyClippingToObject) {
+                applyClippingToObject(designObj, productImage);
+            }
+
             designObj.setCoords();
             canvas.renderAll();
         } catch (error) {
             console.error("Error flipping design:", error);
         }
-    }, [canvas, getActiveDesignObject, isCanvasReady]);
+    }, [canvas, getActiveDesignObject, isCanvasReady, applyClippingToObject]);
 
     const handleOpacityChange = useCallback((value) => {
         if (!isCanvasReady()) return;
@@ -191,12 +161,19 @@ const PreviewTab = ({
         try {
             const rotationValue = parseInt(value) || 0;
             designObj.set('angle', rotationValue);
+
+            // Apply clipping after rotation
+            const productImage = canvas.getObjects().find(obj => obj.isTshirtBase);
+            if (productImage && applyClippingToObject) {
+                applyClippingToObject(designObj, productImage);
+            }
+
             designObj.setCoords();
             canvas.renderAll();
         } catch (error) {
             console.error("Error rotating design:", error);
         }
-    }, [canvas, getActiveDesignObject, isCanvasReady]);
+    }, [canvas, getActiveDesignObject, isCanvasReady, applyClippingToObject]);
 
     const handleArrange = useCallback((action) => {
         if (!isCanvasReady()) return;
@@ -209,11 +186,18 @@ const PreviewTab = ({
                 canvas.setActiveObject(designObj);
                 updateArrange(action);
             }
+
+            // Apply clipping after arrange
+            const productImage = canvas.getObjects().find(obj => obj.isTshirtBase);
+            if (productImage && applyClippingToObject) {
+                applyClippingToObject(designObj, productImage);
+            }
+
             canvas.renderAll();
         } catch (error) {
             console.error("Error arranging design:", error);
         }
-    }, [canvas, getActiveDesignObject, updateArrange, isCanvasReady]);
+    }, [canvas, getActiveDesignObject, updateArrange, isCanvasReady, applyClippingToObject]);
 
     const getFlipStates = useCallback(() => {
         const designObj = getActiveDesignObject();
@@ -316,6 +300,16 @@ const PreviewTab = ({
                         canvas.remove(designObj);
                         canvas.add(newFabricImg);
                         canvas.setActiveObject(newFabricImg);
+
+                        // Apply clipping to the new background-removed image
+                        const productImage = canvas.getObjects().find(obj => obj.isTshirtBase);
+                        if (productImage && applyClippingToObject) {
+                            setTimeout(() => {
+                                applyClippingToObject(newFabricImg, productImage);
+                                console.log('✂️ Clipping applied to background-removed image');
+                            }, 100);
+                        }
+
                         canvas.renderAll();
                     };
                     img.src = resultImageUrl;
@@ -328,7 +322,7 @@ const PreviewTab = ({
         } finally {
             setIsRemovingBg(false);
         }
-    }, [canvas, getActiveDesignObject, isCanvasReady]);
+    }, [canvas, getActiveDesignObject, isCanvasReady, applyClippingToObject]);
 
     const handleUpscale = useCallback(() => {
         console.log("Upscale design clicked");
