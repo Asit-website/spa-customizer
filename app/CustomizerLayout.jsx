@@ -961,11 +961,11 @@ const CustomizerLayout = ({ selectedProduct }) => {
         />
       )}
 
-      {selectedProduct && (
+      {/* {selectedProduct && (
         <RightSmallPreview 
           currentProduct={getCurrentProductData()}
         />
-      )}
+      )} */}
 
       {selectedProduct && (
         <FabricJSCanvas 
