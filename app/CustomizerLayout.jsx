@@ -4,12 +4,10 @@ import { useEffect, useState } from "react";
 import Topbar from "./components/Topbar";
 import Sidebar from "./components/Sidebar";
 import RightSmallPreview from "./components/RightSmallPreview";
-import CenterCanvas3D from "./components/CenterCanvas3D";
 import { FaMinus, FaPlus } from "react-icons/fa6";
-import { useFabricJSEditor } from "fabricjs-react";
+import { useFabricJSEditor,FabricJSCanvas } from "fabricjs-react";
 import LayerContextMenu from "./components/LayerContextMenu";
 import useCanvasContextMenu from "./hooks/useCanvasContextMenu";
-import tripo3DService from './services/tripo3DService';
 
 const CustomizerLayout = ({ selectedProduct }) => {
 
@@ -51,8 +49,6 @@ const CustomizerLayout = ({ selectedProduct }) => {
   // Save states
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [savingWith3D, setSavingWith3D] = useState(false);
-  const [save3DProgress, setSave3DProgress] = useState('');
   const [currentProductId, setCurrentProductId] = useState(null);
 
   const { editor, onReady } = useFabricJSEditor();
@@ -748,14 +744,13 @@ const CustomizerLayout = ({ selectedProduct }) => {
     }
   };
 
-  // Initialize canvas when selectedProduct changes - REMOVED PERSISTENCE
+  // Initialize canvas when selectedProduct changes
   useEffect(() => {
     if (!selectedProduct || !editor?.canvas) return;
 
     console.log(`🆕 Initializing fresh canvas for product ${selectedProduct.id}`);
 
     const initializeCanvas = () => {
-      // Always initialize fresh canvas - no more checking for saved state
       console.log(`📝 Creating fresh canvas for product ${selectedProduct.id}`);
       
       import("fabric").then(({ Image }) => {
@@ -815,7 +810,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
     return () => clearTimeout(timeoutId);
   }, [selectedProduct?.id, editor]);
 
-  // Setup canvas event handlers - REMOVED PERSISTENCE SAVING
+  // Setup canvas event handlers
   useEffect(() => {
     if (!editor || !editor.canvas) return;
 
@@ -859,8 +854,6 @@ const CustomizerLayout = ({ selectedProduct }) => {
         constrainObjectToProduct(e.target, productImage);
         updateClippingForObject(e.target);
       }
-      
-      // REMOVED: Canvas state saving to localStorage
     };
 
     const handleSelectionCreated = (e) => {
@@ -949,7 +942,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
     }
   };
 
-  const handleSave = async (generateWith3D = false) => {
+  const handleSave = async () => {
     if (!editor?.canvas) {
       alert('Canvas not ready!');
       return;
@@ -961,10 +954,6 @@ const CustomizerLayout = ({ selectedProduct }) => {
     }
 
     setIsSaving(true);
-    if (generateWith3D) {
-      setSavingWith3D(true);
-      setSave3DProgress('Preparing design for 3D...');
-    }
 
     try {
       // Take screenshot
@@ -1081,91 +1070,8 @@ const CustomizerLayout = ({ selectedProduct }) => {
           flipY: flipY,
           selectedColor: selectedColor
         },
-        screenshot: screenshotCloudinaryUrl,
-        model3D: null
+        screenshot: screenshotCloudinaryUrl
       };
-
-      // Generate 3D model if requested
-      if (generateWith3D) {
-        try {
-          setSave3DProgress('Generating 3D model...');
-
-          const meaningfulObjects = canvasObjects.filter(obj => {
-            if (obj.isTshirtBase) return false;
-            if (obj.type === 'i-text') return obj.text && obj.text.trim().length > 0;
-            return true;
-          });
-
-          if (meaningfulObjects.length === 0) {
-            throw new Error('No custom content found. Please add text, designs, or images to generate 3D model.');
-          }
-
-          const imageUrlForTripo = screenshotCloudinaryUrl.startsWith('http')
-            ? screenshotCloudinaryUrl
-            : screenshotDataURL;
-
-          const model3DResult = await tripo3DService.generate3DFromScreenshot(
-            imageUrlForTripo,
-            (message) => setSave3DProgress(message),
-            {
-              face_limit: 10000,
-              texture_resolution: 1024,
-              pbr: true
-            }
-          );
-
-          if (!model3DResult || !model3DResult.model) {
-            throw new Error('3D generation failed');
-          }
-
-          // Upload GLB to Cloudinary
-          setSave3DProgress('Uploading 3D model...');
-          
-          let finalGlbUrl = model3DResult.model;
-          let storageType = 'tripo3d';
-
-          try {
-            const formData = new FormData();
-            formData.append("url", finalGlbUrl);
-
-            const response = await fetch(`${baseUrl}/uploadfile`, {
-              method: "POST",
-              body: formData
-            });
-
-            if (response.ok) {
-              const uploadResult = await response.json();
-              if (uploadResult && uploadResult.url) {
-                finalGlbUrl = uploadResult.url;
-                storageType = 'cloudinary';
-              }
-            }
-          } catch (uploadError) {
-            console.warn('GLB upload to Cloudinary failed:', uploadError);
-          }
-
-          saveData.model3D = {
-            url: finalGlbUrl,
-            originalTripoUrl: model3DResult.model,
-            cloudinaryUrl: storageType === 'cloudinary' ? finalGlbUrl : null,
-            renderedImage: model3DResult.rendered_image,
-            taskId: model3DResult.task_id,
-            generatedAt: model3DResult.generatedAt,
-            format: 'glb',
-            screenshotUrl: screenshotCloudinaryUrl,
-            storage: storageType,
-            isReal: true
-          };
-
-          setSave3DProgress('3D model generated successfully!');
-
-        } catch (error) {
-          console.error("3D generation failed:", error);
-          setSave3DProgress('3D generation failed');
-          alert(`3D generation failed: ${error.message}`);
-          return { success: false, error: error.message };
-        }
-      }
 
       // Save to MongoDB
       let savedProductId = null;
@@ -1204,24 +1110,12 @@ const CustomizerLayout = ({ selectedProduct }) => {
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
 
-      let successMessage = 'Design saved successfully! 📸';
-
-      if (generateWith3D && saveData.model3D && saveData.model3D.isReal) {
-        const storageInfo = saveData.model3D.storage === 'cloudinary'
-          ? '✅ Cloudinary Storage'
-          : '⚠️ Tripo3D Storage';
-
-        successMessage = `🎉 Design + 3D Model Saved!\n\nMongoDB ID: ${savedProductId}\nStorage: ${storageInfo}\nGLB URL: ${saveData.model3D.url}`;
-      }
-
+      const successMessage = `Design saved successfully! 📸\n\nMongoDB ID: ${savedProductId}`;
       alert(successMessage);
 
       return {
         success: true,
-        productId: savedProductId,
-        has3D: !!(saveData.model3D && saveData.model3D.isReal),
-        model3DUrl: saveData.model3D?.url || null,
-        storageType: saveData.model3D?.storage || null
+        productId: savedProductId
       };
 
     } catch (error) {
@@ -1230,8 +1124,6 @@ const CustomizerLayout = ({ selectedProduct }) => {
       return { success: false, error: error.message };
     } finally {
       setIsSaving(false);
-      setSavingWith3D(false);
-      setSave3DProgress('');
     }
   };
 
@@ -1242,8 +1134,6 @@ const CustomizerLayout = ({ selectedProduct }) => {
         setShowSidebar={setShowSidebar}
         onSave={handleSave}
         isSaving={isSaving}
-        savingWith3D={savingWith3D}
-        save3DProgress={save3DProgress}
       />
 
       {(showSidebar && selectedProduct) && (
@@ -1297,13 +1187,21 @@ const CustomizerLayout = ({ selectedProduct }) => {
         />
       )}
 
-      {selectedProduct && (
+      {/* {selectedProduct && (
         <CenterCanvas3D
           onReady={onReady}
           editor={editor}
           savedProductId={currentProductId}
         />
-      )}
+      )} */}
+
+      {
+        selectedProduct && (
+          <FabricJSCanvas className="canvas-container" onReady={onReady}
+          editor={editor}
+          savedProductId={currentProductId} />
+        )
+      }
 
       {selectedProduct && (
         <div className="bottom-7 left-1/2 transform -translate-x-1/2 absolute flex items-center gap-2 border border-[#D3DBDF] bg-white p-3.5 rounded-lg">
@@ -1343,34 +1241,6 @@ const CustomizerLayout = ({ selectedProduct }) => {
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
             </svg>
             <span>Design saved successfully!</span>
-          </div>
-        </div>
-      )}
-
-      {savingWith3D && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 shadow-xl max-w-sm w-full mx-4">
-            <div className="flex flex-col items-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-purple-500 mb-4"></div>
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">Saving with 3D Model</h3>
-              <p className="text-sm text-gray-600 text-center">{save3DProgress}</p>
-
-              <div className="w-full bg-gray-200 rounded-full h-2 mt-4">
-                <div
-                  className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all duration-500"
-                  style={{
-                    width: save3DProgress.includes('ready') || save3DProgress.includes('🎉') ? '100%' :
-                      save3DProgress.includes('Converting') || save3DProgress.includes('Creating') ? '70%' :
-                        save3DProgress.includes('Generating') || save3DProgress.includes('Starting') ? '40%' :
-                          save3DProgress.includes('Uploading') || save3DProgress.includes('cloud') ? '20%' : '10%'
-                  }}
-                ></div>
-              </div>
-
-              <p className="text-xs text-gray-500 mt-2 text-center">
-                This may take 2-5 minutes. Please don't close the browser.
-              </p>
-            </div>
           </div>
         </div>
       )}
