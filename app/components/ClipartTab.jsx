@@ -5,7 +5,7 @@ import EmojiPicker from 'emoji-picker-react';
 const ClipartTab = ({
   setShowClipartTab,
   addEmojiTextToCanvas,
-  selectedProduct,  // ✅ Fixed: was lastProduct
+  selectedProduct, 
   handleAddDesignToCanvas,
   addIconToCanvas,
   handleAddPatternToCanvas,
@@ -795,26 +795,32 @@ const ClipartTab = ({
                 <div className="grid grid-cols-1 gap-2">
                   <button
                     onClick={() => {
-                      console.log(`🔴 TOP 50% - Pattern ${index}`);
-                      handleAddPatternToCanvas(pattern.url, 'top');
+                      console.log(`🎨 Adding Pattern ${index} - Perfect Merge`);
+                      handleAddPatternToCanvas(pattern.url);
                     }}
-                    className="bg-red-500 text-white text-xs py-2 rounded hover:bg-red-600 font-medium"
+                    className="bg-gradient-to-r from-purple-500 to-blue-500 text-white text-xs py-2 rounded hover:from-purple-600 hover:to-blue-600 font-medium transition-all duration-200"
                   >
-                    🔴 TOP 50%
+                    ✨ ADD PATTERN
                   </button>
-                  <button
-                    onClick={() => {
-                      console.log(`🔵 BOTTOM 50% - Pattern ${index}`);
-                      handleAddPatternToCanvas(pattern.url, 'bottom');
-                    }}
-                    className="bg-blue-500 text-white text-xs py-2 rounded hover:bg-blue-600 font-medium"
-                  >
-                    🔵 BOTTOM 50%
-                  </button>
+                </div>
+
+                {/* Pattern Info */}
+                <div className="mt-2 text-xs text-gray-600">
+                  <p className="font-medium">{pattern.name || `Pattern ${index + 1}`}</p>
+                  <p className="text-gray-500">Perfect merge sizing</p>
                 </div>
               </div>
             ))}
           </div>
+
+          {/* No patterns message */}
+          {(!selectedProduct?.patterns || selectedProduct.patterns.length === 0) && (
+            <div className="text-center py-8 text-gray-500">
+              <div className="text-4xl mb-2">🎨</div>
+              <p className="text-sm">No patterns available</p>
+              <p className="text-xs mt-1">Patterns will be loaded from product data</p>
+            </div>
+          )}
         </div>
       )}
 

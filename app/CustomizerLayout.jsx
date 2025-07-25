@@ -11,6 +11,60 @@ import useCanvasContextMenu from "./hooks/useCanvasContextMenu";
 
 const CustomizerLayout = ({ selectedProduct }) => {
 
+  class SimpleLayerManager {
+    constructor(canvas) {
+      this.canvas = canvas;
+      this.layerOrder = {
+        COLOR: 0,     
+        PATTERN: 1,    
+        DESIGN: 2,    
+        TEXT: 3,      
+        PRODUCT: 4    
+      };
+    }
+
+    setObjectLayer(obj) {
+      if (!obj) return;
+
+      let zIndex = 0;
+
+      if (obj.isTshirtBase) {
+        zIndex = this.layerOrder.PRODUCT; 
+      } else if (obj.type === 'i-text') {
+        zIndex = this.layerOrder.TEXT; 
+      } else if (obj.type === 'image' && obj.isPattern) {
+        zIndex = this.layerOrder.PATTERN; 
+      } else if (obj.type === 'image' && !obj.isTshirtBase) {
+        zIndex = this.layerOrder.DESIGN; 
+      } else if (obj.isColorEffect) {
+        zIndex = this.layerOrder.COLOR; 
+      }
+
+      obj.zIndex = zIndex;
+      console.log(`✅ Object assigned layer: ${obj.type} -> zIndex: ${zIndex}`);
+    }
+
+    arrangeCanvasLayers() {
+      const objects = this.canvas.getObjects();
+      
+      // Sort objects by their zIndex
+      objects.sort((a, b) => {
+        const aIndex = a.zIndex || 0;
+        const bIndex = b.zIndex || 0;
+        return aIndex - bIndex;
+      });
+
+      // Clear and re-add in correct order
+      this.canvas._objects = [];
+      objects.forEach(obj => {
+        this.canvas._objects.push(obj);
+      });
+
+      this.canvas.renderAll();
+      console.log('✅ Layer arrangement complete - Product on top');
+    }
+  }
+
   import("fabric").then(({ Canvas }) => {
     if (Canvas && !Canvas.prototype.updateZIndices) {
       Canvas.prototype.updateZIndices = function () {
@@ -51,6 +105,9 @@ const CustomizerLayout = ({ selectedProduct }) => {
   const [isSaving, setIsSaving] = useState(false);
   const [currentProductId, setCurrentProductId] = useState(null);
 
+  // Layer manager state
+  const [layerManager, setLayerManager] = useState(null);
+
   const { editor, onReady } = useFabricJSEditor();
 
   const {
@@ -65,6 +122,15 @@ const CustomizerLayout = ({ selectedProduct }) => {
     handleSendBackward,
     handleSendToBack
   } = useCanvasContextMenu(editor);
+
+  // Initialize layer manager when canvas is ready
+  useEffect(() => {
+    if (editor?.canvas && !layerManager) {
+      const manager = new SimpleLayerManager(editor.canvas);
+      setLayerManager(manager);
+      console.log('🎯 Layer Manager initialized with correct order');
+    }
+  }, [editor?.canvas]);
 
   // Helper function to get current product data with customizations
   const getCurrentProductData = () => {
@@ -90,185 +156,25 @@ const CustomizerLayout = ({ selectedProduct }) => {
     };
   };
 
-  // Create T-shirt mask for clipping designs
-  const createTshirtMask = (imageObj, callback) => {
-    if (!imageObj) return;
-
-    const tempCanvas = document.createElement('canvas');
-    const tempCtx = tempCanvas.getContext('2d');
-
-    const img = imageObj.getElement();
-    tempCanvas.width = img.width;
-    tempCanvas.height = img.height;
-
-    tempCtx.drawImage(img, 0, 0);
-
-    const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
-    const data = imageData.data;
-
-    let minX = tempCanvas.width, minY = tempCanvas.height;
-    let maxX = 0, maxY = 0;
-
-    for (let y = 0; y < tempCanvas.height; y++) {
-      for (let x = 0; x < tempCanvas.width; x++) {
-        const alpha = data[(y * tempCanvas.width + x) * 4 + 3];
-        if (alpha > 0) {
-          minX = Math.min(minX, x);
-          minY = Math.min(minY, y);
-          maxX = Math.max(maxX, x);
-          maxY = Math.max(maxY, y);
-        }
-      }
-    }
-
-    const maskCanvas = document.createElement('canvas');
-    const maskCtx = maskCanvas.getContext('2d');
-    maskCanvas.width = tempCanvas.width;
-    maskCanvas.height = tempCanvas.height;
-
-    maskCtx.fillStyle = 'white';
-    for (let y = 0; y < tempCanvas.height; y++) {
-      for (let x = 0; x < tempCanvas.width; x++) {
-        const alpha = data[(y * tempCanvas.width + x) * 4 + 3];
-        if (alpha > 0) {
-          maskCtx.fillRect(x, y, 1, 1);
-        }
-      }
-    }
-
-    callback(maskCanvas.toDataURL(), {
-      minX, minY, maxX, maxY,
-      width: maxX - minX,
-      height: maxY - minY
-    });
-  };
-
-  // Apply clipping mask to object so it gets cut properly within t-shirt bounds
-  const applyClippingToObject = (obj, imageObj) => {
-    if (!imageObj || !obj) return;
-
-    import("fabric").then(({ Image }) => {
-      createTshirtMask(imageObj, (maskDataUrl, bounds) => {
-        const maskImg = new window.Image();
-        maskImg.onload = () => {
-          const imageBounds = imageObj.getBoundingRect();
-
-          const maskFabricImg = new Image(maskImg, {
-            left: imageBounds.left - obj.left,
-            top: imageBounds.top - obj.top,
-            scaleX: imageObj.scaleX,
-            scaleY: imageObj.scaleY,
-            originX: 'left',
-            originY: 'top',
-            absolutePositioned: false
-          });
-
-          obj.clipPath = maskFabricImg;
-          obj.dirty = true;
-          editor.canvas.requestRenderAll();
-        };
-        maskImg.src = maskDataUrl;
-      });
-    });
-  };
-
-  // Update clipping for any object
-  const updateClippingForObject = (obj) => {
-    const canvas = editor?.canvas;
-    if (!canvas || !obj || obj.isTshirtBase) return;
-
-    const imageObj = canvas.getObjects().find((o) => o.type === "image" && o.isTshirtBase);
-    if (imageObj) {
-      applyClippingToObject(obj, imageObj);
-    }
-  };
-
-  // Constrain object to product bounds
-  const constrainObjectToProduct = (obj, productImage) => {
-    if (!obj || !productImage || obj.isTshirtBase) return;
-
-    const productBounds = productImage.getBoundingRect();
-    const objBounds = obj.getBoundingRect();
-
-    const padding = 10;
-    const minX = productBounds.left + padding;
-    const maxX = productBounds.left + productBounds.width - padding;
-    const minY = productBounds.top + padding;
-    const maxY = productBounds.top + productBounds.height - padding;
-
-    const objWidth = objBounds.width;
-    const objHeight = objBounds.height;
-
-    let newLeft = obj.left;
-    let newTop = obj.top;
-
-    if (objBounds.left < minX) {
-      newLeft = minX + objWidth / 2;
-    } else if (objBounds.left + objWidth > maxX) {
-      newLeft = maxX - objWidth / 2;
-    }
-
-    if (objBounds.top < minY) {
-      newTop = minY + objHeight / 2;
-    } else if (objBounds.top + objHeight > maxY) {
-      newTop = maxY - objHeight / 2;
-    }
-
-    obj.set({
-      left: newLeft,
-      top: newTop
-    });
-
-    obj.setCoords();
-  };
-
   const handleColorChange = (colorObj) => {
     setSelectedColor(colorObj);
-    updateTshirtColor(colorObj.color);
+    updateCanvasColor(colorObj.color);
   };
 
-  const updateTshirtColor = (color) => {
+  // Canvas background color change
+  const updateCanvasColor = (color) => {
     if (!editor?.canvas) {
       console.error('❌ Canvas not available for color change');
       return;
     }
     
-    console.log('🎨 Changing t-shirt color to:', color);
+    console.log('🎨 Changing canvas background color to:', color);
     
     const canvas = editor.canvas;
-    const baseLayer = canvas.getObjects().find((obj) => obj.type === "image" && obj.isTshirtBase);
     
-    if (!baseLayer) {
-      console.error('❌ No base layer found for color change');
-      return;
-    }
-    
-    import("fabric").then(({ filters }) => {
-      baseLayer.filters = [
-        new filters.BlendColor({
-          color: color,
-          mode: "multiply",
-          alpha: 1,
-        }),
-      ];
-      baseLayer.applyFilters();
-      
-      // Ensure base layer remains locked after color change
-      baseLayer.set({
-        selectable: false,
-        evented: false,
-        lockMovementX: true,
-        lockMovementY: true,
-        lockScalingX: true,
-        lockScalingY: true,
-        lockRotation: true,
-        hasControls: false,
-        hasBorders: false
-      });
-      
-      baseLayer.setCoords();
+    canvas.setBackgroundColor(color, () => {
       canvas.renderAll();
-      console.log('✅ Color changed and base layer re-locked');
+      console.log('✅ Canvas background color changed to:', color);
     });
   };
 
@@ -294,9 +200,6 @@ const CustomizerLayout = ({ selectedProduct }) => {
       const imageBounds = imageObj.getBoundingRect();
       const topRatio = selectedProduct?.textTopRatio || 3.5;
 
-      console.log('📍 Image bounds:', imageBounds);
-      console.log('📏 Text position ratio:', topRatio);
-
       const textObject = new fabric.IText(customText.slice(0, 9), {
         left: imageBounds.left + imageBounds.width / 2,
         top: imageBounds.top + imageBounds.height / topRatio,
@@ -306,35 +209,29 @@ const CustomizerLayout = ({ selectedProduct }) => {
         fill: textColor,
         fontFamily: fontFamily,
         fontStyle: fontStyle,
-        selectable: true,
-        evented: true,
-        moveCursor: "move",
-        hasControls: true,
-        hasBorders: true,
-        lockMovementX: false,
-        lockMovementY: false,
-        lockScalingX: false,
-        lockScalingY: false,
-        lockRotation: false,
-        editable: true
-      });
-
-      textObject.setControlsVisibility({
-        mt: true, mb: true, ml: true, mr: true,
-        bl: true, br: true, tl: true, tr: true,
-        mtr: true
+        // FIXED: Make objects non-moveable
+        selectable: false,
+        evented: false,
+        moveCursor: "default",
+        hasControls: false,
+        hasBorders: false,
+        lockMovementX: true,
+        lockMovementY: true,
+        lockScalingX: true,
+        lockScalingY: true,
+        lockRotation: true,
+        editable: false
       });
 
       canvas.add(textObject);
-      canvas.setActiveObject(textObject);
 
-      // Apply constraints after a small delay
-      setTimeout(() => {
-        constrainObjectToProduct(textObject, imageObj);
-        applyClippingToObject(textObject, imageObj);
-        canvas.renderAll();
-        console.log('✅ Text added successfully');
-      }, 100);
+      // Apply layer management - IMMEDIATE arrangement
+      if (layerManager) {
+        layerManager.setObjectLayer(textObject);
+        layerManager.arrangeCanvasLayers();
+      }
+      
+      console.log('✅ Text added with proper layer (zIndex: 3) - Non-moveable');
 
       setCustomText("");
       setShowAddModal(false);
@@ -383,42 +280,18 @@ const CustomizerLayout = ({ selectedProduct }) => {
     const obj = canvas.getActiveObject();
     if (!obj) return;
 
-    const objects = canvas.getObjects();
-    const currentIndex = objects.indexOf(obj);
-
-    if (currentIndex === -1) return;
-
     switch (action) {
       case "bringToFront":
-        if (currentIndex < objects.length - 1) {
-          canvas.remove(obj);
-          canvas.add(obj);
-        }
+        canvas.bringToFront(obj);
         break;
-
       case "sendToBack":
-        if (currentIndex > 0) {
-          canvas.remove(obj);
-          const newObjects = [obj, ...objects.filter(o => o !== obj)];
-          canvas._objects = newObjects;
-          canvas.renderAll();
-        }
+        canvas.sendToBack(obj);
         break;
-
       case "bringForward":
-        if (currentIndex < objects.length - 1) {
-          const nextIndex = currentIndex + 1;
-          [objects[currentIndex], objects[nextIndex]] = [objects[nextIndex], objects[currentIndex]];
-          canvas.renderAll();
-        }
+        canvas.bringForward(obj);
         break;
-
       case "sendBackward":
-        if (currentIndex > 0) {
-          const prevIndex = currentIndex - 1;
-          [objects[currentIndex], objects[prevIndex]] = [objects[prevIndex], objects[currentIndex]];
-          canvas.renderAll();
-        }
+        canvas.sendBackwards(obj);
         break;
     }
 
@@ -450,33 +323,36 @@ const CustomizerLayout = ({ selectedProduct }) => {
         originY: "center",
         fontSize: 48,
         fill: "#000",
-        selectable: true,
-        evented: true,
-        hasBorders: true,
-        hasControls: true,
-        moveCursor: "move",
-        lockMovementX: false,
-        lockMovementY: false,
-        lockScalingX: false,
-        lockScalingY: false,
-        lockRotation: false,
-        editable: true
+        // FIXED: Make objects non-moveable
+        selectable: false,
+        evented: false,
+        hasBorders: false,
+        hasControls: false,
+        moveCursor: "default",
+        lockMovementX: true,
+        lockMovementY: true,
+        lockScalingX: true,
+        lockScalingY: true,
+        lockRotation: true,
+        editable: false
       });
 
       emojiText.isEmoji = true;
 
       canvas.add(emojiText);
-      canvas.bringToFront(emojiText);
-      canvas.setActiveObject(emojiText);
 
-      constrainObjectToProduct(emojiText, productImage);
-      applyClippingToObject(emojiText, productImage);
-      canvas.requestRenderAll();
+      // Apply layer management - IMMEDIATE arrangement
+      if (layerManager) {
+        layerManager.setObjectLayer(emojiText);
+        layerManager.arrangeCanvasLayers();
+      }
+      
+      console.log('✅ Emoji added with proper layer (zIndex: 3) - Non-moveable');
     });
   };
 
-  // Enhanced function to add design with backend position data
-  const handleAddDesignToCanvas = (url, position = "center", offsetX = 0, offsetY = 0, targetWidth = 80, targetHeight = 80, quality = 0.8) => {
+  // Design function - Perfect merge with equal dimensions
+  const handleAddDesignToCanvas = (url, position = "center", offsetX = 0, offsetY = 0) => {
     if (!editor || !url) return;
 
     import("fabric").then((fabric) => {
@@ -484,187 +360,115 @@ const CustomizerLayout = ({ selectedProduct }) => {
       const productImage = canvas.getObjects().find((obj) => obj.isTshirtBase);
       if (!productImage) return;
 
-      const imageBounds = productImage.getBoundingRect();
       const imgElement = new Image();
       imgElement.crossOrigin = "anonymous";
       imgElement.src = url;
 
       imgElement.onload = () => {
-        const tempCanvas = document.createElement('canvas');
-        const tempCtx = tempCanvas.getContext('2d');
-
-        const aspectRatio = imgElement.width / imgElement.height;
-        let newWidth = targetWidth;
-        let newHeight = targetHeight;
-
-        if (aspectRatio > 1) {
-          newHeight = targetWidth / aspectRatio;
-        } else {
-          newWidth = targetHeight * aspectRatio;
+        // Get product dimensions for perfect matching
+        const productBounds = productImage.getBoundingRect();
+        
+        // FIXED: Remove existing design before adding new one
+        const existingDesign = canvas.getObjects().find(obj => obj.name === "design-image");
+        if (existingDesign) {
+          canvas.remove(existingDesign);
         }
+        
+        // Create design with EXACT same dimensions as product for perfect merge
+        const imgInstance = new fabric.Image(imgElement, {
+          left: productBounds.left,
+          top: productBounds.top,
+          originX: "left",
+          originY: "top",
+          // Scale to match product dimensions EXACTLY
+          scaleX: productBounds.width / imgElement.width,
+          scaleY: productBounds.height / imgElement.height,
+          name: "design-image",
+          // FIXED: Make objects non-moveable
+          selectable: false,
+          evented: false,
+          hasControls: false,
+          hasBorders: false,
+          moveCursor: "default",
+          lockMovementX: true,
+          lockMovementY: true,
+          lockScalingX: true,
+          lockScalingY: true,
+          lockRotation: true
+        });
 
-        tempCanvas.width = newWidth;
-        tempCanvas.height = newHeight;
-        tempCtx.clearRect(0, 0, newWidth, newHeight);
-        tempCtx.imageSmoothingEnabled = true;
-        tempCtx.imageSmoothingQuality = 'high';
-        tempCtx.drawImage(imgElement, 0, 0, newWidth, newHeight);
+        canvas.add(imgInstance);
 
-        const resizedDataUrl = tempCanvas.toDataURL('image/png', quality);
-
-        const resizedImg = new Image();
-        resizedImg.onload = () => {
-          const maxWidth = imageBounds.width * 0.4;
-          const maxHeight = imageBounds.height * 0.4;
-          const scale = Math.min(maxWidth / resizedImg.width, maxHeight / resizedImg.height);
-
-          const imgInstance = new fabric.Image(resizedImg, {
-            originX: "center",
-            originY: "center",
-            scaleX: scale,
-            scaleY: scale,
-            name: "design-image",
-            selectable: false,
-            evented: false,
-            hasControls: true,
-            hasBorders: false,
-            moveCursor: "move",
-            lockMovementX: false,
-            lockMovementY: false,
-            lockScalingX: false,
-            lockScalingY: false,
-            lockRotation: false
-          });
-
-          const existing = canvas.getObjects().find(obj => obj.name === "design-image");
-          if (existing) canvas.remove(existing);
-
-          let left = imageBounds.left + imageBounds.width / 2;
-          let top = imageBounds.top + imageBounds.height / 2;
-
-          // Use backend position data to calculate exact placement
-          switch (position) {
-            case "top-left":
-              left = imageBounds.left + maxWidth / 2;
-              top = imageBounds.top + maxHeight / 2;
-              break;
-            case "top-right":
-              left = imageBounds.left + imageBounds.width - maxWidth / 2;
-              top = imageBounds.top + maxHeight / 2;
-              break;
-            case "bottom-left":
-              left = imageBounds.left + maxWidth / 2;
-              top = imageBounds.top + imageBounds.height - maxHeight / 2;
-              break;
-            case "bottom-right":
-              left = imageBounds.left + imageBounds.width - maxWidth / 2;
-              top = imageBounds.top + imageBounds.height - maxHeight / 2;
-              break;
-            case "top-center":
-              top = imageBounds.top + maxHeight / 2;
-              break;
-            case "bottom-center":
-              top = imageBounds.top + imageBounds.height - maxHeight / 2;
-              break;
-            case "center-top":
-              top = imageBounds.top + imageBounds.height * 0.3;
-              break;
-            case "center-left":
-              left = imageBounds.left + maxWidth / 2;
-              break;
-            case "center-right":
-              left = imageBounds.left + imageBounds.width - maxWidth / 2;
-              break;
-            case "center":
-            default:
-              break;
-          }
-
-          imgInstance.set({
-            left: left + offsetX,
-            top: top + offsetY
-          });
-
-          canvas.add(imgInstance);
-          canvas.bringToFront(imgInstance);
-          canvas.setActiveObject(imgInstance);
-
-          // Apply clipping mask to ensure design gets cut properly if it goes beyond t-shirt bounds
-          constrainObjectToProduct(imgInstance, productImage);
-          applyClippingToObject(imgInstance, productImage);
-          canvas.requestRenderAll();
-          
-          console.log(`✅ Design added with clipping mask at position: ${position}`);
-        };
-
-        resizedImg.src = resizedDataUrl;
+        // Apply layer management - IMMEDIATE arrangement
+        if (layerManager) {
+          layerManager.setObjectLayer(imgInstance);
+          layerManager.arrangeCanvasLayers();
+        }
+        
+        console.log('✅ Design added with perfect merge dimensions (zIndex: 2) - Non-moveable');
       };
     });
   };
 
-  const handleAddPatternToCanvas = (url, position = "bottom") => {
-    if (!handleAddDesignToCanvas || !editor?.canvas || !url) {
-      return;
-    }
+  // Pattern function - Perfect merge with equal dimensions + FIXED old pattern removal
+  const handleAddPatternToCanvas = (url) => {
+    if (!editor?.canvas || !url) return;
 
     const canvas = editor.canvas;
 
-    let baseBounds;
-    try {
-      const baseImage = canvas.getObjects().find(obj =>
-        obj.isTshirtBase || obj.type === 'image' || (obj.width > 200 && obj.height > 200)
-      );
+    import("fabric").then((fabric) => {
+      const imgElement = new Image();
+      imgElement.crossOrigin = "anonymous";
+      imgElement.src = url;
 
-      if (baseImage?.getBoundingRect) {
-        baseBounds = baseImage.getBoundingRect();
-      } else {
-        baseBounds = {
-          left: canvas.getWidth() * 0.2,
-          top: canvas.getHeight() * 0.1,
-          width: canvas.getWidth() * 0.6,
-          height: canvas.getHeight() * 0.8
-        };
-      }
-    } catch (error) {
-      baseBounds = {
-        left: canvas.getWidth() * 0.2,
-        top: canvas.getHeight() * 0.1,
-        width: canvas.getWidth() * 0.6,
-        height: canvas.getHeight() * 0.8
+      imgElement.onload = () => {
+        // Get product dimensions for perfect matching
+        const productImage = canvas.getObjects().find((obj) => obj.isTshirtBase);
+        if (!productImage) return;
+
+        const productBounds = productImage.getBoundingRect();
+
+        // FIXED: Remove existing patterns before adding new one
+        const existingPatterns = canvas.getObjects().filter(obj => obj.isPattern === true);
+        existingPatterns.forEach(pattern => {
+          canvas.remove(pattern);
+        });
+
+        // Create pattern with EXACT same dimensions as product for perfect merge
+        const imgInstance = new fabric.Image(imgElement, {
+          left: productBounds.left,
+          top: productBounds.top,
+          originX: "left",
+          originY: "top",
+          // Scale to match product dimensions EXACTLY
+          scaleX: productBounds.width / imgElement.width,
+          scaleY: productBounds.height / imgElement.height,
+          name: "pattern-image",
+          isPattern: true,
+          // FIXED: Make objects non-moveable
+          selectable: false,
+          evented: false,
+          hasControls: false,
+          hasBorders: false,
+          moveCursor: "default",
+          lockMovementX: true,
+          lockMovementY: true,
+          lockScalingX: true,
+          lockScalingY: true,
+          lockRotation: true
+        });
+
+        canvas.add(imgInstance);
+
+        // Apply layer management - IMMEDIATE arrangement
+        if (layerManager) {
+          layerManager.setObjectLayer(imgInstance);
+          layerManager.arrangeCanvasLayers();
+        }
+        
+        console.log('✅ Pattern added with perfect merge dimensions (zIndex: 1) - Non-moveable');
       };
-    }
-
-    const targetWidth = baseBounds.width * 0.9;
-    const targetHeight = baseBounds.height * 0.5;
-
-    let offsetY = 0;
-    if (position === 'top') {
-      offsetY = -(baseBounds.height * 0.25);
-    } else {
-      offsetY = (baseBounds.height * 0.25);
-    }
-
-    try {
-      canvas.getObjects()
-        .filter(obj => obj.name && (obj.name.includes('pattern') || obj.name.includes('design-image')))
-        .forEach(obj => canvas.remove(obj));
-    } catch (error) {
-      console.warn("Pattern cleanup error:", error);
-    }
-
-    try {
-      handleAddDesignToCanvas(
-        url,
-        "center",
-        0,
-        offsetY,
-        targetWidth,
-        targetHeight,
-        0.9
-      );
-    } catch (error) {
-      console.error("Pattern addition failed:", error);
-    }
+    });
   };
 
   const addIconToCanvas = async (iconData) => {
@@ -691,16 +495,17 @@ const CustomizerLayout = ({ selectedProduct }) => {
             originY: "center",
             scaleX: 0.8,
             scaleY: 0.8,
-            selectable: true,
-            evented: true,
-            hasControls: true,
-            hasBorders: true,
-            moveCursor: "move",
-            lockMovementX: false,
-            lockMovementY: false,
-            lockScalingX: false,
-            lockScalingY: false,
-            lockRotation: false
+            // FIXED: Make objects non-moveable
+            selectable: false,
+            evented: false,
+            hasControls: false,
+            hasBorders: false,
+            moveCursor: "default",
+            lockMovementX: true,
+            lockMovementY: true,
+            lockScalingX: true,
+            lockScalingY: true,
+            lockRotation: true
           });
 
           img.isIcon = true;
@@ -708,13 +513,14 @@ const CustomizerLayout = ({ selectedProduct }) => {
           img.name = "icon-image";
 
           canvas.add(img);
-          canvas.bringToFront(img);
-          canvas.setActiveObject(img);
 
-          // Apply clipping mask to icon as well
-          constrainObjectToProduct(img, productImage);
-          applyClippingToObject(img, productImage);
-          canvas.requestRenderAll();
+          // Apply layer management - IMMEDIATE arrangement
+          if (layerManager) {
+            layerManager.setObjectLayer(img);
+            layerManager.arrangeCanvasLayers();
+          }
+          
+          console.log('✅ Icon added with proper layer (zIndex: 2) - Non-moveable');
 
           URL.revokeObjectURL(svgUrl);
         });
@@ -722,39 +528,9 @@ const CustomizerLayout = ({ selectedProduct }) => {
 
     } catch (error) {
       console.error('Failed to load icon:', error);
-
-      import("fabric").then(({ IText }) => {
-        const canvas = editor.canvas;
-        const productImage = canvas.getObjects().find((obj) => obj.isTshirtBase);
-        if (!productImage) return;
-
-        const productBounds = productImage.getBoundingRect();
-
-        const iconText = new IText('🔸', {
-          left: productBounds.left + productBounds.width / 2,
-          top: productBounds.top + productBounds.height / 2,
-          originX: "center",
-          originY: "center",
-          fontSize: 48,
-          fill: "#000",
-          selectable: true,
-          evented: true,
-          hasControls: true,
-          hasBorders: true
-        });
-
-        iconText.isIcon = true;
-        canvas.add(iconText);
-        canvas.setActiveObject(iconText);
-
-        constrainObjectToProduct(iconText, productImage);
-        applyClippingToObject(iconText, productImage);
-        canvas.requestRenderAll();
-      });
     }
   };
 
-  // Apply specific design from backend data when user selects it
   const applySelectedDesign = (designData) => {
     if (!designData || !editor?.canvas) return;
 
@@ -764,21 +540,17 @@ const CustomizerLayout = ({ selectedProduct }) => {
       designData.url,
       designData.position,
       designData.offsetX,
-      designData.offsetY,
-      designData.targetWidth || 80,
-      designData.targetHeight || 80
+      designData.offsetY
     );
   };
 
-  // Initialize canvas when selectedProduct changes
+  // Initialize canvas with product - set proper dimensions
   useEffect(() => {
     if (!selectedProduct || !editor?.canvas) return;
 
-    console.log(`🆕 Initializing canvas for product ${selectedProduct.id}`);
+    console.log(`🆕 Initializing canvas with perfect merge for product ${selectedProduct.id}`);
 
     const initializeCanvas = () => {
-      console.log(`📝 Creating canvas for product ${selectedProduct.id}`);
-      
       import("fabric").then(({ Image }) => {
         editor.canvas.clear();
 
@@ -787,8 +559,12 @@ const CustomizerLayout = ({ selectedProduct }) => {
         img.src = selectedProduct.image;
 
         img.onload = () => {
-          const desiredWidth = 300;
-          const scale = desiredWidth / img.width;
+          // Set consistent dimensions - this is the base size for all elements
+          const targetWidth = selectedProduct.width || 300;
+          const targetHeight = selectedProduct.height || (targetWidth * (img.height / img.width));
+          
+          const scaleX = targetWidth / img.width;
+          const scaleY = targetHeight / img.height;
 
           const fabricImg = new Image(img, {
             left: editor.canvas.getWidth() / 2,
@@ -796,9 +572,8 @@ const CustomizerLayout = ({ selectedProduct }) => {
             isTshirtBase: true,
             originX: "center",
             originY: "center",
-            scaleX: scale,
-            scaleY: scale,
-            // Lock properties
+            scaleX: scaleX,
+            scaleY: scaleY,
             selectable: false,
             evented: false,
             hasControls: false,
@@ -808,7 +583,6 @@ const CustomizerLayout = ({ selectedProduct }) => {
             lockScalingX: true,
             lockScalingY: true,
             lockRotation: true,
-            // Visual properties
             flipX: flipX,
             flipY: flipY
           });
@@ -816,15 +590,16 @@ const CustomizerLayout = ({ selectedProduct }) => {
           fabricImg.customId = selectedProduct.id;
           
           editor.canvas.add(fabricImg);
+
+          // Apply layer management - IMMEDIATE arrangement
+          if (layerManager) {
+            layerManager.setObjectLayer(fabricImg);
+            layerManager.arrangeCanvasLayers();
+          }
           
-          // Ensure it's locked and render
-          setTimeout(() => {
-            fabricImg.setCoords();
-            editor.canvas.renderAll();
-            
-            // Don't auto-apply designs anymore - wait for user selection
-            console.log(`✅ Canvas ready - waiting for user to select designs`);
-          }, 50);
+          fabricImg.setCoords();
+          editor.canvas.renderAll();
+          console.log(`✅ Product loaded with dimensions: ${targetWidth}x${targetHeight} (zIndex: 4)`);
         };
 
         img.onerror = () => {
@@ -833,28 +608,23 @@ const CustomizerLayout = ({ selectedProduct }) => {
       });
     };
 
-    // Initialize after small delay
     const timeoutId = setTimeout(initializeCanvas, 100);
     return () => clearTimeout(timeoutId);
-  }, [selectedProduct?.id, editor]);
+  }, [selectedProduct?.id, editor, layerManager]);
 
-  // Setup canvas event handlers
+  // FIXED: Setup canvas event handlers - No selection allowed
   useEffect(() => {
     if (!editor || !editor.canvas) return;
 
     const canvas = editor.canvas;
 
-    // Basic canvas settings
-    canvas.selection = true;
-    canvas.hoverCursor = 'move';
+    // FIXED: Disable selection completely
+    canvas.selection = false;
+    canvas.hoverCursor = 'default';
     canvas.defaultCursor = 'default';
 
-    const getProductImage = () => {
-      return canvas.getObjects().find((o) => o.type === "image" && o.isTshirtBase);
-    };
-
     const handleObjectMoving = (e) => {
-      // Don't allow base layer to move
+      // Product should stay in center
       if (e.target.isTshirtBase) {
         e.target.set({
           left: canvas.getWidth() / 2,
@@ -863,42 +633,41 @@ const CustomizerLayout = ({ selectedProduct }) => {
         e.target.setCoords();
         return;
       }
-
-      // Constrain other objects to product bounds
-      const productImage = getProductImage();
-      if (productImage) {
-        constrainObjectToProduct(e.target, productImage);
-      }
+      
+      // Prevent any object from moving
+      e.preventDefault();
+      return false;
     };
 
     const handleObjectModified = (e) => {
-      // Don't allow base layer modifications
-      if (e.target.isTshirtBase) {
-        return;
-      }
-
-      const productImage = getProductImage();
-      if (productImage) {
-        constrainObjectToProduct(e.target, productImage);
-        updateClippingForObject(e.target);
-      }
+      // Prevent any modifications
+      e.preventDefault();
+      return false;
     };
 
     const handleSelectionCreated = (e) => {
-      // Prevent selection of base layer
-      if (e.selected && e.selected.some(obj => obj.isTshirtBase)) {
-        canvas.discardActiveObject();
-        canvas.renderAll();
+      // Prevent any selections
+      canvas.discardActiveObject();
+      canvas.renderAll();
+    };
+
+    // FIXED: Prevent canvas click from affecting layers
+    const handleCanvasClick = (e) => {
+      // Maintain layer order after any interaction
+      if (layerManager) {
+        setTimeout(() => {
+          layerManager.arrangeCanvasLayers();
+        }, 10);
       }
     };
 
-    // Add event listeners
     canvas.on('object:moving', handleObjectMoving);
     canvas.on('object:scaling', handleObjectMoving);
     canvas.on('object:rotating', handleObjectMoving);
     canvas.on('object:modified', handleObjectModified);
     canvas.on('selection:created', handleSelectionCreated);
     canvas.on('selection:updated', handleSelectionCreated);
+    canvas.on('mouse:down', handleCanvasClick);
 
     return () => {
       canvas.off('object:moving', handleObjectMoving);
@@ -907,8 +676,9 @@ const CustomizerLayout = ({ selectedProduct }) => {
       canvas.off('object:modified', handleObjectModified);
       canvas.off('selection:created', handleSelectionCreated);
       canvas.off('selection:updated', handleSelectionCreated);
+      canvas.off('mouse:down', handleCanvasClick);
     };
-  }, [editor, selectedProduct?.id]);
+  }, [editor, selectedProduct?.id, layerManager]);
 
   // Update text properties for active text object
   useEffect(() => {
@@ -918,7 +688,6 @@ const CustomizerLayout = ({ selectedProduct }) => {
     const activeObject = canvas.getActiveObject();
 
     if (activeObject && activeObject.type === "i-text") {
-      console.log('🔤 Updating text properties');
       activeObject.set({
         fill: textColor,
         fontFamily: fontFamily,
@@ -929,21 +698,6 @@ const CustomizerLayout = ({ selectedProduct }) => {
       canvas.renderAll();
     }
   }, [textColor, fontFamily, fontStyle, textFlipX, textFlipY, editor]);
-
-  // Debug canvas state
-  useEffect(() => {
-    if (editor?.canvas) {
-      const canvas = editor.canvas;
-      const objects = canvas.getObjects();
-      console.log('🖼️ Canvas objects:', objects.length);
-      console.log('📋 Objects detail:', objects.map(obj => ({
-        type: obj.type,
-        isTshirtBase: obj.isTshirtBase,
-        selectable: obj.selectable,
-        evented: obj.evented
-      })));
-    }
-  }, [editor?.canvas]);
 
   const baseUrl = "https://my-backend-blond.vercel.app";
 
@@ -984,14 +738,12 @@ const CustomizerLayout = ({ selectedProduct }) => {
     setIsSaving(true);
 
     try {
-      // Take screenshot
       const screenshotDataURL = editor.canvas.toDataURL('image/png', 0.8);
       
       if (!screenshotDataURL || screenshotDataURL === 'data:,') {
         throw new Error('Failed to capture design screenshot');
       }
 
-      // Upload screenshot to Cloudinary
       let screenshotCloudinaryUrl = screenshotDataURL;
 
       try {
@@ -1010,7 +762,6 @@ const CustomizerLayout = ({ selectedProduct }) => {
         console.error("Screenshot upload failed:", uploadError);
       }
 
-      // Collect canvas data
       const canvasObjects = editor.canvas.getObjects().map(obj => {
         const baseData = {
           type: obj.type,
@@ -1026,7 +777,8 @@ const CustomizerLayout = ({ selectedProduct }) => {
           originY: obj.originY,
           selectable: obj.selectable,
           evented: obj.evented,
-          visible: obj.visible
+          visible: obj.visible,
+          zIndex: obj.zIndex || 0
         };
 
         if (obj.type === 'i-text') {
@@ -1049,6 +801,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
             ...baseData,
             src: obj.getSrc ? obj.getSrc() : obj._originalElement?.src,
             isTshirtBase: obj.isTshirtBase || false,
+            isPattern: obj.isPattern || false,
             name: obj.name,
             isIcon: obj.isIcon || false,
             hasControls: obj.hasControls,
@@ -1064,7 +817,6 @@ const CustomizerLayout = ({ selectedProduct }) => {
         return baseData;
       });
 
-      // Create save data structure using getCurrentProductData()
       const currentProduct = getCurrentProductData();
       
       const saveData = {
@@ -1082,7 +834,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
           width: editor.canvas.getWidth(),
           height: editor.canvas.getHeight(),
           objects: canvasObjects,
-          backgroundColor: editor.canvas.backgroundColor || "#ffffff"
+          backgroundColor: editor.canvas.backgroundColor || selectedColor.color
         },
         customizations: {
           text: customText,
@@ -1098,10 +850,11 @@ const CustomizerLayout = ({ selectedProduct }) => {
           flipY: flipY,
           selectedColor: selectedColor
         },
-        screenshot: screenshotCloudinaryUrl
+        screenshot: screenshotCloudinaryUrl,
+        clippingSystemUsed: 'none',
+        layerSystemUsed: 'perfect-merge-fixed-layers'
       };
 
-      // Save to MongoDB
       let savedProductId = null;
 
       try {
@@ -1125,7 +878,6 @@ const CustomizerLayout = ({ selectedProduct }) => {
         console.error("Database save error:", apiError);
       }
 
-      // Show screenshot in new tab
       try {
         const response = await fetch(screenshotDataURL);
         const blob = await response.blob();
@@ -1138,7 +890,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
 
-      const successMessage = `Design saved successfully! 📸\n\nMongoDB ID: ${savedProductId}`;
+      const successMessage = `Fixed layer design saved! 📸\n\nMongoDB ID: ${savedProductId}`;
       alert(successMessage);
 
       return {
@@ -1205,9 +957,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
           handleAddDesignToCanvas={handleAddDesignToCanvas}
           addIconToCanvas={addIconToCanvas}
           handleAddPatternToCanvas={handleAddPatternToCanvas}
-          constrainObjectToProduct={constrainObjectToProduct}
           applySelectedDesign={applySelectedDesign}
-          applyClippingToObject={applyClippingToObject}
         />
       )}
 
@@ -1263,7 +1013,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
             </svg>
-            <span>Design saved successfully!</span>
+            <span>Fixed layer design saved!</span>
           </div>
         </div>
       )}
