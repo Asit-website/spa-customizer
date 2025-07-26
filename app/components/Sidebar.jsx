@@ -7,10 +7,11 @@ import AddTextTab from "./AddTextTab";
 import EditTextTab from "./EditTextTab";
 import SelectColorsTab from "./SelectColorsTab";
 import ClipartTab from "./ClipartTab";
+import RightSideImageUpload from "./RightSideImageComponent";
 
 const Sidebar = ({
   editor,
-  selectedProduct, // Direct product instead of products array
+  selectedProduct,
   handleAddCustomText,
   customText,
   setCustomText,
@@ -41,14 +42,20 @@ const Sidebar = ({
   applyClippingToObject,
   setFlipX,
   setFlipY,
+  layerManager,
+  handleTopColorChange,
+  handleBottomColorChange,
+  selectedTopColor,
+  selectedBottomColor,
   setTextFlipX,
-  setTextFlipY
+  setTextFlipY,
 }) => {
   const [activeTab, setActiveTab] = useState("editor");
   const [showClipartTab, setShowClipartTab] = useState(false);
   const [showEditorModal, setShowEditorModal] = useState(true);
   const [showImageEditModal, setShowImageEditModal] = useState(false);
   const [showBgColorsModal, setShowBgColorsModal] = useState(false);
+  const [showrightImage, setShowrightImage] = useState(false);
 
   const [hasUploadedImage, setHasUploadedImage] = useState(false);
   const [hasAddedText, setHasAddedText] = useState(false);
@@ -138,7 +145,7 @@ const Sidebar = ({
     setShowEditModal(false);
     setShowBgColorsModal(false);
     setShowClipartTab(false);
-
+    setShowrightImage(false)
     setActiveTab(key);
 
     if (key === "editor") {
@@ -169,6 +176,9 @@ const Sidebar = ({
     if (key === "clipart") {
       setShowClipartTab(true);
     }
+    if (key === "rightImage") {
+      setShowrightImage(true);
+    }
   };
 
   return (
@@ -180,6 +190,7 @@ const Sidebar = ({
           { key: "text", label: "Text", icon: "text-recognition_emsdp8" },
           { key: "colors", label: "Colors", icon: "invert-colors_bybi8l" },
           { key: "clipart", label: "Clipart", icon: "heart-multiple-outline_rjqkb7" },
+          { key: "rightImage", label: "Right Image", icon: "heart-multiple-outline_rjqkb7" },
         ].map(({ key, label, icon }) => (
           <div
             key={key}
@@ -251,17 +262,28 @@ const Sidebar = ({
               setTextFlipX={setTextFlipX}
               setTextFlipY={setTextFlipY}
               bringForward={bringForward}
+              layerManager={layerManager}
             />
           )}
         </>
       )}
 
       {activeTab === "colors" && showBgColorsModal && (
+        // <SelectColorsTab
+        //   setShowBgColorsModal={setShowBgColorsModal}
+        //   handleColorChange={handleColorChange}
+        //   selectedColor={selectedColor}
+        //   setSelectedColor={setSelectedColor}
+        // />
         <SelectColorsTab
-          setShowBgColorsModal={setShowBgColorsModal}
           handleColorChange={handleColorChange}
           selectedColor={selectedColor}
-          setSelectedColor={setSelectedColor}
+          setShowBgColorsModal={setShowBgColorsModal}
+          handleTopColorChange={handleTopColorChange}
+          handleBottomColorChange={handleBottomColorChange}
+          selectedTopColor={selectedTopColor}
+          selectedBottomColor={selectedBottomColor}
+          selectedProduct={selectedProduct}
         />
       )}
 
@@ -276,6 +298,16 @@ const Sidebar = ({
           handleAddPatternToCanvas={handleAddPatternToCanvas}
         />
       )}
+
+      {  activeTab === "rightImage" && showrightImage && (
+          <RightSideImageUpload
+            editor={editor}
+            selectedProduct={selectedProduct}
+            layerManager={layerManager}
+            setShowrightImage={setShowrightImage}
+          />
+        )
+      }
     </div>
   );
 };

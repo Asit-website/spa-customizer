@@ -8,18 +8,85 @@ import { FaMinus, FaPlus } from "react-icons/fa6";
 import { useFabricJSEditor, FabricJSCanvas } from "fabricjs-react";
 import LayerContextMenu from "./components/LayerContextMenu";
 import useCanvasContextMenu from "./hooks/useCanvasContextMenu";
+import RightSideImageUpload from "./components/RightSideImageComponent";
 
 const CustomizerLayout = ({ selectedProduct }) => {
+
+  // class SimpleLayerManager {
+  //   constructor(canvas) {
+  //     this.canvas = canvas;
+  //     this.layerOrder = {
+  //       BASE_COLOR: 0,        // Base background color
+  //       TOP_GRADIENT: 1,      // Top color/gradient image (red/burgundy part)  
+  //       PATTERN: 2,           // Stars, stripes, or other patterns
+  //       BOTTOM_GRADIENT: 3,   // Bottom color/gradient image (green part) with fade
+  //       DESIGN: 4,            // User designs/logos
+  //       TEXT: 5,              // Custom text
+  //       PRODUCT: 6            // Product outline/shape (should be transparent)
+  //     };
+  //   }
+
+  //   setObjectLayer(obj) {
+  //     if (!obj) return;
+
+  //     let zIndex = 0;
+
+  //     if (obj.isTshirtBase) {
+  //       zIndex = this.layerOrder.PRODUCT;
+  //     } else if (obj.type === 'i-text') {
+  //       zIndex = this.layerOrder.TEXT;
+  //     } else if (obj.type === 'image' && obj.isTopGradient) {
+  //       zIndex = this.layerOrder.TOP_GRADIENT; // Red/burgundy top part
+  //     } else if (obj.type === 'image' && obj.isPattern) {
+  //       zIndex = this.layerOrder.PATTERN; // Stars, stripes
+  //     } else if (obj.type === 'image' && obj.isBottomGradient) {
+  //       zIndex = this.layerOrder.BOTTOM_GRADIENT; // Green bottom part with fade
+  //     } else if (obj.isBottomGradientFade || obj.isBottomGradientTopTransparent) {
+  //       // Both overlays should be same layer as bottom gradient but slightly higher
+  //       zIndex = this.layerOrder.BOTTOM_GRADIENT + 0.1;
+  //     } else if (obj.type === 'image' && !obj.isTshirtBase) {
+  //       zIndex = this.layerOrder.DESIGN; // User designs
+  //     } else if (obj.isColorEffect) {
+  //       zIndex = this.layerOrder.BASE_COLOR;
+  //     }
+
+  //     obj.zIndex = zIndex;
+  //     console.log(`✅ Object assigned layer: ${obj.type} -> zIndex: ${zIndex}`);
+  //   }
+
+  //   arrangeCanvasLayers() {
+  //     const objects = this.canvas.getObjects();
+
+  //     // Sort objects by their zIndex
+  //     objects.sort((a, b) => {
+  //       const aIndex = a.zIndex || 0;
+  //       const bIndex = b.zIndex || 0;
+  //       return aIndex - bIndex;
+  //     });
+
+  //     // Clear and re-add in correct order
+  //     this.canvas._objects = [];
+  //     objects.forEach(obj => {
+  //       this.canvas._objects.push(obj);
+  //     });
+
+  //     this.canvas.renderAll();
+  //     console.log('✅ Layer arrangement complete - Updated gradient system with fade applied');
+  //   }
+  // }
 
   class SimpleLayerManager {
     constructor(canvas) {
       this.canvas = canvas;
       this.layerOrder = {
-        COLOR: 0,     
-        PATTERN: 1,    
-        DESIGN: 2,    
-        TEXT: 3,      
-        PRODUCT: 4    
+        BASE_COLOR: 0,        // Base background color
+        TOP_GRADIENT: 1,      // Top color/gradient image (red/burgundy part)  
+        PATTERN: 2,           // Stars, stripes, or other patterns
+        BOTTOM_GRADIENT: 3,   // Bottom color/gradient image (green part) with fade
+        DESIGN: 4,            // User designs/logos
+        TEXT: 5,              // Custom text
+        RIGHT_SIDE_IMAGE: 6,  // NEW: Uploaded images for right side (highest priority)
+        PRODUCT: 7            // Product outline/shape (should be transparent)
       };
     }
 
@@ -29,24 +96,32 @@ const CustomizerLayout = ({ selectedProduct }) => {
       let zIndex = 0;
 
       if (obj.isTshirtBase) {
-        zIndex = this.layerOrder.PRODUCT; 
+        zIndex = this.layerOrder.PRODUCT;
+      } else if (obj.isRightSideImage) {
+        zIndex = this.layerOrder.RIGHT_SIDE_IMAGE; // NEW: Right side uploaded images
       } else if (obj.type === 'i-text') {
-        zIndex = this.layerOrder.TEXT; 
+        zIndex = this.layerOrder.TEXT;
+      } else if (obj.type === 'image' && obj.isTopGradient) {
+        zIndex = this.layerOrder.TOP_GRADIENT;
       } else if (obj.type === 'image' && obj.isPattern) {
-        zIndex = this.layerOrder.PATTERN; 
+        zIndex = this.layerOrder.PATTERN;
+      } else if (obj.type === 'image' && obj.isBottomGradient) {
+        zIndex = this.layerOrder.BOTTOM_GRADIENT;
+      } else if (obj.isBottomGradientFade || obj.isBottomGradientTopTransparent) {
+        zIndex = this.layerOrder.BOTTOM_GRADIENT + 0.1;
       } else if (obj.type === 'image' && !obj.isTshirtBase) {
-        zIndex = this.layerOrder.DESIGN; 
+        zIndex = this.layerOrder.DESIGN;
       } else if (obj.isColorEffect) {
-        zIndex = this.layerOrder.COLOR; 
+        zIndex = this.layerOrder.BASE_COLOR;
       }
 
       obj.zIndex = zIndex;
-      console.log(`✅ Object assigned layer: ${obj.type} -> zIndex: ${zIndex}`);
+      console.log(`✅ Object assigned layer: ${obj.type} -> zIndex: ${zIndex}${obj.isRightSideImage ? ' (Right Side Image)' : ''}`);
     }
 
     arrangeCanvasLayers() {
       const objects = this.canvas.getObjects();
-      
+
       // Sort objects by their zIndex
       objects.sort((a, b) => {
         const aIndex = a.zIndex || 0;
@@ -61,7 +136,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
       });
 
       this.canvas.renderAll();
-      console.log('✅ Layer arrangement complete - Product on top');
+      console.log('✅ Layer arrangement complete - Updated with right side image support');
     }
   }
 
@@ -93,6 +168,10 @@ const CustomizerLayout = ({ selectedProduct }) => {
   const [flipX, setFlipX] = useState(false);
   const [flipY, setFlipY] = useState(false);
   const [selectedColor, setSelectedColor] = useState({ color: "#ffffff", name: "White" });
+
+  // NEW: Gradient states
+  const [selectedTopColor, setSelectedTopColor] = useState(null);
+  const [selectedBottomColor, setSelectedBottomColor] = useState(null);
 
   // UI states
   const [showAddModal, setShowAddModal] = useState(true);
@@ -128,14 +207,14 @@ const CustomizerLayout = ({ selectedProduct }) => {
     if (editor?.canvas && !layerManager) {
       const manager = new SimpleLayerManager(editor.canvas);
       setLayerManager(manager);
-      console.log('🎯 Layer Manager initialized with correct order');
+      console.log('🎯 Layer Manager initialized with gradient system');
     }
   }, [editor?.canvas]);
 
   // Helper function to get current product data with customizations
   const getCurrentProductData = () => {
     if (!selectedProduct) return null;
-    
+
     return {
       ...selectedProduct,
       text: customText,
@@ -153,6 +232,8 @@ const CustomizerLayout = ({ selectedProduct }) => {
       rotate: 0,
       alignment: "center",
       color: selectedColor.color,
+      topColor: selectedTopColor,
+      bottomColor: selectedBottomColor,
     };
   };
 
@@ -161,20 +242,251 @@ const CustomizerLayout = ({ selectedProduct }) => {
     updateCanvasColor(colorObj.color);
   };
 
+  // NEW: Handle top gradient color
+  const handleTopColorChange = (colorObj) => {
+    setSelectedTopColor(colorObj);
+    handleAddTopGradientToCanvas(colorObj.url);
+  };
+
+  // NEW: Handle bottom gradient color
+  const handleBottomColorChange = (colorObj) => {
+    setSelectedBottomColor(colorObj);
+    handleAddBottomGradientToCanvas(colorObj.url);
+  };
+
   // Canvas background color change
   const updateCanvasColor = (color) => {
     if (!editor?.canvas) {
       console.error('❌ Canvas not available for color change');
       return;
     }
-    
+
     console.log('🎨 Changing canvas background color to:', color);
-    
+
     const canvas = editor.canvas;
-    
+
     canvas.setBackgroundColor(color, () => {
       canvas.renderAll();
       console.log('✅ Canvas background color changed to:', color);
+    });
+  };
+
+  // NEW: Add bottom gradient function
+  // const handleAddBottomGradientToCanvas = (url) => {
+  //   if (!editor?.canvas || !url) return;
+
+  //   const canvas = editor.canvas;
+
+  //   import("fabric").then((fabric) => {
+  //     const imgElement = new Image();
+  //     imgElement.crossOrigin = "anonymous";
+  //     imgElement.src = url;
+
+  //     imgElement.onload = () => {
+  //       const productImage = canvas.getObjects().find((obj) => obj.isTshirtBase);
+  //       if (!productImage) return;
+
+  //       const productBounds = productImage.getBoundingRect();
+
+  //       const existingBottomGradient = canvas.getObjects().filter(obj => obj.isBottomGradient === true);
+  //       existingBottomGradient.forEach(gradient => {
+  //         canvas.remove(gradient);
+  //       });
+
+  //       const imgInstance = new fabric.Image(imgElement, {
+  //         left: productBounds.left,
+  //         top: productBounds.top,
+  //         originX: "left",
+  //         originY: "top",
+  //         scaleX: productBounds.width / imgElement.width,
+  //         scaleY: productBounds.height / imgElement.height,
+  //         name: "bottom-gradient-image",
+  //         isBottomGradient: true,
+  //         selectable: false,
+  //         evented: false,
+  //         hasControls: false,
+  //         hasBorders: false,
+  //         moveCursor: "default",
+  //         lockMovementX: true,
+  //         lockMovementY: true,
+  //         lockScalingX: true,
+  //         lockScalingY: true,
+  //         lockRotation: true
+  //       });
+
+  //       canvas.add(imgInstance);
+
+  //       if (layerManager) {
+  //         layerManager.setObjectLayer(imgInstance);
+  //         layerManager.arrangeCanvasLayers();
+  //       }
+
+  //       console.log('✅ Bottom gradient added (zIndex: 1) - Bottom color applied');
+  //     };
+  //   });
+  // };
+  const handleAddBottomGradientToCanvas = (url) => {
+    if (!editor?.canvas || !url) return;
+
+    const canvas = editor.canvas;
+
+    import("fabric").then((fabric) => {
+      const imgElement = new Image();
+      imgElement.crossOrigin = "anonymous";
+      imgElement.src = url;
+
+      imgElement.onload = () => {
+        const productImage = canvas.getObjects().find((obj) => obj.isTshirtBase);
+        if (!productImage) return;
+
+        const productBounds = productImage.getBoundingRect();
+
+        // Remove existing bottom gradient and all its overlays
+        const existingBottomElements = canvas.getObjects().filter(obj =>
+          obj.isBottomGradient === true ||
+          obj.isBottomGradientFade === true ||
+          obj.isBottomGradientTopTransparent === true
+        );
+        existingBottomElements.forEach(element => {
+          canvas.remove(element);
+        });
+
+        // Create bottom gradient image that only covers the BOTTOM 50% with fade effect
+        const imgInstance = new fabric.Image(imgElement, {
+          left: productBounds.left,
+          top: productBounds.top + (productBounds.height * 0.5), // Start from 50% height
+          originX: "left",
+          originY: "top",
+          opacity: 0.5,
+          scaleX: productBounds.width / imgElement.width,
+          scaleY: (productBounds.height * 0.5) / imgElement.height, // Only cover bottom 50%
+          name: "bottom-gradient-image",
+          isBottomGradient: true,
+          selectable: false,
+          evented: false,
+          hasControls: false,
+          hasBorders: false,
+          moveCursor: "default",
+          lockMovementX: true,
+          lockMovementY: true,
+          lockScalingX: true,
+          lockScalingY: true,
+          lockRotation: true
+        });
+
+        // Add the image to canvas first
+        canvas.add(imgInstance);
+
+        // Create fade effect overlay that makes the top part of bottom gradient transparent
+        const fadeOverlay = new fabric.Rect({
+          left: productBounds.left,
+          top: productBounds.top + (productBounds.height * 0.5), // Start from 50% height
+          width: productBounds.width,
+          height: productBounds.height * 0.5, // Bottom 50%
+          originX: "left",
+          originY: "top",
+          fill: new fabric.Gradient({
+            type: 'linear',
+            gradientUnits: 'pixels',
+            coords: {
+              x1: 0,
+              y1: 0,
+              x2: 0,
+              y2: productBounds.height * 0.5 // Gradient in bottom 50%
+            },
+            colorStops: [
+              { offset: 0, color: 'rgba(0,0,0,1)' },     // Fully opaque at 50% mark (hides image)
+              { offset: 0.3, color: 'rgba(0,0,0,0.7)' }, // Quick fade transition
+              { offset: 1, color: 'rgba(0,0,0,0)' }      // Fully transparent at bottom (shows image)
+            ]
+          }),
+          name: "bottom-gradient-fade-overlay",
+          isBottomGradientFade: true,
+          selectable: false,
+          evented: false,
+          hasControls: false,
+          hasBorders: false,
+          moveCursor: "default",
+          lockMovementX: true,
+          lockMovementY: true,
+          lockScalingX: true,
+          lockScalingY: true,
+          lockRotation: true,
+          globalCompositeOperation: 'destination-out' // This removes parts of the bottom gradient
+        });
+
+        // Add the fade overlay
+        canvas.add(fadeOverlay);
+
+        // Apply layer management for all elements
+        if (layerManager) {
+          layerManager.setObjectLayer(imgInstance);
+          layerManager.setObjectLayer(fadeOverlay);
+          layerManager.arrangeCanvasLayers();
+        }
+
+        console.log('✅ Bottom gradient added - Only covers bottom 50% with fade effect, top 50% remains transparent');
+      };
+    });
+  };
+
+
+
+  // NEW: Add top gradient function
+  const handleAddTopGradientToCanvas = (url) => {
+    if (!editor?.canvas || !url) return;
+
+    const canvas = editor.canvas;
+
+    import("fabric").then((fabric) => {
+      const imgElement = new Image();
+      imgElement.crossOrigin = "anonymous";
+      imgElement.src = url;
+
+      imgElement.onload = () => {
+        const productImage = canvas.getObjects().find((obj) => obj.isTshirtBase);
+        if (!productImage) return;
+
+        const productBounds = productImage.getBoundingRect();
+
+        // Remove existing top gradient
+        const existingTopGradient = canvas.getObjects().filter(obj => obj.isTopGradient === true);
+        existingTopGradient.forEach(gradient => {
+          canvas.remove(gradient);
+        });
+
+        // Create top gradient with EXACT same dimensions as product
+        const imgInstance = new fabric.Image(imgElement, {
+          left: productBounds.left,
+          top: productBounds.top,
+          originX: "left",
+          originY: "top",
+          scaleX: productBounds.width / imgElement.width,
+          scaleY: productBounds.height / imgElement.height,
+          name: "top-gradient-image",
+          isTopGradient: true,
+          selectable: false,
+          evented: false,
+          hasControls: false,
+          hasBorders: false,
+          moveCursor: "default",
+          lockMovementX: true,
+          lockMovementY: true,
+          lockScalingX: true,
+          lockScalingY: true,
+          lockRotation: true
+        });
+
+        canvas.add(imgInstance);
+
+        // Apply layer management
+        if (layerManager) {
+          layerManager.setObjectLayer(imgInstance);
+          layerManager.arrangeCanvasLayers();
+        }
+
+        console.log('✅ Top gradient added (zIndex: 2) - Top color applied');
+      };
     });
   };
 
@@ -201,7 +513,8 @@ const CustomizerLayout = ({ selectedProduct }) => {
       const topRatio = selectedProduct?.textTopRatio || 3.5;
 
       const textObject = new fabric.IText(customText.slice(0, 9), {
-        left: imageBounds.left + imageBounds.width / 2,
+        // left: imageBounds.left + imageBounds.width / 2,
+        left: imageBounds.left + imageBounds.width * 0.25,
         top: imageBounds.top + imageBounds.height / topRatio,
         originX: "center",
         originY: "center",
@@ -209,19 +522,20 @@ const CustomizerLayout = ({ selectedProduct }) => {
         fill: textColor,
         fontFamily: fontFamily,
         fontStyle: fontStyle,
-        // FIXED: Make objects non-moveable
-        selectable: false,
-        evented: false,
-        moveCursor: "default",
-        hasControls: false,
-        hasBorders: false,
-        lockMovementX: true,
-        lockMovementY: true,
-        lockScalingX: true,
-        lockScalingY: true,
-        lockRotation: true,
-        editable: false
+        selectable: true,
+        evented: true,
+        moveCursor: "move",
+        hasControls: true,
+        hasBorders: true,
+        lockMovementX: false,
+        lockMovementY: false,
+        lockScalingX: false,
+        lockScalingY: false,
+        lockRotation: false,
+        editable: true
       });
+
+      console.log('✅ Text object created:', textObject);
 
       canvas.add(textObject);
 
@@ -230,8 +544,8 @@ const CustomizerLayout = ({ selectedProduct }) => {
         layerManager.setObjectLayer(textObject);
         layerManager.arrangeCanvasLayers();
       }
-      
-      console.log('✅ Text added with proper layer (zIndex: 3) - Non-moveable');
+
+      console.log('✅ Text added with proper layer (zIndex: 5) - Non-moveable');
 
       setCustomText("");
       setShowAddModal(false);
@@ -323,7 +637,6 @@ const CustomizerLayout = ({ selectedProduct }) => {
         originY: "center",
         fontSize: 48,
         fill: "#000",
-        // FIXED: Make objects non-moveable
         selectable: false,
         evented: false,
         hasBorders: false,
@@ -346,8 +659,8 @@ const CustomizerLayout = ({ selectedProduct }) => {
         layerManager.setObjectLayer(emojiText);
         layerManager.arrangeCanvasLayers();
       }
-      
-      console.log('✅ Emoji added with proper layer (zIndex: 3) - Non-moveable');
+
+      console.log('✅ Emoji added with proper layer (zIndex: 5) - Non-moveable');
     });
   };
 
@@ -367,13 +680,13 @@ const CustomizerLayout = ({ selectedProduct }) => {
       imgElement.onload = () => {
         // Get product dimensions for perfect matching
         const productBounds = productImage.getBoundingRect();
-        
-        // FIXED: Remove existing design before adding new one
+
+        // Remove existing design before adding new one
         const existingDesign = canvas.getObjects().find(obj => obj.name === "design-image");
         if (existingDesign) {
           canvas.remove(existingDesign);
         }
-        
+
         // Create design with EXACT same dimensions as product for perfect merge
         const imgInstance = new fabric.Image(imgElement, {
           left: productBounds.left,
@@ -384,7 +697,6 @@ const CustomizerLayout = ({ selectedProduct }) => {
           scaleX: productBounds.width / imgElement.width,
           scaleY: productBounds.height / imgElement.height,
           name: "design-image",
-          // FIXED: Make objects non-moveable
           selectable: false,
           evented: false,
           hasControls: false,
@@ -404,8 +716,8 @@ const CustomizerLayout = ({ selectedProduct }) => {
           layerManager.setObjectLayer(imgInstance);
           layerManager.arrangeCanvasLayers();
         }
-        
-        console.log('✅ Design added with perfect merge dimensions (zIndex: 2) - Non-moveable');
+
+        console.log('✅ Design added with perfect merge dimensions (zIndex: 4) - Non-moveable');
       };
     });
   };
@@ -428,7 +740,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
 
         const productBounds = productImage.getBoundingRect();
 
-        // FIXED: Remove existing patterns before adding new one
+        // Remove existing patterns before adding new one
         const existingPatterns = canvas.getObjects().filter(obj => obj.isPattern === true);
         existingPatterns.forEach(pattern => {
           canvas.remove(pattern);
@@ -445,7 +757,6 @@ const CustomizerLayout = ({ selectedProduct }) => {
           scaleY: productBounds.height / imgElement.height,
           name: "pattern-image",
           isPattern: true,
-          // FIXED: Make objects non-moveable
           selectable: false,
           evented: false,
           hasControls: false,
@@ -465,8 +776,8 @@ const CustomizerLayout = ({ selectedProduct }) => {
           layerManager.setObjectLayer(imgInstance);
           layerManager.arrangeCanvasLayers();
         }
-        
-        console.log('✅ Pattern added with perfect merge dimensions (zIndex: 1) - Non-moveable');
+
+        console.log('✅ Pattern added with perfect merge dimensions (zIndex: 3) - Non-moveable');
       };
     });
   };
@@ -495,7 +806,6 @@ const CustomizerLayout = ({ selectedProduct }) => {
             originY: "center",
             scaleX: 0.8,
             scaleY: 0.8,
-            // FIXED: Make objects non-moveable
             selectable: false,
             evented: false,
             hasControls: false,
@@ -519,8 +829,8 @@ const CustomizerLayout = ({ selectedProduct }) => {
             layerManager.setObjectLayer(img);
             layerManager.arrangeCanvasLayers();
           }
-          
-          console.log('✅ Icon added with proper layer (zIndex: 2) - Non-moveable');
+
+          console.log('✅ Icon added with proper layer (zIndex: 4) - Non-moveable');
 
           URL.revokeObjectURL(svgUrl);
         });
@@ -548,7 +858,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
   useEffect(() => {
     if (!selectedProduct || !editor?.canvas) return;
 
-    console.log(`🆕 Initializing canvas with perfect merge for product ${selectedProduct.id}`);
+    console.log(`🆕 Initializing canvas with gradient system for product ${selectedProduct.id}`);
 
     const initializeCanvas = () => {
       import("fabric").then(({ Image }) => {
@@ -562,7 +872,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
           // Set consistent dimensions - this is the base size for all elements
           const targetWidth = selectedProduct.width || 300;
           const targetHeight = selectedProduct.height || (targetWidth * (img.height / img.width));
-          
+
           const scaleX = targetWidth / img.width;
           const scaleY = targetHeight / img.height;
 
@@ -588,7 +898,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
           });
 
           fabricImg.customId = selectedProduct.id;
-          
+
           editor.canvas.add(fabricImg);
 
           // Apply layer management - IMMEDIATE arrangement
@@ -596,10 +906,10 @@ const CustomizerLayout = ({ selectedProduct }) => {
             layerManager.setObjectLayer(fabricImg);
             layerManager.arrangeCanvasLayers();
           }
-          
+
           fabricImg.setCoords();
           editor.canvas.renderAll();
-          console.log(`✅ Product loaded with dimensions: ${targetWidth}x${targetHeight} (zIndex: 4)`);
+          console.log(`✅ Product loaded with dimensions: ${targetWidth}x${targetHeight} (zIndex: 6)`);
         };
 
         img.onerror = () => {
@@ -612,13 +922,13 @@ const CustomizerLayout = ({ selectedProduct }) => {
     return () => clearTimeout(timeoutId);
   }, [selectedProduct?.id, editor, layerManager]);
 
-  // FIXED: Setup canvas event handlers - No selection allowed
+  // Setup canvas event handlers - No selection allowed
   useEffect(() => {
     if (!editor || !editor.canvas) return;
 
     const canvas = editor.canvas;
 
-    // FIXED: Disable selection completely
+    // Disable selection completely
     canvas.selection = false;
     canvas.hoverCursor = 'default';
     canvas.defaultCursor = 'default';
@@ -633,7 +943,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
         e.target.setCoords();
         return;
       }
-      
+
       // Prevent any object from moving
       e.preventDefault();
       return false;
@@ -651,7 +961,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
       canvas.renderAll();
     };
 
-    // FIXED: Prevent canvas click from affecting layers
+    // Prevent canvas click from affecting layers
     const handleCanvasClick = (e) => {
       // Maintain layer order after any interaction
       if (layerManager) {
@@ -739,7 +1049,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
 
     try {
       const screenshotDataURL = editor.canvas.toDataURL('image/png', 0.8);
-      
+
       if (!screenshotDataURL || screenshotDataURL === 'data:,') {
         throw new Error('Failed to capture design screenshot');
       }
@@ -802,6 +1112,8 @@ const CustomizerLayout = ({ selectedProduct }) => {
             src: obj.getSrc ? obj.getSrc() : obj._originalElement?.src,
             isTshirtBase: obj.isTshirtBase || false,
             isPattern: obj.isPattern || false,
+            isTopGradient: obj.isTopGradient || false,
+            isBottomGradient: obj.isBottomGradient || false,
             name: obj.name,
             isIcon: obj.isIcon || false,
             hasControls: obj.hasControls,
@@ -818,7 +1130,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
       });
 
       const currentProduct = getCurrentProductData();
-      
+
       const saveData = {
         timestamp: new Date().toISOString(),
         product: {
@@ -848,11 +1160,13 @@ const CustomizerLayout = ({ selectedProduct }) => {
           textFlipY: textFlipY,
           flipX: flipX,
           flipY: flipY,
-          selectedColor: selectedColor
+          selectedColor: selectedColor,
+          selectedTopColor: selectedTopColor,
+          selectedBottomColor: selectedBottomColor
         },
         screenshot: screenshotCloudinaryUrl,
         clippingSystemUsed: 'none',
-        layerSystemUsed: 'perfect-merge-fixed-layers'
+        layerSystemUsed: 'gradient-layer-system'
       };
 
       let savedProductId = null;
@@ -869,7 +1183,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
         if (response.ok) {
           const result = await response.json();
           savedProductId = result._id || result.data?._id || result.product?._id;
-          
+
           if (savedProductId) {
             setCurrentProductId(savedProductId);
           }
@@ -890,7 +1204,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
 
-      const successMessage = `Fixed layer design saved! 📸\n\nMongoDB ID: ${savedProductId}`;
+      const successMessage = `Gradient layer design saved! 📸\n\nMongoDB ID: ${savedProductId}`;
       alert(successMessage);
 
       return {
@@ -920,6 +1234,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
         <Sidebar
           bringForward={() => updateArrange('bringForward')}
           editor={editor}
+          layerManager={layerManager}
           selectedProduct={selectedProduct}
           customText={customText}
           textSize={textSize}
@@ -958,23 +1273,30 @@ const CustomizerLayout = ({ selectedProduct }) => {
           addIconToCanvas={addIconToCanvas}
           handleAddPatternToCanvas={handleAddPatternToCanvas}
           applySelectedDesign={applySelectedDesign}
+          // NEW: Pass gradient color handlers
+          handleTopColorChange={handleTopColorChange}
+          handleBottomColorChange={handleBottomColorChange}
+          selectedTopColor={selectedTopColor}
+          selectedBottomColor={selectedBottomColor}
+        />
+      )}
+
+      {selectedProduct && (
+        <FabricJSCanvas
+          className="canvas-container"
+          onReady={onReady}
+          editor={editor}
+          savedProductId={currentProductId}
         />
       )}
 
       {/* {selectedProduct && (
-        <RightSmallPreview 
-          currentProduct={getCurrentProductData()}
+        <RightSideImageUpload
+          editor={editor}
+          selectedProduct={selectedProduct}
+          layerManager={layerManager}
         />
       )} */}
-
-      {selectedProduct && (
-        <FabricJSCanvas 
-          className="canvas-container" 
-          onReady={onReady}
-          editor={editor}
-          savedProductId={currentProductId} 
-        />
-      )}
 
       {selectedProduct && (
         <div className="bottom-7 left-1/2 transform -translate-x-1/2 absolute flex items-center gap-2 border border-[#D3DBDF] bg-white p-3.5 rounded-lg">
@@ -1013,7 +1335,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
             </svg>
-            <span>Fixed layer design saved!</span>
+            <span>Gradient layer design saved!</span>
           </div>
         </div>
       )}

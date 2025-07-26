@@ -920,6 +920,140 @@ export const backendProducts = [
                 name: "Pattern 15",
                 url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1753440619/fade-bottom11_qkxqa8.png"
             }
-        ]
+        ],
+        topColor: [
+            {
+                id: 1,
+                name: "Color 1",
+                url:"https://res.cloudinary.com/dd9tagtiw/image/upload/v1753506570/color1_b9nl0k.png"
+            },
+            {
+                id: 2,
+                name: "Color 2",
+                url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1753506570/color3_xvg4ah.png"
+            },
+            {
+                id: 3,
+                name: "Color 3",
+                url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1753506570/color4_fh2pg0.png"
+            },
+            {
+                id: 4,
+                name: "Color 4",
+                url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1753506570/color2_a4teq2.png"
+            },
+            {
+                id: 5,
+                name: "Color 5",
+                url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1753506570/color5_iyfuwb.png"
+            },
+            {
+                id: 6,
+                name: "Color 6",
+                url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1753506570/color6_fophq5.png"
+            },
+            {
+                id: 7,
+                name: "Color 7",
+                url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1753506570/color8_j9kpin.png"
+            },
+            {
+                id: 8,
+                name: "Color 8",
+                url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1753506571/color9_jfj6hk.png"
+            },
+            {
+                id: 9,
+                name: "Color 9",
+                url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1753506571/color7_yizc6p.pngg"
+            },
+            {
+                id: 10,
+                name: "Color 10",
+                url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1753506571/color11_eh5h8r.png"
+            },
+            {
+                id: 11,
+                name: "Color 11",
+                url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1753506571/color10_lerdoi.png"
+            },
+            {
+                id: 12,
+                name: "Color 12",
+                url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1753506571/color12_iaj43h.png"
+            },
+            {
+                id: 13,
+                name: "Color 13",
+                url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1753506571/color13_nw7pt0.png"
+            }
+        ],
+        bottomColor: [
+            {
+                id: 1,
+                name: "Color 1",
+                url:"https://res.cloudinary.com/dd9tagtiw/image/upload/v1753506570/color1_b9nl0k.png"
+            },
+            {
+                id: 2,
+                name: "Color 2",
+                url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1753506570/color3_xvg4ah.png"
+            },
+            {
+                id: 3,
+                name: "Color 3",
+                url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1753506570/color4_fh2pg0.png"
+            },
+            {
+                id: 4,
+                name: "Color 4",
+                url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1753506570/color2_a4teq2.png"
+            },
+            {
+                id: 5,
+                name: "Color 5",
+                url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1753506570/color5_iyfuwb.png"
+            },
+            {
+                id: 6,
+                name: "Color 6",
+                url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1753506570/color6_fophq5.png"
+            },
+            {
+                id: 7,
+                name: "Color 7",
+                url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1753506570/color8_j9kpin.png"
+            },
+            {
+                id: 8,
+                name: "Color 8",
+                url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1753506571/color9_jfj6hk.png"
+            },
+            {
+                id: 9,
+                name: "Color 9",
+                url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1753506571/color7_yizc6p.pngg"
+            },
+            {
+                id: 10,
+                name: "Color 10",
+                url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1753506571/color11_eh5h8r.png"
+            },
+            {
+                id: 11,
+                name: "Color 11",
+                url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1753506571/color10_lerdoi.png"
+            },
+            {
+                id: 12,
+                name: "Color 12",
+                url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1753506571/color12_iaj43h.png"
+            },
+            {
+                id: 13,
+                name: "Color 13",
+                url: "https://res.cloudinary.com/dd9tagtiw/image/upload/v1753506571/color13_nw7pt0.png"
+            }
+        ],
     }
 ];
