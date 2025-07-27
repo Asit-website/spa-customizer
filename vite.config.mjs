@@ -16,7 +16,7 @@ export default defineConfig({
       fileName: 'bc-customiser-app',
       formats: ['umd'],
     },
-    cssCodeSplit: true,
+    cssCodeSplit: true, //this line create style tag in head. if false create css file.
     outDir: 'public/bc-app',
     emptyOutDir: true,
     minify: false
