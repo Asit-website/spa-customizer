@@ -17,6 +17,7 @@ export default defineConfig({
       fileName: 'bc-customiser-app',
       formats: ['umd'],
     },
+    cssCodeSplit: false,
     outDir: 'public/bc-app',
     emptyOutDir: true,
     minify: false
