@@ -4,7 +4,7 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [react()], 
-  : false, 
+  publicDir: false, 
   define: {
       'process.env.NODE_ENV': JSON.stringify('production'),
       'process.env': '{}', // fallback to avoid undefined
@@ -22,8 +22,8 @@ export default defineConfig({
     minify: false
   },
   content: [
-    './app/**/*.{js,jsx,ts,tsx}', // ✅ all components
-    './embed-widget.jsx',         // ✅ entry file
+    './app/**/*.{js,jsx,ts,tsx}',
+    './embed-widget.jsx',
   ],
   theme: {
     extend: {},
