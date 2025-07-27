@@ -13,6 +13,7 @@ window.mountProductCustomizer = function (selector = '#customizer-root', props =
     <>
       <div className="bg-blue-500 text-white text-xl p-4 rounded-lg">Tailwind is working 🎉</div>
       <div className="bg-blue-500 text-white text-xl">Tailwind works. V2</div>
+      <p className="g-red">Color Red</p>
       <CustomizerLayout {...props} />
     </>
     )

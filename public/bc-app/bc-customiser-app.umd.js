@@ -48514,6 +48514,7 @@ ${line}` : line;
         /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "bg-blue-500 text-white text-xl p-4 rounded-lg", children: "Tailwind is working 🎉" }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "bg-blue-500 text-white text-xl", children: "Tailwind works. V2" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "g-red", children: "Color Red" }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(CustomizerLayout, { ...props })
         ] })
       );
