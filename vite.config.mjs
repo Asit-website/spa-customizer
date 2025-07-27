@@ -3,8 +3,8 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 
 export default defineConfig({
-  plugins: [react()],
-   publicDir: false, 
+  plugins: [react()], 
+  : false, 
   define: {
       'process.env.NODE_ENV': JSON.stringify('production'),
       'process.env': '{}', // fallback to avoid undefined
@@ -16,7 +16,7 @@ export default defineConfig({
       fileName: 'bc-customiser-app',
       formats: ['umd'],
     },
-    cssCodeSplit: false,
+    cssCodeSplit: true,
     outDir: 'public/bc-app',
     emptyOutDir: true,
     minify: false
