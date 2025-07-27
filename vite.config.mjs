@@ -2,7 +2,6 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
-
 export default defineConfig({
   plugins: [react()],
    publicDir: false, 
@@ -21,6 +20,13 @@ export default defineConfig({
     outDir: 'public/bc-app',
     emptyOutDir: true,
     minify: false
+  },
+  content: [
+    './app/**/*.{js,jsx,ts,tsx}', // ✅ all components
+    './embed-widget.jsx',         // ✅ entry file
+  ],
+  theme: {
+    extend: {},
   },
 })
 
