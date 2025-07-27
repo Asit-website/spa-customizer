@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import CustomizerLayout from "./CustomizerLayout";
 
@@ -19,8 +18,6 @@ export default function Home() {
 
   return (
     <>
-    <div className="bg-blue-500 text-white text-xl p-4 rounded-lg">Tailwind is working 🎉</div>
-    <div className="bg-blue-500 text-white text-xl">Tailwind works</div>;
     <CustomizerLayout/>
     </>
   );

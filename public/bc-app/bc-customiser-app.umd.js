@@ -48510,7 +48510,14 @@ ${line}` : line;
     const container = document.querySelector(selector);
     if (container) {
       const root = ReactDOM.createRoot(container);
-      root.render(/* @__PURE__ */ jsxRuntimeExports.jsx(CustomizerLayout, { ...props }));
+      root.render(
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "bg-blue-500 text-white text-xl p-4 rounded-lg", children: "Tailwind is working 🎉" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "bg-blue-500 text-white text-xl", children: "Tailwind works" }),
+          ";",
+          /* @__PURE__ */ jsxRuntimeExports.jsx(CustomizerLayout, { ...props })
+        ] })
+      );
     } else {
       console.warn("No mount target found for ProductCustomizer");
     }
