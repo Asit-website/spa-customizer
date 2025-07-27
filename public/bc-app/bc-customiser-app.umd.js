@@ -2,6 +2,9 @@
   typeof define === "function" && define.amd ? define(factory) : factory();
 })(function() {
   "use strict";
+  var __vite_style__ = document.createElement("style");
+  __vite_style__.textContent = "body {\r\n  font-family: Arial, Helvetica, sans-serif;\r\n}\r\n\r\n.g-red{\r\n  color: red;\r\n}\r\n\r\n::-webkit-scrollbar {\r\n  width: 6px;\r\n}\r\n\r\n::-webkit-scrollbar-thumb {\r\n  background-color: rgba(0, 0, 0, 0.2);\r\n  border-radius: 4px;\r\n}\r\n\r\n.canvas-container {\r\n  position: absolute;\r\n  top: 50%;\r\n  left: 50%;\r\n  width: 60vw !important;\r\n  height: 80vh !important;\r\n  transform: translate(-50%, -50%);\r\n  /* background: aqua; */\r\n  z-index: 0;\r\n}\r\n\r\n.canvas-container canvas {\r\n  width: 100% !important;\r\n  height: 100% !important;\r\n}\r\n\r\ncanvas {\r\n  pointer-events: auto !important;\r\n  touch-action: manipulation;\r\n  -webkit-touch-callout: none;\r\n  -webkit-user-select: none;\r\n  -moz-user-select: none;\r\n       user-select: none;\r\n}\r\n/*$vite$:1*/";
+  document.head.appendChild(__vite_style__);
   function getDefaultExportFromCjs(x2) {
     return x2 && x2.__esModule && Object.prototype.hasOwnProperty.call(x2, "default") ? x2["default"] : x2;
   }
