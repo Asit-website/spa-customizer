@@ -1,5 +1,5 @@
 "use client";
-
+import "../app/globals.css"
 import { useEffect, useState } from "react";
 import Topbar from "./components/Topbar";
 import Sidebar from "./components/Sidebar";
