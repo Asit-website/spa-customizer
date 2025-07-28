@@ -65,9 +65,11 @@ const SelectColorsTab = ({
       case 'background':
         return defaultColorOptions; // Background colors remain the same
       case 'topColor':
-        return selectedProduct.topColor || defaultColorOptions;
+        // FIXED: Access colors.topColor instead of just topColor
+        return selectedProduct.colors?.topColor || defaultColorOptions;
       case 'bottomColor':
-        return selectedProduct.bottomColor || defaultColorOptions;
+        // FIXED: Access colors.bottomColor instead of just bottomColor  
+        return selectedProduct.colors?.bottomColor || defaultColorOptions;
       default:
         return defaultColorOptions;
     }
@@ -89,7 +91,7 @@ const SelectColorsTab = ({
   const handleColorSelect = (colorObj, tab) => {
     switch (tab) {
       case 'background':
-        handleColorChange(colorObj);
+        handleColorChange && handleColorChange(colorObj);
         break;
       case 'topColor':
         handleTopColorChange && handleTopColorChange(colorObj);
@@ -136,6 +138,9 @@ const SelectColorsTab = ({
   const currentColors = getColorsForTab(activeTab);
   const currentSelected = getCurrentSelectedColor(activeTab);
 
+  // Check if gradient tabs should be shown
+  const hasGradientColors = selectedProduct?.colors?.topColor || selectedProduct?.colors?.bottomColor;
+
   return (
     <div className="bg-white rounded-lg border border-[#D3DBDF] w-72 h-fit max-h-[460px] overflow-hidden">
       <div className='flex items-center justify-between py-2 px-3'>
@@ -148,7 +153,7 @@ const SelectColorsTab = ({
       </div>
       <hr className="border-t border-[#D3DBDF] h-px" />
 
-      {/* Tab Navigation */}
+      {/* Tab Navigation - Only show if there are gradient colors */}
       <div className="flex border-b border-[#D3DBDF]">
         <button
           onClick={() => setActiveTab('background')}
@@ -162,7 +167,7 @@ const SelectColorsTab = ({
         </button>
         
         {/* Only show gradient tabs if product has gradient colors */}
-        {selectedProduct?.topColor && (
+        {selectedProduct?.colors?.topColor && (
           <button
             onClick={() => setActiveTab('topColor')}
             className={`flex-1 py-2 px-3 text-sm font-medium transition-colors duration-200 ${
@@ -175,7 +180,7 @@ const SelectColorsTab = ({
           </button>
         )}
         
-        {selectedProduct?.bottomColor && (
+        {selectedProduct?.colors?.bottomColor && (
           <button
             onClick={() => setActiveTab('bottomColor')}
             className={`flex-1 py-2 px-3 text-sm font-medium transition-colors duration-200 ${
@@ -195,7 +200,7 @@ const SelectColorsTab = ({
           {currentColors.map((colorObj, index) => {
             const isSelected = currentSelected && (
               (activeTab === 'background' && currentSelected.color === colorObj.color) ||
-              (activeTab !== 'background' && currentSelected.id === colorObj.id)
+              (activeTab !== 'background' && currentSelected?.id === colorObj.id)
             );
 
             return (
@@ -233,6 +238,7 @@ const SelectColorsTab = ({
         {activeTab === 'background' && "Background colors change the base canvas color"}
         {activeTab === 'topColor' && "Top colors create gradient effects on the upper part"}
         {activeTab === 'bottomColor' && "Bottom colors create gradient effects on the lower part"}
+        {!hasGradientColors && activeTab === 'background' && " • This product doesn't support gradient colors"}
       </div>
     </div>
   );

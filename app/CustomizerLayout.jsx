@@ -12,69 +12,6 @@ import RightSideImageUpload from "./components/RightSideImageComponent";
 
 const CustomizerLayout = ({ selectedProduct }) => {
 
-  // class SimpleLayerManager {
-  //   constructor(canvas) {
-  //     this.canvas = canvas;
-  //     this.layerOrder = {
-  //       BASE_COLOR: 0,        // Base background color
-  //       TOP_GRADIENT: 1,      // Top color/gradient image (red/burgundy part)  
-  //       PATTERN: 2,           // Stars, stripes, or other patterns
-  //       BOTTOM_GRADIENT: 3,   // Bottom color/gradient image (green part) with fade
-  //       DESIGN: 4,            // User designs/logos
-  //       TEXT: 5,              // Custom text
-  //       PRODUCT: 6            // Product outline/shape (should be transparent)
-  //     };
-  //   }
-
-  //   setObjectLayer(obj) {
-  //     if (!obj) return;
-
-  //     let zIndex = 0;
-
-  //     if (obj.isTshirtBase) {
-  //       zIndex = this.layerOrder.PRODUCT;
-  //     } else if (obj.type === 'i-text') {
-  //       zIndex = this.layerOrder.TEXT;
-  //     } else if (obj.type === 'image' && obj.isTopGradient) {
-  //       zIndex = this.layerOrder.TOP_GRADIENT; // Red/burgundy top part
-  //     } else if (obj.type === 'image' && obj.isPattern) {
-  //       zIndex = this.layerOrder.PATTERN; // Stars, stripes
-  //     } else if (obj.type === 'image' && obj.isBottomGradient) {
-  //       zIndex = this.layerOrder.BOTTOM_GRADIENT; // Green bottom part with fade
-  //     } else if (obj.isBottomGradientFade || obj.isBottomGradientTopTransparent) {
-  //       // Both overlays should be same layer as bottom gradient but slightly higher
-  //       zIndex = this.layerOrder.BOTTOM_GRADIENT + 0.1;
-  //     } else if (obj.type === 'image' && !obj.isTshirtBase) {
-  //       zIndex = this.layerOrder.DESIGN; // User designs
-  //     } else if (obj.isColorEffect) {
-  //       zIndex = this.layerOrder.BASE_COLOR;
-  //     }
-
-  //     obj.zIndex = zIndex;
-  //     console.log(`✅ Object assigned layer: ${obj.type} -> zIndex: ${zIndex}`);
-  //   }
-
-  //   arrangeCanvasLayers() {
-  //     const objects = this.canvas.getObjects();
-
-  //     // Sort objects by their zIndex
-  //     objects.sort((a, b) => {
-  //       const aIndex = a.zIndex || 0;
-  //       const bIndex = b.zIndex || 0;
-  //       return aIndex - bIndex;
-  //     });
-
-  //     // Clear and re-add in correct order
-  //     this.canvas._objects = [];
-  //     objects.forEach(obj => {
-  //       this.canvas._objects.push(obj);
-  //     });
-
-  //     this.canvas.renderAll();
-  //     console.log('✅ Layer arrangement complete - Updated gradient system with fade applied');
-  //   }
-  // }
-
   class SimpleLayerManager {
     constructor(canvas) {
       this.canvas = canvas;
@@ -85,7 +22,12 @@ const CustomizerLayout = ({ selectedProduct }) => {
         BOTTOM_GRADIENT: 3,   // Bottom color/gradient image (green part) with fade
         DESIGN: 4,            // User designs/logos
         TEXT: 5,              // Custom text
-        RIGHT_SIDE_IMAGE: 6,  // NEW: Uploaded images for right side (highest priority)
+        RIGHT_SIDE_IMAGE: 6,  // Uploaded images for right side (highest priority)
+        // Dynamic shoe layers
+        SOLE: 1,              // Shoe sole
+        SURFACE: 2,           // Shoe surface
+        MIDDLE: 3,            // Shoe middle part
+        LACE: 4,              // Shoe laces
         PRODUCT: 7            // Product outline/shape (should be transparent)
       };
     }
@@ -98,7 +40,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
       if (obj.isTshirtBase) {
         zIndex = this.layerOrder.PRODUCT;
       } else if (obj.isRightSideImage) {
-        zIndex = this.layerOrder.RIGHT_SIDE_IMAGE; // NEW: Right side uploaded images
+        zIndex = this.layerOrder.RIGHT_SIDE_IMAGE;
       } else if (obj.type === 'i-text') {
         zIndex = this.layerOrder.TEXT;
       } else if (obj.type === 'image' && obj.isTopGradient) {
@@ -109,6 +51,24 @@ const CustomizerLayout = ({ selectedProduct }) => {
         zIndex = this.layerOrder.BOTTOM_GRADIENT;
       } else if (obj.isBottomGradientFade || obj.isBottomGradientTopTransparent) {
         zIndex = this.layerOrder.BOTTOM_GRADIENT + 0.1;
+      } else if (obj.type === 'image' && obj.layerType) {
+        // Handle dynamic shoe layers
+        switch (obj.layerType) {
+          case 'sole':
+            zIndex = this.layerOrder.SOLE;
+            break;
+          case 'surface':
+            zIndex = this.layerOrder.SURFACE;
+            break;
+          case 'middle':
+            zIndex = this.layerOrder.MIDDLE;
+            break;
+          case 'lace':
+            zIndex = this.layerOrder.LACE;
+            break;
+          default:
+            zIndex = this.layerOrder.DESIGN;
+        }
       } else if (obj.type === 'image' && !obj.isTshirtBase) {
         zIndex = this.layerOrder.DESIGN;
       } else if (obj.isColorEffect) {
@@ -116,7 +76,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
       }
 
       obj.zIndex = zIndex;
-      console.log(`✅ Object assigned layer: ${obj.type} -> zIndex: ${zIndex}${obj.isRightSideImage ? ' (Right Side Image)' : ''}`);
+      console.log(`✅ Object assigned layer: ${obj.type} -> zIndex: ${zIndex}${obj.layerType ? ` (${obj.layerType})` : ''}${obj.isRightSideImage ? ' (Right Side Image)' : ''}`);
     }
 
     arrangeCanvasLayers() {
@@ -136,7 +96,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
       });
 
       this.canvas.renderAll();
-      console.log('✅ Layer arrangement complete - Updated with right side image support');
+      console.log('✅ Layer arrangement complete - Updated with dynamic layers support');
     }
   }
 
@@ -173,6 +133,9 @@ const CustomizerLayout = ({ selectedProduct }) => {
   const [selectedTopColor, setSelectedTopColor] = useState(null);
   const [selectedBottomColor, setSelectedBottomColor] = useState(null);
 
+  // Dynamic layer states for shoes
+  const [selectedLayers, setSelectedLayers] = useState({});
+
   // UI states
   const [showAddModal, setShowAddModal] = useState(true);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -207,7 +170,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
     if (editor?.canvas && !layerManager) {
       const manager = new SimpleLayerManager(editor.canvas);
       setLayerManager(manager);
-      console.log('🎯 Layer Manager initialized with gradient system');
+      console.log('🎯 Layer Manager initialized with dynamic layers system');
     }
   }, [editor?.canvas]);
 
@@ -234,6 +197,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
       color: selectedColor.color,
       topColor: selectedTopColor,
       bottomColor: selectedBottomColor,
+      selectedLayers: selectedLayers,
     };
   };
 
@@ -242,16 +206,30 @@ const CustomizerLayout = ({ selectedProduct }) => {
     updateCanvasColor(colorObj.color);
   };
 
-  // NEW: Handle top gradient color
+  // NEW: Handle top gradient color - FIXED
   const handleTopColorChange = (colorObj) => {
     setSelectedTopColor(colorObj);
     handleAddTopGradientToCanvas(colorObj.url);
   };
 
-  // NEW: Handle bottom gradient color
+  // NEW: Handle bottom gradient color - FIXED
   const handleBottomColorChange = (colorObj) => {
     setSelectedBottomColor(colorObj);
     handleAddBottomGradientToCanvas(colorObj.url);
+  };
+
+  // NEW: Handle dynamic layer changes for shoes
+  const handleDynamicLayerChange = (layerType, item) => {
+    console.log(`🔄 Changing layer: ${layerType} to ${item.name}`);
+    
+    // Update selected layers state
+    setSelectedLayers(prev => ({
+      ...prev,
+      [layerType]: item
+    }));
+
+    // Add the layer to canvas
+    handleAddDynamicLayerToCanvas(layerType, item.url);
   };
 
   // Canvas background color change
@@ -271,60 +249,94 @@ const CustomizerLayout = ({ selectedProduct }) => {
     });
   };
 
-  // NEW: Add bottom gradient function
-  // const handleAddBottomGradientToCanvas = (url) => {
-  //   if (!editor?.canvas || !url) return;
+  // NEW: Add dynamic layer function for shoes
+  const handleAddDynamicLayerToCanvas = (layerType, url) => {
+    if (!editor?.canvas || !url) return;
 
-  //   const canvas = editor.canvas;
+    const canvas = editor.canvas;
 
-  //   import("fabric").then((fabric) => {
-  //     const imgElement = new Image();
-  //     imgElement.crossOrigin = "anonymous";
-  //     imgElement.src = url;
+    import("fabric").then((fabric) => {
+      const imgElement = new Image();
+      imgElement.crossOrigin = "anonymous";
+      imgElement.src = url;
 
-  //     imgElement.onload = () => {
-  //       const productImage = canvas.getObjects().find((obj) => obj.isTshirtBase);
-  //       if (!productImage) return;
+      imgElement.onload = () => {
+        const productImage = canvas.getObjects().find((obj) => obj.isTshirtBase);
+        if (!productImage) return;
 
-  //       const productBounds = productImage.getBoundingRect();
+        const productBounds = productImage.getBoundingRect();
 
-  //       const existingBottomGradient = canvas.getObjects().filter(obj => obj.isBottomGradient === true);
-  //       existingBottomGradient.forEach(gradient => {
-  //         canvas.remove(gradient);
-  //       });
+        // Remove existing layer of the same type
+        const existingLayers = canvas.getObjects().filter(obj => obj.layerType === layerType);
+        existingLayers.forEach(layer => {
+          canvas.remove(layer);
+        });
 
-  //       const imgInstance = new fabric.Image(imgElement, {
-  //         left: productBounds.left,
-  //         top: productBounds.top,
-  //         originX: "left",
-  //         originY: "top",
-  //         scaleX: productBounds.width / imgElement.width,
-  //         scaleY: productBounds.height / imgElement.height,
-  //         name: "bottom-gradient-image",
-  //         isBottomGradient: true,
-  //         selectable: false,
-  //         evented: false,
-  //         hasControls: false,
-  //         hasBorders: false,
-  //         moveCursor: "default",
-  //         lockMovementX: true,
-  //         lockMovementY: true,
-  //         lockScalingX: true,
-  //         lockScalingY: true,
-  //         lockRotation: true
-  //       });
+        // Create new layer with exact same dimensions as product
+        const imgInstance = new fabric.Image(imgElement, {
+          left: productBounds.left,
+          top: productBounds.top,
+          originX: "left",
+          originY: "top",
+          scaleX: productBounds.width / imgElement.width,
+          scaleY: productBounds.height / imgElement.height,
+          name: `${layerType}-layer`,
+          layerType: layerType,
+          selectable: false,
+          evented: false,
+          hasControls: false,
+          hasBorders: false,
+          moveCursor: "default",
+          lockMovementX: true,
+          lockMovementY: true,
+          lockScalingX: true,
+          lockScalingY: true,
+          lockRotation: true
+        });
 
-  //       canvas.add(imgInstance);
+        canvas.add(imgInstance);
 
-  //       if (layerManager) {
-  //         layerManager.setObjectLayer(imgInstance);
-  //         layerManager.arrangeCanvasLayers();
-  //       }
+        if (layerManager) {
+          layerManager.setObjectLayer(imgInstance);
+          layerManager.arrangeCanvasLayers();
+        }
 
-  //       console.log('✅ Bottom gradient added (zIndex: 1) - Bottom color applied');
-  //     };
-  //   });
-  // };
+        console.log(`✅ ${layerType} layer added - Dynamic layer system`);
+      };
+    });
+  };
+
+  // Load default layers for products that have them
+  const loadDefaultLayers = () => {
+    if (!selectedProduct?.defaultLayers || !editor?.canvas) return;
+
+    console.log('🔧 Loading default layers for product:', selectedProduct.id);
+
+    const defaultLayers = selectedProduct.defaultLayers;
+    const initialLayers = {};
+
+    Object.keys(defaultLayers).forEach(layerType => {
+      const url = defaultLayers[layerType];
+      if (url) {
+        // Find the corresponding item in layersDesigns
+        const layerDesigns = selectedProduct.layersDesigns?.[layerType];
+        if (layerDesigns) {
+          const defaultItem = layerDesigns.find(item => item.url === url) || 
+                             layerDesigns[0]; // Fallback to first item
+          
+          if (defaultItem) {
+            initialLayers[layerType] = defaultItem;
+            handleAddDynamicLayerToCanvas(layerType, url);
+          }
+        }
+      }
+    });
+
+    setSelectedLayers(initialLayers);
+    console.log('✅ Default layers loaded:', Object.keys(initialLayers));
+  };
+
+  // NEW: Add bottom gradient function - FIXED
   const handleAddBottomGradientToCanvas = (url) => {
     if (!editor?.canvas || !url) return;
 
@@ -430,9 +442,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
     });
   };
 
-
-
-  // NEW: Add top gradient function
+  // NEW: Add top gradient function - FIXED
   const handleAddTopGradientToCanvas = (url) => {
     if (!editor?.canvas || !url) return;
 
@@ -513,7 +523,6 @@ const CustomizerLayout = ({ selectedProduct }) => {
       const topRatio = selectedProduct?.textTopRatio || 3.5;
 
       const textObject = new fabric.IText(customText.slice(0, 9), {
-        // left: imageBounds.left + imageBounds.width / 2,
         left: imageBounds.left + imageBounds.width * 0.25,
         top: imageBounds.top + imageBounds.height / topRatio,
         originX: "center",
@@ -854,67 +863,114 @@ const CustomizerLayout = ({ selectedProduct }) => {
     );
   };
 
-  // Initialize canvas with product - set proper dimensions
+  // Initialize canvas with product - UPDATED for default layers
   useEffect(() => {
     if (!selectedProduct || !editor?.canvas) return;
 
-    console.log(`🆕 Initializing canvas with gradient system for product ${selectedProduct.id}`);
+    console.log(`🆕 Initializing canvas for product ${selectedProduct.id} (${selectedProduct.type})`);
 
     const initializeCanvas = () => {
       import("fabric").then(({ Image }) => {
         editor.canvas.clear();
 
-        const img = new window.Image();
-        img.crossOrigin = "anonymous";
-        img.src = selectedProduct.image;
+        // For products with defaultLayers, show only shadow/outline initially
+        const showProductImage = !selectedProduct.defaultLayers;
+        
+        if (showProductImage) {
+          // Show full product image (for t-shirts, etc.)
+          const img = new window.Image();
+          img.crossOrigin = "anonymous";
+          img.src = selectedProduct.image;
 
-        img.onload = () => {
-          // Set consistent dimensions - this is the base size for all elements
+          img.onload = () => {
+            const targetWidth = selectedProduct.width || 300;
+            const targetHeight = selectedProduct.height || (targetWidth * (img.height / img.width));
+
+            const scaleX = targetWidth / img.width;
+            const scaleY = targetHeight / img.height;
+
+            const fabricImg = new Image(img, {
+              left: editor.canvas.getWidth() / 2,
+              top: editor.canvas.getHeight() / 2,
+              isTshirtBase: true,
+              originX: "center",
+              originY: "center",
+              scaleX: scaleX,
+              scaleY: scaleY,
+              selectable: false,
+              evented: false,
+              hasControls: false,
+              hasBorders: false,
+              lockMovementX: true,
+              lockMovementY: true,
+              lockScalingX: true,
+              lockScalingY: true,
+              lockRotation: true,
+              flipX: flipX,
+              flipY: flipY
+            });
+
+            fabricImg.customId = selectedProduct.id;
+            editor.canvas.add(fabricImg);
+
+            if (layerManager) {
+              layerManager.setObjectLayer(fabricImg);
+              layerManager.arrangeCanvasLayers();
+            }
+
+            fabricImg.setCoords();
+            editor.canvas.renderAll();
+            console.log(`✅ Product loaded with dimensions: ${targetWidth}x${targetHeight}`);
+          };
+
+          img.onerror = () => {
+            console.error('Failed to load product image:', selectedProduct.image);
+          };
+        } else {
+          // For products with defaultLayers (shoes), create invisible base
           const targetWidth = selectedProduct.width || 300;
-          const targetHeight = selectedProduct.height || (targetWidth * (img.height / img.width));
+          const targetHeight = selectedProduct.width || 300; // Square for shoes
 
-          const scaleX = targetWidth / img.width;
-          const scaleY = targetHeight / img.height;
+          // Create invisible base rectangle to define product bounds
+          import("fabric").then((fabric) => {
+            const baseRect = new fabric.Rect({
+              left: editor.canvas.getWidth() / 2,
+              top: editor.canvas.getHeight() / 2,
+              width: targetWidth,
+              height: targetHeight,
+              isTshirtBase: true,
+              originX: "center",
+              originY: "center",
+              fill: 'transparent',
+              stroke: 'transparent',
+              selectable: false,
+              evented: false,
+              hasControls: false,
+              hasBorders: false,
+              lockMovementX: true,
+              lockMovementY: true,
+              lockScalingX: true,
+              lockScalingY: true,
+              lockRotation: true,
+              visible: false // Make it invisible but keep for bounds calculation
+            });
 
-          const fabricImg = new Image(img, {
-            left: editor.canvas.getWidth() / 2,
-            top: editor.canvas.getHeight() / 2,
-            isTshirtBase: true,
-            originX: "center",
-            originY: "center",
-            scaleX: scaleX,
-            scaleY: scaleY,
-            selectable: false,
-            evented: false,
-            hasControls: false,
-            hasBorders: false,
-            lockMovementX: true,
-            lockMovementY: true,
-            lockScalingX: true,
-            lockScalingY: true,
-            lockRotation: true,
-            flipX: flipX,
-            flipY: flipY
+            baseRect.customId = selectedProduct.id;
+            editor.canvas.add(baseRect);
+
+            if (layerManager) {
+              layerManager.setObjectLayer(baseRect);
+              layerManager.arrangeCanvasLayers();
+            }
+
+            console.log(`✅ Invisible base created for layered product: ${targetWidth}x${targetHeight}`);
+            
+            // Load default layers after base is created
+            setTimeout(() => {
+              loadDefaultLayers();
+            }, 100);
           });
-
-          fabricImg.customId = selectedProduct.id;
-
-          editor.canvas.add(fabricImg);
-
-          // Apply layer management - IMMEDIATE arrangement
-          if (layerManager) {
-            layerManager.setObjectLayer(fabricImg);
-            layerManager.arrangeCanvasLayers();
-          }
-
-          fabricImg.setCoords();
-          editor.canvas.renderAll();
-          console.log(`✅ Product loaded with dimensions: ${targetWidth}x${targetHeight} (zIndex: 6)`);
-        };
-
-        img.onerror = () => {
-          console.error('Failed to load product image:', selectedProduct.image);
-        };
+        }
       });
     };
 
@@ -1114,6 +1170,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
             isPattern: obj.isPattern || false,
             isTopGradient: obj.isTopGradient || false,
             isBottomGradient: obj.isBottomGradient || false,
+            layerType: obj.layerType || null,
             name: obj.name,
             isIcon: obj.isIcon || false,
             hasControls: obj.hasControls,
@@ -1138,9 +1195,11 @@ const CustomizerLayout = ({ selectedProduct }) => {
           image: selectedProduct.image,
           description: selectedProduct.description,
           size: selectedProduct.size,
+          type: selectedProduct.type,
           color: selectedColor.color,
           width: selectedProduct.width,
-          textTopRatio: selectedProduct.textTopRatio
+          textTopRatio: selectedProduct.textTopRatio,
+          hasDefaultLayers: !!selectedProduct.defaultLayers
         },
         canvas: {
           width: editor.canvas.getWidth(),
@@ -1162,11 +1221,12 @@ const CustomizerLayout = ({ selectedProduct }) => {
           flipY: flipY,
           selectedColor: selectedColor,
           selectedTopColor: selectedTopColor,
-          selectedBottomColor: selectedBottomColor
+          selectedBottomColor: selectedBottomColor,
+          selectedLayers: selectedLayers
         },
         screenshot: screenshotCloudinaryUrl,
         clippingSystemUsed: 'none',
-        layerSystemUsed: 'gradient-layer-system'
+        layerSystemUsed: selectedProduct.defaultLayers ? 'dynamic-layer-system' : 'gradient-layer-system'
       };
 
       let savedProductId = null;
@@ -1204,7 +1264,8 @@ const CustomizerLayout = ({ selectedProduct }) => {
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
 
-      const successMessage = `Gradient layer design saved! 📸\n\nMongoDB ID: ${savedProductId}`;
+      const systemType = selectedProduct.defaultLayers ? 'Dynamic layer' : 'Gradient layer';
+      const successMessage = `${systemType} design saved! 📸\n\nMongoDB ID: ${savedProductId}`;
       alert(successMessage);
 
       return {
@@ -1273,11 +1334,12 @@ const CustomizerLayout = ({ selectedProduct }) => {
           addIconToCanvas={addIconToCanvas}
           handleAddPatternToCanvas={handleAddPatternToCanvas}
           applySelectedDesign={applySelectedDesign}
-          // NEW: Pass gradient color handlers
           handleTopColorChange={handleTopColorChange}
           handleBottomColorChange={handleBottomColorChange}
           selectedTopColor={selectedTopColor}
           selectedBottomColor={selectedBottomColor}
+          handleDynamicLayerChange={handleDynamicLayerChange}
+          selectedLayers={selectedLayers}
         />
       )}
 
@@ -1289,14 +1351,6 @@ const CustomizerLayout = ({ selectedProduct }) => {
           savedProductId={currentProductId}
         />
       )}
-
-      {/* {selectedProduct && (
-        <RightSideImageUpload
-          editor={editor}
-          selectedProduct={selectedProduct}
-          layerManager={layerManager}
-        />
-      )} */}
 
       {selectedProduct && (
         <div className="bottom-7 left-1/2 transform -translate-x-1/2 absolute flex items-center gap-2 border border-[#D3DBDF] bg-white p-3.5 rounded-lg">
@@ -1335,7 +1389,7 @@ const CustomizerLayout = ({ selectedProduct }) => {
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
             </svg>
-            <span>Gradient layer design saved!</span>
+            <span>Design saved successfully!</span>
           </div>
         </div>
       )}

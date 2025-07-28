@@ -6,7 +6,7 @@ import EditTab from "./EditTab";
 import AddTextTab from "./AddTextTab";
 import EditTextTab from "./EditTextTab";
 import SelectColorsTab from "./SelectColorsTab";
-import ClipartTab from "./ClipartTab";
+import DynamicClipartTab from "./ClipartTab"; // Updated import
 import RightSideImageUpload from "./RightSideImageComponent";
 
 const Sidebar = ({
@@ -49,6 +49,9 @@ const Sidebar = ({
   selectedBottomColor,
   setTextFlipX,
   setTextFlipY,
+  handleDynamicLayerChange, // NEW: For dynamic shoe layers
+  selectedLayers, // NEW: Current selected layers for shoes
+  handleDynamicColorChange
 }) => {
   const [activeTab, setActiveTab] = useState("editor");
   const [showClipartTab, setShowClipartTab] = useState(false);
@@ -181,6 +184,20 @@ const Sidebar = ({
     }
   };
 
+  // Determine tab label based on product type
+  const getClipartTabLabel = () => {
+    if (!selectedProduct) return "Clipart";
+    
+    switch (selectedProduct.type) {
+      case "shoe":
+        return "Customize";
+      case "sando":
+        return "Designs";
+      default:
+        return "Clipart";
+    }
+  };
+
   return (
     <div className="absolute top-24 sm:top-28 left-7 w-[35%] flex gap-5 z-50 flex-col sm:flex-row">
       <div className="bg-white p-5 rounded-lg border border-[#D3DBDF] flex flex-row sm:flex-col h-fit items-center justify-between sm:justify-normal gap-6">
@@ -189,7 +206,7 @@ const Sidebar = ({
           { key: "edit", label: "Edit", icon: "pencil-outline_c6lwsj" },
           { key: "text", label: "Text", icon: "text-recognition_emsdp8" },
           { key: "colors", label: "Colors", icon: "invert-colors_bybi8l" },
-          { key: "clipart", label: "Clipart", icon: "heart-multiple-outline_rjqkb7" },
+          { key: "clipart", label: getClipartTabLabel(), icon: "heart-multiple-outline_rjqkb7" },
           { key: "rightImage", label: "Right Image", icon: "heart-multiple-outline_rjqkb7" },
         ].map(({ key, label, icon }) => (
           <div
@@ -269,12 +286,6 @@ const Sidebar = ({
       )}
 
       {activeTab === "colors" && showBgColorsModal && (
-        // <SelectColorsTab
-        //   setShowBgColorsModal={setShowBgColorsModal}
-        //   handleColorChange={handleColorChange}
-        //   selectedColor={selectedColor}
-        //   setSelectedColor={setSelectedColor}
-        // />
         <SelectColorsTab
           handleColorChange={handleColorChange}
           selectedColor={selectedColor}
@@ -284,30 +295,32 @@ const Sidebar = ({
           selectedTopColor={selectedTopColor}
           selectedBottomColor={selectedBottomColor}
           selectedProduct={selectedProduct}
+          handleDynamicColorChange={handleDynamicColorChange}
         />
       )}
 
       {activeTab === "clipart" && showClipartTab && (
-        <ClipartTab
+        <DynamicClipartTab
           addEmojiTextToCanvas={addEmojiTextToCanvas}
           setShowClipartTab={setShowClipartTab}
-          selectedProduct={selectedProduct} // Pass selectedProduct instead of lastProduct
+          selectedProduct={selectedProduct}
           handleAddDesignToCanvas={handleAddDesignToCanvas}
           addIconToCanvas={addIconToCanvas}
           editor={editor}
           handleAddPatternToCanvas={handleAddPatternToCanvas}
+          handleDynamicLayerChange={handleDynamicLayerChange} // NEW: Pass dynamic layer handler
+          selectedLayers={selectedLayers} // NEW: Pass selected layers
         />
       )}
 
-      {  activeTab === "rightImage" && showrightImage && (
-          <RightSideImageUpload
-            editor={editor}
-            selectedProduct={selectedProduct}
-            layerManager={layerManager}
-            setShowrightImage={setShowrightImage}
-          />
-        )
-      }
+      {activeTab === "rightImage" && showrightImage && (
+        <RightSideImageUpload
+          editor={editor}
+          selectedProduct={selectedProduct}
+          layerManager={layerManager}
+          setShowrightImage={setShowrightImage}
+        />
+      )}
     </div>
   );
 };
